@@ -8,8 +8,19 @@ function handleApiGet_(e) {
     const urlPath = path.replace(/^\/+/, '');
     // Basic route detection
     if (urlPath === 'api/config') {
-      const payload = getConfig_();
-      return jsonResponse_(payload, origin);
+      const token = e.parameter && e.parameter.token;
+      if (token) {
+        // Token-based config: return company-specific data
+        const companyName = companyFromToken_(token);
+        const company = { name: companyName };
+        const products = getProductsByCompany_(companyName);
+        const payload = { company, products };
+        return jsonResponse_(payload, origin);
+      } else {
+        // Traditional config: return all companies and products
+        const payload = getConfig_();
+        return jsonResponse_(payload, origin);
+      }
     }
 
     if (urlPath === 'api/leads') {

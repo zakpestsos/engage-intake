@@ -56,6 +56,59 @@
     if (!$('#leadValue').value) $('#leadValue').value = price ? String(price) : '';
   }
 
+  function setupCompanyMode(company, products) {
+    // Hide the company selection section
+    const companySection = document.querySelector('.form-section');
+    if (companySection) {
+      companySection.style.display = 'none';
+    }
+    
+    // Update the header to show the company name
+    const header = document.querySelector('.intake-header h2');
+    if (header) {
+      header.innerHTML = `📞 Call Intake Form<br><span style="font-size: 0.7em; color: var(--primary); font-weight: normal;">for ${sanitize(company.name)}</span>`;
+    }
+    
+    // Populate products for this company only
+    const sel = $('#product');
+    sel.innerHTML = '<option value="">Select product/service...</option>';
+    products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.name;
+      opt.setAttribute('data-sku', p.sku);
+      opt.setAttribute('data-price', p.price);
+      opt.textContent = `${p.name} - $${p.price}`;
+      sel.appendChild(opt);
+    });
+    
+    // Store company info for form submission
+    window.SELECTED_COMPANY = company.name;
+    
+    // Update tabindex since company field is hidden
+    updateTabIndexForCompanyMode();
+    
+    // Auto-focus to first name field
+    setTimeout(() => {
+      $('#firstName').focus();
+    }, 100);
+  }
+
+  function updateTabIndexForCompanyMode() {
+    // Shift all tabindex down by 1 since company field (tabindex 1) is hidden
+    $('#firstName').setAttribute('tabindex', '1');
+    $('#lastName').setAttribute('tabindex', '2');
+    $('#addressStreet').setAttribute('tabindex', '3');
+    $('#addressCity').setAttribute('tabindex', '4');
+    $('#addressState').setAttribute('tabindex', '5');
+    $('#addressPostal').setAttribute('tabindex', '6');
+    $('#reason').setAttribute('tabindex', '7');
+    $('#reasonOther').setAttribute('tabindex', '8');
+    $('#product').setAttribute('tabindex', '9');
+    $('#leadValue').setAttribute('tabindex', '10');
+    $('#notes').setAttribute('tabindex', '11');
+    $('#submitBtn').setAttribute('tabindex', '12');
+  }
+
   function initPlaces() {
     console.log('Initializing Google Places autocomplete...');
     
@@ -143,7 +196,13 @@
 
   function validate() {
     const errors = {};
-    if (!$('#company').value.trim()) errors.company = 'Required';
+    
+    // Only validate company if it's visible (not in token mode)
+    const companyField = $('#company');
+    if (companyField.style.display !== 'none' && !companyField.value.trim()) {
+      errors.company = 'Required';
+    }
+    
     if (!$('#firstName').value.trim()) errors.firstName = 'Required';
     if (!$('#lastName').value.trim()) errors.lastName = 'Required';
     if (!$('#addressStreet').value.trim()) errors.addressStreet = 'Required';
@@ -170,12 +229,31 @@
   }
 
   async function loadConfig() {
+    // Check if we have a company token in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyToken = urlParams.get('token');
+    
     console.log('Loading config from:', API() + '/api/config');
     console.log('API_BASE from config:', API());
-    const cfg = await fetchJSON(API() + '/api/config');
+    console.log('Company token from URL:', companyToken);
+    
+    // If we have a token, load config for specific company
+    const configUrl = companyToken ? 
+      API() + '/api/config?token=' + encodeURIComponent(companyToken) :
+      API() + '/api/config';
+      
+    const cfg = await fetchJSON(configUrl);
     console.log('Config loaded successfully:', cfg);
-    PRODUCTS_BY_COMPANY = cfg.productsByCompany || {};
-    populateCompanies(cfg.companies || []);
+    
+    // Store the company info if token-based
+    if (companyToken && cfg.company) {
+      window.CURRENT_COMPANY = cfg.company;
+      setupCompanyMode(cfg.company, cfg.products || []);
+    } else {
+      // Traditional mode - show all companies
+      PRODUCTS_BY_COMPANY = cfg.productsByCompany || {};
+      populateCompanies(cfg.companies || []);
+    }
   }
 
   async function submitLead(payload) {
@@ -235,8 +313,11 @@
       
       const productSel = $('#product'); 
       const opt = productSel.options[productSel.selectedIndex];
+      // Use token-based company or selected company
+      const companyName = window.SELECTED_COMPANY || $('#company').value.trim();
+      
       const payload = {
-        companyName: $('#company').value.trim(),
+        companyName: companyName,
         customerFirstName: $('#firstName').value.trim(),
         customerLastName: $('#lastName').value.trim(),
         address: addressParts,

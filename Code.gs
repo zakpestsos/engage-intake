@@ -70,7 +70,7 @@ const ALLOWED_ORIGINS = [
   'https://script.google.com',
   'https://sites.google.com',
   'https://script.googleusercontent.com',
-  'https://pest-sos.github.io',
+  'https://zakpestsos.github.io',
   'https://your-org.github.io',
   'https://your-user.github.io'
 ];

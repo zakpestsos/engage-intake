@@ -220,7 +220,19 @@
     
     // Only validate company if it's visible (not in token mode)
     const companyField = $('#company');
-    if (companyField.style.display !== 'none' && !companyField.value.trim()) {
+    const companySection = companyField.closest('.form-section');
+    const isCompanyVisible = companySection && companySection.style.display !== 'none';
+    
+    console.log('🔍 Company field validation:', {
+      fieldExists: !!companyField,
+      sectionExists: !!companySection,
+      sectionDisplay: companySection ? companySection.style.display : 'not found',
+      isVisible: isCompanyVisible,
+      fieldValue: companyField ? companyField.value : 'no field',
+      selectedCompany: window.SELECTED_COMPANY
+    });
+    
+    if (isCompanyVisible && !companyField.value.trim() && !window.SELECTED_COMPANY) {
       errors.company = 'Required';
     }
     
@@ -513,15 +525,36 @@
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
     });
     
+    // Add direct button click handler for debugging
+    $('#submitBtn').addEventListener('click', function(e) {
+      console.log('🔘 SUBMIT BUTTON CLICKED');
+      console.log('🔘 Button disabled?', this.disabled);
+      console.log('🔘 Event target:', e.target);
+    });
+    
     $('#intakeForm').addEventListener('submit', async function(e){
+      console.log('🚀 FORM SUBMIT EVENT TRIGGERED');
       e.preventDefault();
       clearError();
-      if (!validate()) return;
+      
+      console.log('📝 Starting form validation...');
+      const validationResult = validate();
+      console.log('✅ Validation result:', validationResult);
+      
+      if (!validationResult) {
+        console.log('❌ Validation failed, stopping submission');
+        return;
+      }
+      
+      console.log('✅ Validation passed, proceeding with submission');
       
       const productSel = $('#product'); 
       const opt = productSel.options[productSel.selectedIndex];
       // Use token-based company or selected company
       const companyName = window.SELECTED_COMPANY || $('#company').value.trim();
+      
+      console.log('🏢 Company for submission:', companyName);
+      console.log('📦 Selected product:', opt ? opt.value : 'none');
       
       const payload = {
         companyName: companyName,

@@ -56,7 +56,20 @@
     if (!$('#leadValue').value) $('#leadValue').value = price ? String(price) : '';
   }
 
+  function showLoading() {
+    $('#loadingSpinner').style.display = 'block';
+    $('#mainForm').style.display = 'none';
+  }
+  
+  function hideLoading() {
+    $('#loadingSpinner').style.display = 'none';
+    $('#mainForm').style.display = 'block';
+  }
+
   function setupCompanyMode(company, products) {
+    console.log('🏢 Setting up company mode for:', company);
+    console.log('📦 Products received:', products);
+    
     // Hide the company selection section
     const companySection = document.querySelector('.form-section');
     if (companySection) {
@@ -72,7 +85,12 @@
     // Populate products for this company only
     const sel = $('#product');
     sel.innerHTML = '<option value="">Select product/service...</option>';
-    products.forEach(p => {
+    
+    // Ensure products is an array
+    const productArray = Array.isArray(products) ? products : [];
+    console.log('📦 Product array to process:', productArray);
+    
+    productArray.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.name;
       opt.setAttribute('data-sku', p.sku);
@@ -86,6 +104,9 @@
     
     // Update tabindex since company field is hidden
     updateTabIndexForCompanyMode();
+    
+    // Hide loading and show form
+    hideLoading();
     
     // Auto-focus to first name field
     setTimeout(() => {
@@ -373,6 +394,8 @@
       // Traditional mode - show all companies
       PRODUCTS_BY_COMPANY = cfg.productsByCompany || {};
       populateCompanies(cfg.companies || []);
+      hideLoading();
+      setTimeout(() => $('#company').focus(), 100);
     }
   }
 
@@ -461,6 +484,9 @@
         await loadConfig(); 
       } catch (e) { 
         console.error('💥 Config loading failed with full error details:', e);
+        
+        // Hide loading and show error
+        hideLoading();
         
         // Enhanced error message
         let errorMsg = 'Failed to load configuration.';

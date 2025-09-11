@@ -13,15 +13,14 @@ function handleApiGet_(e) {
     
     console.log('📞 JSONP request detected:', isJSONP);
     
-    // Skip CORS validation for JSONP requests since script tags bypass CORS
-    if (!isJSONP) {
-      const { origin, ok } = allowOrigin_(e);
-      console.log('🌐 Origin check:', { origin, ok });
-      
-      if (!ok) {
-        console.log('❌ Origin not allowed, returning 403');
-        return jsonResponse_({ error: 'Forbidden' }, origin, 403);
-      }
+    // Get origin for logging, but skip validation for JSONP
+    const { origin, ok } = allowOrigin_(e);
+    console.log('🌐 Origin check:', { origin, ok, isJSONP });
+    
+    // Only enforce CORS for non-JSONP requests
+    if (!isJSONP && !ok) {
+      console.log('❌ Origin not allowed, returning 403');
+      return jsonResponse_({ error: 'Forbidden' }, origin || '', 403);
     }
 
     // Check API endpoint from parameter or path
@@ -43,11 +42,11 @@ function handleApiGet_(e) {
         const company = { name: companyName };
         const products = getProductsByCompany_(companyName);
         const payload = { company, products };
-        return jsonResponse_(payload, origin);
+        return jsonResponse_(payload, '', 200);
       } else {
         // Traditional config: return all companies and products
         const payload = getConfig_();
-        return jsonResponse_(payload, origin);
+        return jsonResponse_(payload, '', 200);
       }
     }
 
@@ -58,7 +57,7 @@ function handleApiGet_(e) {
       const from = e.parameter && e.parameter.from;
       const to = e.parameter && e.parameter.to;
       const payload = listLeadsForCompany_(companyName, { status, from, to });
-      return jsonResponse_(payload, origin);
+      return jsonResponse_(payload, '', 200);
     }
 
     if (endpoint === 'stats' || endpoint === 'api/stats') {
@@ -67,10 +66,10 @@ function handleApiGet_(e) {
       const from = e.parameter && e.parameter.from;
       const to = e.parameter && e.parameter.to;
       const payload = getStatsForCompany_(companyName, { from, to });
-      return jsonResponse_(payload, origin);
+      return jsonResponse_(payload, '', 200);
     }
 
-    return jsonResponse_({ error: 'Not found' }, origin, 404);
+    return jsonResponse_({ error: 'Not found' }, '', 404);
   } catch (err) {
     return jsonResponse_({ error: String(err.message || err) }, (e && e.headers && e.headers.origin) || '', 400);
   }
@@ -78,9 +77,10 @@ function handleApiGet_(e) {
 
 function handleApiPost_(e) {
   try {
+    // For POST requests, still check CORS since they use fetch, not JSONP
     const { origin, ok } = allowOrigin_(e);
     if (!ok) {
-      return jsonResponse_({ error: 'Forbidden' }, origin, 403);
+      return jsonResponse_({ error: 'Forbidden' }, origin || '', 403);
     }
 
     // Check API endpoint from parameter or path
@@ -95,7 +95,7 @@ function handleApiPost_(e) {
       const body = parseBody_(e);
       const payload = normalizeLeadBody_(body);
       const result = createLead_(payload, 'agent ui');
-      return jsonResponse_(result, origin);
+      return jsonResponse_(result, origin || '', 200);
     }
 
     // PATCH via POST (with _method=PATCH) to api/leads/:id
@@ -104,16 +104,16 @@ function handleApiPost_(e) {
       const body = parseBody_(e);
       const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
       if (String(methodOverride).toUpperCase() !== 'PATCH') {
-        return jsonResponse_({ error: 'Use PATCH override' }, origin, 405);
+        return jsonResponse_({ error: 'Use PATCH override' }, origin || '', 405);
       }
       const token = (e.parameter && e.parameter.token) || (body && body.token);
       const companyName = companyFromToken_(token);
       const status = (e.parameter && e.parameter.status) || (body && body.status);
       const result = updateLeadStatusForCompany_(companyName, patchId, status, 'client ui');
-      return jsonResponse_(result, origin);
+      return jsonResponse_(result, origin || '', 200);
     }
 
-    return jsonResponse_({ error: 'Not found' }, origin, 404);
+    return jsonResponse_({ error: 'Not found' }, origin || '', 404);
   } catch (err) {
     const origin = (e && e.headers && e.headers.origin) || '';
     return jsonResponse_({ error: String(err.message || err) }, origin, 400);

@@ -10,11 +10,19 @@
 </head>
 <body>
   <div class="intake-container">
-    <div class="intake-header">
-      <h2>📞 Call Intake Form</h2>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-container">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading company information...</div>
     </div>
     
-    <div id="errorBanner" class="error-banner" style="display:none;"></div>
+    <!-- Main Form (hidden until loaded) -->
+    <div id="mainForm" style="display: none;">
+      <div class="intake-header">
+        <h2>📞 Call Intake Form</h2>
+      </div>
+      
+      <div id="errorBanner" class="error-banner" style="display:none;"></div>
     
     <form id="intakeForm" class="quick-form" autocomplete="off" novalidate>
     <!-- Company Selection -->
@@ -120,7 +128,8 @@
       </div>
     </div>
     </form>
-  </div>
+    </div> <!-- End mainForm -->
+  </div> <!-- End intake-container -->
   
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>

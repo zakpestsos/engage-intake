@@ -154,7 +154,13 @@ function allowOrigin_(e) {
 
 // HTMLService entrypoints
 function doGet(e) {
-  // Serve HTML pages if no /api requested
+  // Check if this is an API request via parameter
+  const apiEndpoint = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
+  if (apiEndpoint) {
+    return handleApiGet_(e);
+  }
+  
+  // Serve HTML pages if no API requested
   const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
   if (path && path.startsWith('api/')) {
     return handleApiGet_(e);
@@ -183,6 +189,24 @@ function doPost(e) {
   }
   return ContentService.createTextOutput(JSON.stringify({ error: 'Unsupported route' }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doOptions(e) {
+  // Handle CORS preflight requests
+  const { origin, ok } = allowOrigin_(e);
+  if (!ok) {
+    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
+  }
+  
+  const out = ContentService.createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT);
+  
+  out.addHeader('Access-Control-Allow-Origin', origin);
+  out.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  out.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  out.addHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  return out;
 }
 
 // API wrappers for HTMLService (google.script.run)

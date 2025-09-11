@@ -239,8 +239,8 @@
     
     // If we have a token, load config for specific company
     const configUrl = companyToken ? 
-      API() + '/api/config?token=' + encodeURIComponent(companyToken) :
-      API() + '/api/config';
+      API() + '?api=config&token=' + encodeURIComponent(companyToken) :
+      API() + '?api=config';
       
     const cfg = await fetchJSON(configUrl);
     console.log('Config loaded successfully:', cfg);
@@ -257,7 +257,7 @@
   }
 
   async function submitLead(payload) {
-    const res = await fetchJSON(API() + '/api/leads', {
+    const res = await fetchJSON(API() + '?api=leads', {
       method: 'POST',
       body: JSON.stringify(payload)
     });

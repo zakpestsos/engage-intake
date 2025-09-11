@@ -51,7 +51,7 @@
       from: q.from || '', 
       to: q.to || '' 
     });
-    return fetchJSON(API() + '/api/leads?' + p.toString());
+    return fetchJSON(API() + '?api=leads&' + p.toString());
   }
   
   async function getStats(q) {
@@ -60,7 +60,7 @@
       from: q.from || '', 
       to: q.to || '' 
     });
-    return fetchJSON(API() + '/api/stats?' + p.toString());
+    return fetchJSON(API() + '?api=stats&' + p.toString());
   }
   
   async function updateLead(token, id, status) {

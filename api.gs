@@ -2,12 +2,20 @@
 
 function handleApiGet_(e) {
   try {
-    const path = (e && e.pathInfo) ? String(e.pathInfo) : ''; // e.g., api/config
-    const { origin } = allowOrigin_(e);
+    const { origin, ok } = allowOrigin_(e);
+    if (!ok) {
+      return jsonResponse_({ error: 'Forbidden' }, origin, 403);
+    }
 
+    // Check API endpoint from parameter or path
+    const apiParam = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
+    const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
     const urlPath = path.replace(/^\/+/, '');
-    // Basic route detection
-    if (urlPath === 'api/config') {
+    
+    // Determine endpoint
+    const endpoint = apiParam || urlPath;
+    
+    if (endpoint === 'config' || endpoint === 'api/config') {
       const token = e.parameter && e.parameter.token;
       if (token) {
         // Token-based config: return company-specific data
@@ -23,7 +31,7 @@ function handleApiGet_(e) {
       }
     }
 
-    if (urlPath === 'api/leads') {
+    if (endpoint === 'leads' || endpoint === 'api/leads') {
       const token = e.parameter && e.parameter.token;
       const companyName = companyFromToken_(token);
       const status = e.parameter && e.parameter.status;
@@ -33,7 +41,7 @@ function handleApiGet_(e) {
       return jsonResponse_(payload, origin);
     }
 
-    if (urlPath === 'api/stats') {
+    if (endpoint === 'stats' || endpoint === 'api/stats') {
       const token = e.parameter && e.parameter.token;
       const companyName = companyFromToken_(token);
       const from = e.parameter && e.parameter.from;
@@ -50,10 +58,20 @@ function handleApiGet_(e) {
 
 function handleApiPost_(e) {
   try {
-    const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
-    const { origin } = allowOrigin_(e);
+    const { origin, ok } = allowOrigin_(e);
+    if (!ok) {
+      return jsonResponse_({ error: 'Forbidden' }, origin, 403);
+    }
 
-    if (path === 'api/leads') {
+    // Check API endpoint from parameter or path
+    const apiParam = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
+    const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
+    const urlPath = path.replace(/^\/+/, '');
+    
+    // Determine endpoint
+    const endpoint = apiParam || urlPath;
+
+    if (endpoint === 'leads' || endpoint === 'api/leads') {
       const body = parseBody_(e);
       const payload = normalizeLeadBody_(body);
       const result = createLead_(payload, 'agent ui');
@@ -123,9 +141,16 @@ function normalizeLeadBody_(b) {
 }
 
 function jsonResponse_(obj, origin, status) {
-  // Apps Script Web Apps handle CORS automatically for most cases
-  // For additional security, we validate origins in the calling functions
+  // Set proper CORS headers for cross-origin requests
   const out = ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+  
+  // Add CORS headers
+  if (origin) {
+    out.addHeader('Access-Control-Allow-Origin', origin);
+    out.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    out.addHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  
   return out;
 }

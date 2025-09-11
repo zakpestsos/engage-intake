@@ -2,7 +2,7 @@
 // Repository: https://github.com/zakpestsos/engage-intake
 window.APP_CONFIG = {
   // Your Apps Script Web App URL (deployed and configured)
-  API_BASE: 'https://script.google.com/macros/s/AKfycbxXvnoWxfObg8eJISCDYsKjz_Ahsp5-ifFJpANvmWTcYV3SbYJUaOghq24QYrOAgvAC/exec',
+  API_BASE: 'https://script.google.com/macros/s/AKfycbzI9AvgS6Ohmhu44zBULb8EM342LSkBSleGpu_SBtpdOumg1cuQAdaJMgOzx_uOw50E/exec',
   
   // Your Google Maps API key (configured for GitHub Pages domain)
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM'

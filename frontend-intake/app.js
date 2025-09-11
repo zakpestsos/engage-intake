@@ -250,6 +250,9 @@
       return await fetchViaJSONP(url);
     }
     
+    // For POST requests, use text/plain approach
+    console.log('📤 Using text/plain POST request for:', opts.method);
+    
     try {
       // Use text/plain to avoid CORS preflight requests with Apps Script
       const fetchOptions = Object.assign({ 
@@ -525,7 +528,12 @@
         companyName: companyName,
         customerFirstName: $('#firstName').value.trim(),
         customerLastName: $('#lastName').value.trim(),
-        address: addressParts,
+        address: {
+          street: $('#addressStreet').value.trim(),
+          city: $('#addressCity').value.trim(),
+          state: $('#addressState').value.trim(),
+          postal: $('#addressPostal').value.trim()
+        },
         reasonForCall: $('#reason').value.trim(),
         reasonCustom: $('#reasonOther').value.trim(),
         productSku: opt ? opt.getAttribute('data-sku') : '',
@@ -535,15 +543,23 @@
         notes: $('#notes').value.trim()
       };
       
+      console.log('💾 Form submission payload:', payload);
+      
       $('#submitBtn').disabled = true;
+      $('#submitBtn').textContent = '⏳ Saving...';
+      
       try {
-        await submitLead(payload);
-        showToast('Lead submitted successfully.');
+        console.log('📤 Submitting lead...');
+        const result = await submitLead(payload);
+        console.log('✅ Lead submitted successfully:', result);
+        showToast('✅ Lead saved to CRM!');
         resetForm();
       } catch (err) {
-        showError('Submit failed. Check API_BASE in config.js and ensure CORS is enabled.');
+        console.error('💥 Submit failed with error:', err);
+        showError(`Submit failed: ${err.message}`);
       } finally {
         $('#submitBtn').disabled = false;
+        $('#submitBtn').textContent = '💾 Save Lead (Ctrl+Enter)';
       }
     });
 

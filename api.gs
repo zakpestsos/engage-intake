@@ -40,7 +40,10 @@ function handleApiGet_(e) {
         // Token-based config: return company-specific data
         const companyName = companyFromToken_(token);
         const company = { name: companyName };
-        const products = getProductsByCompany_(companyName);
+        const allProductsByCompany = getProductsByCompany_();
+        const products = allProductsByCompany[companyName] || [];
+        console.log('🏢 Token-based config for:', companyName);
+        console.log('📦 Products for company:', products);
         const payload = { company, products };
         return jsonResponse_(payload, '', 200);
       } else {

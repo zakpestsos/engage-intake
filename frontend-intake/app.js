@@ -230,6 +230,7 @@
       }, opts || {});
       
       console.log('📤 Fetch options:', fetchOptions);
+      console.log('🔍 Headers being sent:', fetchOptions.headers);
       
       const res = await fetch(url, fetchOptions);
       

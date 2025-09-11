@@ -1,0 +1,18 @@
+# Apps Script files (these stay in Google Apps Script)
+*.gs
+appsscript.json
+*.html
+!frontend-*/
+!frontend-*/**
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# Documentation (keeping setup docs but not Apps Script specific)
+# Keep GITHUB_PAGES_SETUP.md and GOOGLE_MAPS_SETUP.md

@@ -1,0 +1,70 @@
+<!-- Google Charts loader -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<div class="row">
+  <div id="chartLeadsByDay" class="chart"></div>
+  <div id="chartLeadsByReason" class="chart"></div>
+</div>
+<div class="row">
+  <div id="chartPvByMonth" class="chart"></div>
+</div>
+
+<script>
+  google.charts.load('current', { packages: ['corechart'] });
+
+  function renderCharts(stats) {
+    google.charts.setOnLoadCallback(function() {
+      renderLeadsByDayChart(stats.leadsByDay || []);
+      renderLeadsByReasonChart(stats.leadsByReason || []);
+      renderPvByMonthChart(stats.productionValueByMonth || []);
+    });
+  }
+
+  function renderLeadsByDayChart(dataArr) {
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Leads');
+    data.addRows(dataArr.map(d => [d.date, Number(d.count || 0)]));
+    const chart = new google.visualization.LineChart(document.getElementById('chartLeadsByDay'));
+    chart.draw(data, { 
+      title: 'Leads by Day', 
+      legend: { position: 'none' }, 
+      height: 320,
+      backgroundColor: 'transparent',
+      titleTextStyle: { color: '#e5e7eb' },
+      hAxis: { textStyle: { color: '#9ca3af' } },
+      vAxis: { textStyle: { color: '#9ca3af' } }
+    });
+  }
+
+  function renderLeadsByReasonChart(dataArr) {
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Reason');
+    data.addColumn('number', 'Count');
+    data.addRows(dataArr.map(d => [d.reason, Number(d.count || 0)]));
+    const chart = new google.visualization.PieChart(document.getElementById('chartLeadsByReason'));
+    chart.draw(data, { 
+      title: 'Leads by Reason', 
+      height: 320,
+      backgroundColor: 'transparent',
+      titleTextStyle: { color: '#e5e7eb' },
+      legend: { textStyle: { color: '#9ca3af' } }
+    });
+  }
+
+  function renderPvByMonthChart(dataArr) {
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month');
+    data.addColumn('number', 'Production Value');
+    data.addRows(dataArr.map(d => [d.month, Number(d.total || 0)]));
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartPvByMonth'));
+    chart.draw(data, { 
+      title: 'Production Value by Month', 
+      legend: { position: 'none' }, 
+      height: 320,
+      backgroundColor: 'transparent',
+      titleTextStyle: { color: '#e5e7eb' },
+      hAxis: { textStyle: { color: '#9ca3af' } },
+      vAxis: { textStyle: { color: '#9ca3af' } }
+    });
+  }
+</script>

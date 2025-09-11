@@ -1,0 +1,584 @@
+<?!= include('styles.css.html'); ?>
+<meta http-equiv="Cache-Control" content="no-store">
+<style>
+  /* Call Center Optimized Styles */
+  .intake-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 16px;
+    background: var(--bg);
+  }
+  .intake-header {
+    background: var(--panel);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 2px solid var(--accent);
+  }
+  .intake-header h2 {
+    margin: 0;
+    color: var(--accent);
+    font-size: 18px;
+  }
+  .quick-form {
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .form-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  .section-title {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .quick-field {
+    margin-bottom: 12px;
+  }
+  .quick-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .quick-field input,
+  .quick-field select,
+  .quick-field textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  .quick-field input:focus,
+  .quick-field select:focus,
+  .quick-field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+  .address-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 80px 100px;
+    gap: 8px;
+  }
+  .customer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .product-grid {
+    display: grid;
+    grid-template-columns: 2fr 120px 120px;
+    gap: 12px;
+    align-items: end;
+  }
+  .submit-section {
+    background: var(--card);
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .submit-btn {
+    background: var(--success);
+    color: white;
+    border: 0;
+    padding: 12px 32px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    min-width: 200px;
+  }
+  .submit-btn:hover:not(:disabled) {
+    background: #059669;
+  }
+  .submit-btn:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
+  }
+  .field-shortcut {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+  @media (max-width: 768px) {
+    .address-grid,
+    .customer-grid,
+    .product-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="intake-container">
+  <div class="intake-header">
+    <h2>📞 Call Intake Form</h2>
+  </div>
+  
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+  
+  <form id="intakeForm" class="quick-form" autocomplete="off" novalidate>
+    <!-- Company Selection -->
+    <div class="form-section">
+      <div class="section-title">1. Company</div>
+      <div class="quick-field">
+        <label>Select Company <span class="field-shortcut">(Tab to next)</span></label>
+        <select id="company" required autocomplete="off" tabindex="1">
+          <option value="">Choose company...</option>
+        </select>
+        <div class="error" data-for="company"></div>
+      </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="form-section">
+      <div class="section-title">2. Customer Information</div>
+      <div class="customer-grid">
+        <div class="quick-field">
+          <label>First Name</label>
+          <input type="text" id="firstName" placeholder="John" required autocomplete="off" tabindex="2">
+          <div class="error" data-for="firstName"></div>
+        </div>
+        <div class="quick-field">
+          <label>Last Name</label>
+          <input type="text" id="lastName" placeholder="Smith" required autocomplete="off" tabindex="3">
+          <div class="error" data-for="lastName"></div>
+        </div>
+      </div>
+      
+      <div class="quick-field">
+        <label>Address <span class="field-shortcut">(Start typing street - auto-complete available)</span></label>
+        <div class="address-grid">
+          <input type="text" id="addressStreet" placeholder="Start typing street address..." required autocomplete="off" tabindex="4">
+          <input type="text" id="addressCity" placeholder="City (auto-filled)" required autocomplete="off" tabindex="5">
+          <input type="text" id="addressState" placeholder="ST" required autocomplete="off" tabindex="6" maxlength="2" style="text-transform: uppercase;">
+          <input type="text" id="addressPostal" placeholder="Zip (auto-filled)" required autocomplete="off" tabindex="7" maxlength="10">
+        </div>
+        <div class="error" data-for="addressStreet"></div>
+        <div class="error" data-for="addressCity"></div>
+        <div class="error" data-for="addressState"></div>
+        <div class="error" data-for="addressPostal"></div>
+      </div>
+    </div>
+
+    <!-- Call Details -->
+    <div class="form-section">
+      <div class="section-title">3. Call Details</div>
+      <div class="quick-field">
+        <label>Reason for Call</label>
+        <select id="reason" required autocomplete="off" tabindex="8">
+          <option value="">Select reason...</option>
+          <option value="Schedule">Schedule Appointment</option>
+          <option value="Reschedule">Reschedule Appointment</option>
+          <option value="New Sale">New Sale</option>
+          <option value="Cancellation">Cancellation</option>
+          <option value="Complaint">Complaint</option>
+          <option value="Other…">Other...</option>
+        </select>
+        <div class="error" data-for="reason"></div>
+      </div>
+
+      <div class="quick-field" id="reasonOtherWrap" style="display:none;">
+        <label>Specify Other Reason</label>
+        <input type="text" id="reasonOther" placeholder="Please specify..." autocomplete="off" tabindex="9">
+      </div>
+    </div>
+
+    <!-- Product & Pricing -->
+    <div class="form-section">
+      <div class="section-title">4. Product & Pricing</div>
+      <div class="product-grid">
+        <div class="quick-field">
+          <label>Product/Service</label>
+          <select id="product" required autocomplete="off" tabindex="10">
+            <option value="">Select product...</option>
+          </select>
+          <div class="error" data-for="product"></div>
+        </div>
+        <div class="quick-field">
+          <label>Price</label>
+          <input type="text" id="productPrice" readonly tabindex="-1" style="background: var(--card); color: var(--muted);">
+        </div>
+        <div class="quick-field">
+          <label>Lead Value</label>
+          <input type="number" id="leadValue" step="0.01" placeholder="0.00" autocomplete="off" tabindex="11">
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Notes -->
+    <div class="form-section">
+      <div class="section-title">5. Notes (Optional)</div>
+      <div class="quick-field">
+        <label>Additional Information</label>
+        <textarea id="notes" rows="3" placeholder="Any additional details about the call..." autocomplete="off" tabindex="12"></textarea>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-section">
+      <button type="submit" id="submitBtn" class="submit-btn" tabindex="13">
+        💾 Save Lead (Ctrl+Enter)
+      </button>
+      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+        Form will reset automatically after saving
+      </div>
+    </div>
+  </form>
+</div>
+
+<?!= include('partials/toast.html'); ?>
+
+<script>
+  let PRODUCTS_BY_COMPANY = {};
+
+  function showError(msg) {
+    const banner = document.getElementById('errorBanner');
+    banner.textContent = msg || 'Something went wrong';
+    banner.style.display = 'block';
+  }
+  
+  function clearError() {
+    const banner = document.getElementById('errorBanner');
+    banner.style.display = 'none';
+    banner.textContent = '';
+  }
+
+  function sanitize(s) {
+    const span = document.createElement('span');
+    span.innerText = (s == null) ? '' : String(s);
+    return span.innerHTML;
+  }
+
+  function populateCompanies(companies) {
+    const sel = document.getElementById('company');
+    sel.innerHTML = '<option value="">Select company</option>' + 
+      companies.map(c => '<option value="' + sanitize(c.name) + '">' + sanitize(c.name) + '</option>').join('');
+  }
+
+  function populateProducts(companyName) {
+    const sel = document.getElementById('product');
+    const items = PRODUCTS_BY_COMPANY[companyName] || [];
+    sel.innerHTML = '<option value="">Select product</option>' + 
+      items.map(p => '<option data-sku="' + sanitize(p.sku) + '" data-price="' + Number(p.price) + '">' + sanitize(p.name) + '</option>').join('');
+    document.getElementById('productPrice').value = '';
+    const leadValueEl = document.getElementById('leadValue');
+    if (!leadValueEl.value) leadValueEl.value = '';
+  }
+
+  function onProductChange() {
+    const sel = document.getElementById('product');
+    const opt = sel.options[sel.selectedIndex];
+    const price = Number(opt && opt.getAttribute('data-price')) || 0;
+    document.getElementById('productPrice').value = price ? String(price) : '';
+    const leadValueEl = document.getElementById('leadValue');
+    if (!leadValueEl.value) {
+      leadValueEl.value = price ? String(price) : '';
+    }
+  }
+
+  function getAddressParts() {
+    return {
+      street: document.getElementById('addressStreet').value.trim(),
+      city: document.getElementById('addressCity').value.trim(),
+      state: document.getElementById('addressState').value.trim(),
+      postal: document.getElementById('addressPostal').value.trim()
+    };
+  }
+
+  // Enhanced manual address entry helpers
+  function setupAddressHelpers() {
+    const cityField = document.getElementById('addressCity');
+    const stateField = document.getElementById('addressState');
+    const postalField = document.getElementById('addressPostal');
+    
+    // Auto-capitalize city names
+    if (cityField) {
+      cityField.addEventListener('input', function() {
+        const words = this.value.split(' ');
+        const capitalizedWords = words.map(word => {
+          if (word.length > 0) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }
+          return word;
+        });
+        this.value = capitalizedWords.join(' ');
+      });
+    }
+    
+    // Auto-format state (uppercase, max 2 chars)
+    if (stateField) {
+      stateField.addEventListener('input', function() {
+        this.value = this.value.toUpperCase().slice(0, 2);
+      });
+    }
+    
+    // Auto-format postal code
+    if (postalField) {
+      postalField.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, ''); // Remove non-digits
+        if (value.length > 5) {
+          value = value.slice(0, 5) + '-' + value.slice(5, 9);
+        }
+        this.value = value;
+      });
+    }
+  }
+
+
+  function validate() {
+    const errors = {};
+    const company = document.getElementById('company').value.trim();
+    const first = document.getElementById('firstName').value.trim();
+    const last = document.getElementById('lastName').value.trim();
+    const addressStreet = document.getElementById('addressStreet').value.trim();
+    const addressCity = document.getElementById('addressCity').value.trim();
+    const addressState = document.getElementById('addressState').value.trim();
+    const addressPostal = document.getElementById('addressPostal').value.trim();
+    const reason = document.getElementById('reason').value.trim();
+    const product = document.getElementById('product').value.trim();
+
+    if (!company) errors.company = 'Required';
+    if (!first) errors.firstName = 'Required';
+    if (!last) errors.lastName = 'Required';
+    if (!addressStreet) errors.addressStreet = 'Required';
+    if (!addressCity) errors.addressCity = 'Required';
+    if (!addressState) errors.addressState = 'Required';
+    if (!addressPostal) errors.addressPostal = 'Required';
+    if (!reason) errors.reason = 'Required';
+    if (!product) errors.product = 'Required';
+
+    document.querySelectorAll('.error').forEach(el => el.textContent = '');
+    Object.keys(errors).forEach(k => {
+      const el = document.querySelector('.error[data-for="' + k + '"]');
+      if (el) el.textContent = errors[k];
+    });
+    return { valid: Object.keys(errors).length === 0, errors };
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  function resetForm() {
+    document.getElementById('intakeForm').reset();
+    document.getElementById('product').innerHTML = '<option value="">Select product</option>';
+    document.getElementById('productPrice').value = '';
+    document.getElementById('leadValue').value = '';
+    document.getElementById('reasonOtherWrap').style.display = 'none';
+  }
+
+
+  // Keyboard shortcuts
+  function handleKeyboard(e) {
+    // Ctrl+Enter to submit
+    if (e.ctrlKey && e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('submitBtn').click();
+      return;
+    }
+    
+    // Quick navigation shortcuts
+    if (e.altKey) {
+      switch(e.key) {
+        case '1':
+          e.preventDefault();
+          document.getElementById('company').focus();
+          break;
+        case '2':
+          e.preventDefault();
+          document.getElementById('firstName').focus();
+          break;
+        case '3':
+          e.preventDefault();
+          document.getElementById('reason').focus();
+          break;
+        case '4':
+          e.preventDefault();
+          document.getElementById('product').focus();
+          break;
+        case 's':
+          e.preventDefault();
+          document.getElementById('submitBtn').click();
+          break;
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    clearError();
+
+    // Add keyboard event listener
+    document.addEventListener('keydown', handleKeyboard);
+
+    // Setup address formatting helpers
+    setupAddressHelpers();
+
+    // Load config
+    google.script.run.withSuccessHandler(function(cfg) {
+      PRODUCTS_BY_COMPANY = cfg.productsByCompany || {};
+      populateCompanies(cfg.companies || []);
+      // Auto-focus first field
+      setTimeout(() => document.getElementById('company').focus(), 100);
+    }).withFailureHandler(function(err) {
+      showError('Failed to load configuration.');
+    }).srv_getConfig();
+
+    document.getElementById('company').addEventListener('change', function() {
+      populateProducts(this.value);
+      // Auto-advance to first name when company is selected
+      setTimeout(() => document.getElementById('firstName').focus(), 50);
+    });
+    
+    document.getElementById('product').addEventListener('change', function() {
+      onProductChange();
+      // Auto-advance to lead value if different from product price
+      const price = document.getElementById('productPrice').value;
+      const leadValue = document.getElementById('leadValue');
+      if (price && !leadValue.value) {
+        setTimeout(() => leadValue.focus(), 50);
+      }
+    });
+    
+    document.getElementById('reason').addEventListener('change', function() {
+      const show = this.value === 'Other…';
+      document.getElementById('reasonOtherWrap').style.display = show ? 'block' : 'none';
+      if (show) {
+        setTimeout(() => document.getElementById('reasonOther').focus(), 50);
+      }
+    });
+
+    document.getElementById('intakeForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearError();
+      const { valid } = validate();
+      if (!valid) return;
+
+      const company = document.getElementById('company').value.trim();
+      const productSel = document.getElementById('product');
+      const productName = productSel.value.trim();
+      const productOpt = productSel.options[productSel.selectedIndex];
+      const productSku = productOpt ? productOpt.getAttribute('data-sku') : '';
+      const productPrice = document.getElementById('productPrice').value.trim();
+      const leadValue = document.getElementById('leadValue').value.trim();
+
+      const payload = {
+        companyName: company,
+        customerFirstName: document.getElementById('firstName').value.trim(),
+        customerLastName: document.getElementById('lastName').value.trim(),
+        address: getAddressParts(),
+        reasonForCall: document.getElementById('reason').value.trim(),
+        reasonCustom: document.getElementById('reasonOther').value.trim(),
+        productSku: productSku || '',
+        productName: productName || '',
+        productPrice: productPrice ? Number(productPrice) : '',
+        leadValue: leadValue ? Number(leadValue) : '',
+        notes: document.getElementById('notes').value.trim()
+      };
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      google.script.run.withSuccessHandler(function(res) {
+        btn.disabled = false;
+        showToast('✅ Lead saved successfully! Ready for next call.');
+        
+        // Brief success indicator
+        btn.style.background = '#10b981';
+        btn.textContent = '✅ Saved!';
+        
+        // Reset form and restore button
+        setTimeout(() => {
+          resetForm();
+          btn.style.background = '';
+          btn.textContent = '💾 Save Lead (Ctrl+Enter)';
+          // Auto-focus back to company field for next call
+          document.getElementById('company').focus();
+        }, 1000);
+        
+        // Optional: Play success sound (if browser allows)
+        try {
+          const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQxOqOPztmEcBzuP1vLNeSsFJI/A7999QAoUXrTp66hVFApGn+DyvmwhBTOH0fPSeSsFKYHM8d2HMwgXZbjr4pdOEQ=');
+          audio.volume = 0.1;
+          audio.play();
+        } catch(e) {
+          // Ignore if audio fails
+        }
+      }).withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.style.background = '#ef4444';
+        btn.textContent = '❌ Failed - Try Again';
+        setTimeout(() => {
+          btn.style.background = '';
+          btn.textContent = '💾 Save Lead (Ctrl+Enter)';
+        }, 2000);
+        showError('Submit failed: ' + (err && err.message ? err.message : 'Unknown error'));
+      }).srv_submitLead(payload);
+    });
+
+    // Simple address autocomplete using basic suggestions
+    console.log('Setting up simplified address autocomplete for Apps Script');
+    
+    // Initialize simple address autocomplete
+    initSimpleAddressAutocomplete();
+    
+    function initSimpleAddressAutocomplete() {
+      const streetField = document.getElementById('addressStreet');
+      if (!streetField) return;
+      
+      // Visual indicator that form is ready for fast entry
+      streetField.placeholder = '🏠 Enter street address (manual entry)';
+      streetField.style.borderLeft = '3px solid #4f46e5';
+      
+      // Add helpful formatting on input
+      streetField.addEventListener('input', function() {
+        // Auto-capitalize first letter of each word
+        const words = this.value.split(' ');
+        const capitalizedWords = words.map(word => {
+          if (word.length > 0) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          }
+          return word;
+        });
+        this.value = capitalizedWords.join(' ');
+      });
+      
+      // Smart tab advancement when address looks complete
+      streetField.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab' && this.value.length > 5) {
+          // If it looks like a complete address (has numbers and letters)
+          const hasNumber = /\d/.test(this.value);
+          const hasLetters = /[a-zA-Z]/.test(this.value);
+          if (hasNumber && hasLetters) {
+            // Auto-advance to city field
+            setTimeout(() => {
+              document.getElementById('addressCity').focus();
+            }, 50);
+          }
+        }
+      });
+      
+      showToast('📝 Fast address entry ready - optimized for call agents');
+    }
+  });
+</script>

@@ -1,0 +1,4 @@
+# Exclude frontend files from Apps Script deployment
+frontend-dashboard/**
+frontend-intake/**
+frontend-shared/**

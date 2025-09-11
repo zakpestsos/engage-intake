@@ -1,0 +1,74 @@
+<?!= include('styles.css.html'); ?>
+<meta http-equiv="Cache-Control" content="no-store">
+<div class="container">
+  <h2>Analytics</h2>
+  <div id="unauthorized" class="error-banner" style="display:none;">401 Unauthorized: invalid token.</div>
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+  
+  <section class="filters">
+    <div class="row">
+      <div class="field">
+        <label>From</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label>To</label>
+        <input type="date" id="toDate">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="applyFilters">Apply</button>
+      </div>
+    </div>
+  </section>
+  
+  <div id="charts">
+    <?!= include('charts.js.html'); ?>
+  </div>
+</div>
+
+<?!= include('partials/toast.html'); ?>
+
+<script>
+  let TOKEN = '';
+  
+  function showError(msg) {
+    const banner = document.getElementById('errorBanner');
+    banner.textContent = msg || 'Something went wrong';
+    banner.style.display = 'block';
+  }
+  
+  function clearError() {
+    const banner = document.getElementById('errorBanner');
+    banner.style.display = 'none';
+    banner.textContent = '';
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    google.script.url.getLocation(function(loc) {
+      const params = loc.parameter || {};
+      TOKEN = (params.token || '').trim();
+      if (!TOKEN) {
+        document.getElementById('unauthorized').style.display = 'block';
+        return;
+      }
+      
+      document.getElementById('applyFilters').addEventListener('click', function() {
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        google.script.run.withSuccessHandler(function(stats) {
+          if (window.renderCharts) renderCharts(stats);
+        }).withFailureHandler(function(err) {
+          showError('Failed to load analytics data');
+        }).srv_getStats({ token: TOKEN, from: from, to: to });
+      });
+      
+      // Initial load
+      google.script.run.withSuccessHandler(function(stats) {
+        if (window.renderCharts) renderCharts(stats);
+      }).withFailureHandler(function(err) {
+        showError('Failed to load analytics data');
+      }).srv_getStats({ token: TOKEN, from: '', to: '' });
+    });
+  });
+</script>

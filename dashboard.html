@@ -1,0 +1,224 @@
+<?!= include('styles.css.html'); ?>
+<meta http-equiv="Cache-Control" content="no-store">
+<div class="container">
+  <h2>Client Dashboard</h2>
+  <div id="unauthorized" class="error-banner" style="display:none;">401 Unauthorized: invalid token.</div>
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+  <section class="filters">
+    <div class="row">
+      <div class="field">
+        <label>Status</label>
+        <select id="statusFilter">
+          <option value="">All</option>
+          <option>NEW</option>
+          <option>ACCEPTED</option>
+          <option>COMPLETED</option>
+          <option>CANCELLED</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>From</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="field">
+        <label>To</label>
+        <input type="date" id="toDate">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button id="applyFilters">Apply</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="overview">
+    <div class="card">
+      <div class="kpi" id="kpiNew">0</div>
+      <div class="kpi-label">New Leads</div>
+    </div>
+    <div class="card">
+      <div class="kpi" id="kpiCancel">0</div>
+      <div class="kpi-label">Cancellations</div>
+    </div>
+    <div class="card">
+      <div class="kpi" id="kpiAccepted">0</div>
+      <div class="kpi-label">Accepted</div>
+    </div>
+    <div class="card">
+      <div class="kpi" id="kpiCompleted">0</div>
+      <div class="kpi-label">Completed</div>
+    </div>
+    <div class="card">
+      <div class="kpi" id="kpiCaptured">$0</div>
+      <div class="kpi-label">Captured Value</div>
+    </div>
+    <div class="card">
+      <div class="kpi" id="kpiCommitted">$0</div>
+      <div class="kpi-label">Committed Value</div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Leads</h3>
+    <div class="table-wrap">
+      <table id="leadsTable">
+        <thead>
+          <tr>
+            <th>Created At</th>
+            <th>Customer Name</th>
+            <th>City/State</th>
+            <th>Reason</th>
+            <th>Product</th>
+            <th>Lead Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="leadsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h3>Analytics</h3>
+    <div id="charts">
+      <?!= include('charts.js.html'); ?>
+    </div>
+  </section>
+</div>
+
+<?!= include('partials/toast.html'); ?>
+
+<script>
+  let TOKEN = '';
+  let CURRENT_FILTERS = { status: '', from: '', to: '' };
+
+  function showError(msg) {
+    const banner = document.getElementById('errorBanner');
+    banner.textContent = msg || 'Something went wrong';
+    banner.style.display = 'block';
+  }
+  
+  function clearError() {
+    const banner = document.getElementById('errorBanner');
+    banner.style.display = 'none';
+    banner.textContent = '';
+  }
+  
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2400);
+  }
+  
+  function fmtMoney(v) {
+    return '$' + (Number(v || 0)).toLocaleString(undefined, { maximumFractionDigits: 2 });
+  }
+  
+  function sanitize(s) {
+    const span = document.createElement('span');
+    span.innerText = (s == null) ? '' : String(s);
+    return span.innerHTML;
+  }
+
+  function renderKPIs(stats) {
+    const counts = stats.counts || {};
+    document.getElementById('kpiNew').textContent = counts.NEW || 0;
+    document.getElementById('kpiCancel').textContent = counts.CANCELLED || 0;
+    document.getElementById('kpiAccepted').textContent = counts.ACCEPTED || 0;
+    document.getElementById('kpiCompleted').textContent = counts.COMPLETED || 0;
+    const pv = stats.productionValue || {};
+    document.getElementById('kpiCaptured').textContent = fmtMoney(pv.capturedTotal || 0);
+    document.getElementById('kpiCommitted').textContent = fmtMoney(pv.committedTotal || 0);
+  }
+
+  function renderLeads(leads) {
+    const tbody = document.getElementById('leadsBody');
+    tbody.innerHTML = '';
+    leads.forEach(ld => {
+      const tr = document.createElement('tr');
+      const createdDate = new Date(ld.createdAt).toLocaleDateString();
+      tr.innerHTML =
+        '<td>' + sanitize(createdDate) + '</td>' +
+        '<td>' + sanitize(ld.customerName) + '</td>' +
+        '<td>' + sanitize(ld.city) + ', ' + sanitize(ld.state) + '</td>' +
+        '<td>' + sanitize(ld.reason) + '</td>' +
+        '<td>' + sanitize(ld.product || ld.productSku || '') + '</td>' +
+        '<td>' + fmtMoney(ld.leadValue) + '</td>' +
+        '<td><span class="badge status-' + sanitize(ld.status.toLowerCase()) + '">' + sanitize(ld.status) + '</span></td>' +
+        '<td>' +
+          '<button class="small" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button> ' +
+          '<button class="small" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button> ' +
+          '<button class="small danger" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
+        '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function loadLeadsAndStats() {
+    clearError();
+    const query = {
+      token: TOKEN,
+      status: CURRENT_FILTERS.status || '',
+      from: CURRENT_FILTERS.from || '',
+      to: CURRENT_FILTERS.to || ''
+    };
+    
+    google.script.run.withSuccessHandler(function(leads) {
+      renderLeads(leads);
+    }).withFailureHandler(function(err) {
+      showError('Failed to load leads: ' + (err.message || 'Unknown error'));
+    }).srv_listLeads(query);
+
+    google.script.run.withSuccessHandler(function(stats) {
+      renderKPIs(stats);
+      // Render charts
+      if (window.renderCharts) {
+        renderCharts(stats);
+      }
+    }).withFailureHandler(function(err) {
+      showError('Failed to load stats: ' + (err.message || 'Unknown error'));
+    }).srv_getStats(query);
+  }
+
+  function updateStatus(id, status) {
+    google.script.run.withSuccessHandler(function(res) {
+      showToast('Updated status to: ' + status);
+      loadLeadsAndStats();
+    }).withFailureHandler(function(err) {
+      showError('Update failed: ' + (err && err.message ? err.message : 'Unknown'));
+    }).srv_updateLeadStatus({ token: TOKEN, id: id, status: status });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    google.script.url.getLocation(function(loc) {
+      const params = loc.parameter || {};
+      TOKEN = (params.token || '').trim();
+      if (!TOKEN) {
+        document.getElementById('unauthorized').style.display = 'block';
+        return;
+      }
+      
+      // Event listeners
+      document.getElementById('applyFilters').addEventListener('click', function() {
+        CURRENT_FILTERS.status = document.getElementById('statusFilter').value.trim();
+        CURRENT_FILTERS.from = document.getElementById('fromDate').value;
+        CURRENT_FILTERS.to = document.getElementById('toDate').value;
+        loadLeadsAndStats();
+      });
+      
+      document.getElementById('leadsBody').addEventListener('click', function(e) {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        updateStatus(id, action);
+      });
+
+      // Initial load
+      loadLeadsAndStats();
+    });
+  });
+</script>

@@ -2,24 +2,15 @@
 
 function handleApiGet_(e) {
   try {
-    // Debug logging for Apps Script
-    console.log('🔧 Apps Script handleApiGet_ called');
-    console.log('📋 Request parameters:', e && e.parameter);
-    console.log('🛣️ Path info:', e && e.pathInfo);
-    
     // Check if this is a JSONP request (has callback parameter)
     const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : '';
     const isJSONP = !!callback;
     
-    console.log('📞 JSONP request detected:', isJSONP);
-    
     // Get origin for logging, but skip validation for JSONP
     const { origin, ok } = allowOrigin_(e);
-    console.log('🌐 Origin check:', { origin, ok, isJSONP });
     
     // Only enforce CORS for non-JSONP requests
     if (!isJSONP && !ok) {
-      console.log('❌ Origin not allowed, returning 403');
       return jsonResponse_({ error: 'Forbidden' }, origin || '', 403);
     }
 
@@ -28,11 +19,8 @@ function handleApiGet_(e) {
     const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
     const urlPath = path.replace(/^\/+/, '');
     
-    console.log('🔍 API routing debug:', { apiParam, path, urlPath });
-    
     // Determine endpoint
     const endpoint = apiParam || urlPath;
-    console.log('🎯 Final endpoint:', endpoint);
     
     if (endpoint === 'config' || endpoint === 'api/config') {
       const token = e.parameter && e.parameter.token;
@@ -80,9 +68,15 @@ function handleApiGet_(e) {
 
 function handleApiPost_(e) {
   try {
-    // For POST requests, still check CORS since they use fetch, not JSONP
+    // Check Content-Type to see if this is our text/plain request
+    const contentType = (e && e.postData && e.postData.type) || '';
+    const isTextPlain = contentType.includes('text/plain');
+    
+    // Get origin for logging, but skip validation for text/plain requests
     const { origin, ok } = allowOrigin_(e);
-    if (!ok) {
+    
+    // Only enforce CORS for non-text/plain requests
+    if (!isTextPlain && !ok) {
       return jsonResponse_({ error: 'Forbidden' }, origin || '', 403);
     }
 
@@ -97,6 +91,14 @@ function handleApiPost_(e) {
     if (endpoint === 'leads' || endpoint === 'api/leads') {
       const body = parseBody_(e);
       const payload = normalizeLeadBody_(body);
+      
+      // IMPORTANT: Get company name from token instead of trusting frontend
+      const token = (e.parameter && e.parameter.token) || (body && body.token);
+      if (token) {
+        const tokenCompanyName = companyFromToken_(token);
+        payload.companyName = tokenCompanyName; // Override with token-based company
+      }
+      
       const result = createLead_(payload, 'agent ui');
       return jsonResponse_(result, origin || '', 200);
     }
@@ -127,8 +129,14 @@ function parseBody_(e) {
   if (!e || !e.postData || !e.postData.contents) return {};
   const ctype = (e.postData.type || '').toLowerCase();
   const raw = e.postData.contents;
-  if (ctype.indexOf('application/json') >= 0) {
-    try { return JSON.parse(raw); } catch (err) { return {}; }
+  
+  // Handle JSON data regardless of Content-Type (for our text/plain CORS bypass)
+  if (ctype.indexOf('application/json') >= 0 || ctype.indexOf('text/plain') >= 0) {
+    try { 
+      return JSON.parse(raw);
+    } catch (err) { 
+      return {}; 
+    }
   }
   if (ctype.indexOf('application/x-www-form-urlencoded') >= 0) {
     const out = {};
@@ -138,6 +146,7 @@ function parseBody_(e) {
     });
     return out;
   }
+  console.log('❌ Unsupported content type:', ctype);
   return {};
 }
 

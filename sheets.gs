@@ -71,8 +71,9 @@ function createLead_(payload, actor) {
   const companyNames = new Set(companies.map(c => c.name));
 
   const companyName = String(payload.companyName || '').trim();
+  
   if (!companyName || !companyNames.has(companyName)) {
-    throw new Error('Invalid Company Name');
+    throw new Error('Invalid Company Name: "' + companyName + '" not found in [' + Array.from(companyNames).join(', ') + ']');
   }
 
   // Resolve company token to stamp

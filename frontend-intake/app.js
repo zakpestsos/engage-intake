@@ -67,9 +67,6 @@
   }
 
   function setupCompanyMode(company, products) {
-    console.log('🏢 Setting up company mode for:', company);
-    console.log('📦 Products received:', products);
-    
     // Hide the company selection section
     const companySection = document.querySelector('.form-section');
     if (companySection) {
@@ -88,7 +85,6 @@
     
     // Ensure products is an array
     const productArray = Array.isArray(products) ? products : [];
-    console.log('📦 Product array to process:', productArray);
     
     productArray.forEach(p => {
       const opt = document.createElement('option');
@@ -465,14 +461,8 @@
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     
-    // Enhanced Debug: Check config loading
-    console.log('🔧 Debugging configuration loading...');
-    console.log('📋 window.APP_CONFIG:', window.APP_CONFIG);
-    console.log('🆔 Config VERSION:', window.APP_CONFIG && window.APP_CONFIG.VERSION);
-    console.log('🌐 API_BASE function result:', API());
-    console.log('🗝️ PLACES_KEY function result:', PLACES_KEY());
-    console.log('📍 Current page URL:', window.location.href);
-    console.log('🔗 Current origin:', window.location.origin);
+    // Basic config check
+    console.log('Loading intake form...');
     
     // Check if config loaded properly
     if (!window.APP_CONFIG) {

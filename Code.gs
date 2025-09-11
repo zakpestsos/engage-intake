@@ -228,10 +228,22 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  // Check if this is an API request via parameter (same as doGet)
+  const apiEndpoint = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
+  if (apiEndpoint) {
+    return handleApiPost_(e);
+  }
+  
+  // Also check path-based routing for backward compatibility
   const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
   if (path && path.startsWith('api/')) {
     return handleApiPost_(e);
   }
+  
+  console.log('❌ Unsupported POST route - no api parameter or path');
+  console.log('📋 POST parameters:', e && e.parameter);
+  console.log('🛣️ POST path:', path);
+  
   return ContentService.createTextOutput(JSON.stringify({ error: 'Unsupported route' }))
     .setMimeType(ContentService.MimeType.JSON);
 }

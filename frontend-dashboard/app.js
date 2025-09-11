@@ -36,12 +36,62 @@
     return (u.searchParams.get('token') || '').trim(); 
   }
 
-  async function fetchJSON(url, opts){
-    const res = await fetch(url, Object.assign({ 
-      headers: { 'Content-Type': 'application/json' }
-    }, opts || {}));
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+  async function fetchJSON(url, opts) {
+    // For GET requests, use JSONP to bypass CORS (same as intake form)
+    if (!opts || !opts.method || opts.method === 'GET') {
+      return await fetchViaJSONP(url);
+    }
+    
+    // For POST requests, use text/plain approach
+    try {
+      const fetchOptions = Object.assign({ 
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      }, opts || {});
+      
+      const res = await fetch(url, fetchOptions);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async function fetchViaJSONP(url) {
+    return new Promise((resolve, reject) => {
+      const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const separator = url.includes('?') ? '&' : '?';
+      const jsonpUrl = url + separator + 'callback=' + callbackName;
+      
+      window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.head.removeChild(script);
+        resolve(data);
+      };
+      
+      const script = document.createElement('script');
+      script.src = jsonpUrl;
+      script.onerror = function() {
+        delete window[callbackName];
+        document.head.removeChild(script);
+        reject(new Error('JSONP request failed'));
+      };
+      
+      const timeout = setTimeout(() => {
+        delete window[callbackName];
+        if (script.parentNode) {
+          document.head.removeChild(script);
+        }
+        reject(new Error('JSONP request timed out'));
+      }, 10000);
+      
+      const originalCallback = window[callbackName];
+      window[callbackName] = function(data) {
+        clearTimeout(timeout);
+        originalCallback(data);
+      };
+      
+      document.head.appendChild(script);
+    });
   }
   
   async function listLeads(q) { 

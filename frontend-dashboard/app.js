@@ -203,9 +203,40 @@
     });
   }
 
+  function showLoading() {
+    $('#loadingSpinner').style.display = 'block';
+    $('#mainDashboard').style.display = 'none';
+  }
+  
+  function hideLoading() {
+    $('#loadingSpinner').style.display = 'none';
+    $('#mainDashboard').style.display = 'block';
+  }
+
+  function showSection(sectionId) {
+    // Hide all sections
+    $('#leadsSection').style.display = 'none';
+    $('#analyticsSection').style.display = 'none';
+    
+    // Show selected section
+    $('#' + sectionId).style.display = 'block';
+    
+    // Update nav buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    if (sectionId === 'leadsSection') {
+      $('#leadsTab').classList.add('active');
+    } else if (sectionId === 'analyticsSection') {
+      $('#analyticsTab').classList.add('active');
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', async function(){
+    clearError();
+    showLoading();
+    
     const token = getToken();
     if (!token) { 
+      hideLoading();
       $('#unauthorized').style.display = 'block'; 
       return; 
     }
@@ -218,6 +249,10 @@
         to: $('#toDate').value 
       };
     }
+    
+    // Set up navigation
+    $('#leadsTab').addEventListener('click', () => showSection('leadsSection'));
+    $('#analyticsTab').addEventListener('click', () => showSection('analyticsSection'));
     
     $('#applyFilters').addEventListener('click', async function(){
       clearError();
@@ -239,16 +274,41 @@
       if (!btn) return;
       const id = btn.getAttribute('data-id'); 
       const action = btn.getAttribute('data-action');
+      
+      // Visual feedback
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = '⏳';
+      
       try { 
         await updateLead(token, id, action); 
-        showToast('Updated status to: ' + action); 
+        showToast('✅ Status updated to: ' + action); 
         $('#applyFilters').click(); 
       } catch (e) { 
-        showError('Update failed.'); 
+        showError('Update failed: ' + e.message); 
+        btn.textContent = originalText;
+        btn.disabled = false;
       }
     });
     
-    // Initial load
-    $('#applyFilters').click();
+    try {
+      const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);
+      
+      // Update company name in header
+      if (leads && leads.length > 0) {
+        const companyName = leads[0].Company_Name || 'Client';
+        $('#companyName').textContent = `📊 ${companyName} Dashboard`;
+      }
+      
+      renderLeads(leads); 
+      renderKPIs(stats); 
+      drawCharts(stats);
+      
+      hideLoading();
+      showSection('leadsSection'); // Start with leads tab
+    } catch (e) { 
+      hideLoading();
+      showError('Failed to load data. Check API_BASE in config.js'); 
+    }
   });
 })();

@@ -90,43 +90,42 @@ function handleApiPost_(e) {
 
     if (endpoint === 'leads' || endpoint === 'api/leads') {
       const body = parseBody_(e);
-      const payload = normalizeLeadBody_(body);
       
-      // IMPORTANT: Get company name from token instead of trusting frontend
-      const token = (e.parameter && e.parameter.token) || (body && body.token);
-      if (token) {
-        const tokenCompanyName = companyFromToken_(token);
-        payload.companyName = tokenCompanyName; // Override with token-based company
-      }
+      // Check if this is a PATCH request (lead status update)
+      const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
+      const leadId = (e.parameter && e.parameter.id) || (body && body.id);
       
-      const result = createLead_(payload, 'agent ui');
-      return jsonResponse_(result, origin || '', 200);
-    }
-
-    // Handle PATCH requests (for lead status updates from dashboard)
-    const body = parseBody_(e);
-    const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
-    const leadId = (e.parameter && e.parameter.id) || (body && body.id);
-    
-    if (String(methodOverride).toUpperCase() === 'PATCH' && leadId && endpoint === 'leads') {
-      const token = (e.parameter && e.parameter.token) || (body && body.token);
-      const companyName = companyFromToken_(token);
-      const status = (e.parameter && e.parameter.status) || (body && body.status);
-      console.log('🔄 PATCH request:', { leadId, companyName, status, methodOverride });
-      const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui');
-      return jsonResponse_(result, origin || '', 200);
-    }
-    
-    // Debug: If we reach here for leads endpoint, something is wrong
-    if (endpoint === 'leads') {
-      console.log('⚠️ Leads endpoint reached but conditions not met:', {
+      console.log('🔍 POST to leads endpoint debug:', {
+        endpoint,
         methodOverride,
         leadId,
-        endpoint,
-        isPatch: String(methodOverride).toUpperCase() === 'PATCH',
-        hasLeadId: !!leadId,
-        isLeadsEndpoint: endpoint === 'leads'
+        bodyKeys: Object.keys(body),
+        parameterKeys: e.parameter ? Object.keys(e.parameter) : []
       });
+      
+      if (String(methodOverride).toUpperCase() === 'PATCH' && leadId) {
+        console.log('✅ PATCH request identified, updating existing lead...');
+        const token = (e.parameter && e.parameter.token) || (body && body.token);
+        const companyName = companyFromToken_(token);
+        const status = (e.parameter && e.parameter.status) || (body && body.status);
+        console.log('🔄 PATCH details:', { leadId, companyName, status });
+        const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui');
+        return jsonResponse_(result, origin || '', 200);
+      } else {
+        console.log('📝 Creating new lead (no PATCH method or leadId)');
+        // This is the normal lead creation path from intake form
+        const payload = normalizeLeadBody_(body);
+        
+        // IMPORTANT: Get company name from token instead of trusting frontend
+        const token = (e.parameter && e.parameter.token) || (body && body.token);
+        if (token) {
+          const tokenCompanyName = companyFromToken_(token);
+          payload.companyName = tokenCompanyName; // Override with token-based company
+        }
+        
+        const result = createLead_(payload, 'agent ui');
+        return jsonResponse_(result, origin || '', 200);
+      }
     }
 
     return jsonResponse_({ error: 'Not found' }, origin || '', 404);

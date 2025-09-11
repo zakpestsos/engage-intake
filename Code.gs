@@ -154,10 +154,23 @@ function allowOrigin_(e) {
 
 // HTMLService entrypoints
 function doGet(e) {
+  // Check for JSONP callback parameter
+  const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : '';
+  
   // Check if this is an API request via parameter
   const apiEndpoint = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
   if (apiEndpoint) {
-    return handleApiGet_(e);
+    const result = handleApiGet_(e);
+    
+    // If JSONP callback requested, wrap response
+    if (callback) {
+      const jsonResponse = result.getContent();
+      const jsonpResponse = callback + '(' + jsonResponse + ');';
+      return ContentService.createTextOutput(jsonpResponse)
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    
+    return result;
   }
   
   // Serve HTML pages if no API requested

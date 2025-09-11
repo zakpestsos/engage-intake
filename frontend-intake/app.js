@@ -223,6 +223,12 @@
   async function fetchJSON(url, opts) {
     console.log('🌐 fetchJSON called with:', { url, opts });
     
+    // For GET requests, try JSONP-style approach to bypass CORS
+    if (!opts || !opts.method || opts.method === 'GET') {
+      console.log('🔄 Attempting JSONP-style approach for GET request');
+      return await fetchViaJSONP(url);
+    }
+    
     try {
       // Use text/plain to avoid CORS preflight requests with Apps Script
       const fetchOptions = Object.assign({ 
@@ -287,6 +293,59 @@
       
       throw error;
     }
+  }
+
+  async function fetchViaJSONP(url) {
+    console.log('🔄 Using JSONP-style approach for:', url);
+    
+    return new Promise((resolve, reject) => {
+      // Create a unique callback name
+      const callbackName = 'jsonp_callback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      
+      // Add callback parameter to URL
+      const separator = url.includes('?') ? '&' : '?';
+      const jsonpUrl = url + separator + 'callback=' + callbackName;
+      
+      console.log('📞 JSONP URL:', jsonpUrl);
+      
+      // Create global callback function
+      window[callbackName] = function(data) {
+        console.log('✅ JSONP callback received data:', data);
+        delete window[callbackName]; // Clean up
+        document.head.removeChild(script); // Clean up
+        resolve(data);
+      };
+      
+      // Create script tag
+      const script = document.createElement('script');
+      script.src = jsonpUrl;
+      script.onerror = function() {
+        console.error('❌ JSONP script loading failed');
+        delete window[callbackName]; // Clean up
+        document.head.removeChild(script); // Clean up
+        reject(new Error('JSONP request failed'));
+      };
+      
+      // Add timeout
+      const timeout = setTimeout(() => {
+        console.error('⏰ JSONP request timed out');
+        delete window[callbackName]; // Clean up
+        if (script.parentNode) {
+          document.head.removeChild(script); // Clean up
+        }
+        reject(new Error('JSONP request timed out'));
+      }, 10000);
+      
+      // Clear timeout when callback is called
+      const originalCallback = window[callbackName];
+      window[callbackName] = function(data) {
+        clearTimeout(timeout);
+        originalCallback(data);
+      };
+      
+      // Add script to head to trigger request
+      document.head.appendChild(script);
+    });
   }
 
   async function loadConfig() {

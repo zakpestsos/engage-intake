@@ -2,8 +2,16 @@
 
 function handleApiGet_(e) {
   try {
+    // Debug logging for Apps Script
+    console.log('🔧 Apps Script handleApiGet_ called');
+    console.log('📋 Request parameters:', e && e.parameter);
+    console.log('🛣️ Path info:', e && e.pathInfo);
+    
     const { origin, ok } = allowOrigin_(e);
+    console.log('🌐 Origin check:', { origin, ok });
+    
     if (!ok) {
+      console.log('❌ Origin not allowed, returning 403');
       return jsonResponse_({ error: 'Forbidden' }, origin, 403);
     }
 
@@ -12,8 +20,11 @@ function handleApiGet_(e) {
     const path = (e && e.pathInfo) ? String(e.pathInfo) : '';
     const urlPath = path.replace(/^\/+/, '');
     
+    console.log('🔍 API routing debug:', { apiParam, path, urlPath });
+    
     // Determine endpoint
     const endpoint = apiParam || urlPath;
+    console.log('🎯 Final endpoint:', endpoint);
     
     if (endpoint === 'config' || endpoint === 'api/config') {
       const token = e.parameter && e.parameter.token;

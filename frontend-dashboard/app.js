@@ -114,7 +114,7 @@
   }
   
   async function updateLead(token, id, status) {
-    return fetchJSON(API() + '/api/leads/' + encodeURIComponent(id), {
+    return fetchJSON(API() + '?api=leads&id=' + encodeURIComponent(id), {
       method: 'POST',
       body: JSON.stringify({ _method: 'PATCH', token, status })
     });

@@ -530,6 +530,26 @@
       console.log('🔘 SUBMIT BUTTON CLICKED');
       console.log('🔘 Button disabled?', this.disabled);
       console.log('🔘 Event target:', e.target);
+      console.log('🔘 Form element:', $('#intakeForm'));
+      
+      // Test if form submission works
+      console.log('🧪 Testing form submission trigger...');
+      
+      // Check if all required fields are filled
+      const requiredFields = ['firstName', 'lastName', 'addressStreet', 'addressCity', 'addressState', 'addressPostal', 'reason', 'product'];
+      const fieldStatus = {};
+      requiredFields.forEach(fieldId => {
+        const field = $('#' + fieldId);
+        fieldStatus[fieldId] = field ? field.value.trim() : 'FIELD_NOT_FOUND';
+      });
+      console.log('📋 Required field status:', fieldStatus);
+      
+      // Check if company is selected (token mode or manual)
+      console.log('🏢 Company selection status:', {
+        tokenCompany: window.SELECTED_COMPANY,
+        dropdownCompany: $('#company').value,
+        finalCompany: window.SELECTED_COMPANY || $('#company').value.trim()
+      });
     });
     
     $('#intakeForm').addEventListener('submit', async function(e){

@@ -221,11 +221,55 @@
   }
 
   async function fetchJSON(url, opts) {
-    const res = await fetch(url, Object.assign({ 
-      headers: { 'Content-Type': 'application/json' }
-    }, opts || {}));
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    console.log('🌐 fetchJSON called with:', { url, opts });
+    
+    try {
+      const res = await fetch(url, Object.assign({ 
+        headers: { 'Content-Type': 'application/json' }
+      }, opts || {}));
+      
+      console.log('📡 Fetch response received:', {
+        status: res.status,
+        statusText: res.statusText,
+        headers: Object.fromEntries(res.headers.entries()),
+        url: res.url
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ HTTP Error Response:', {
+          status: res.status,
+          statusText: res.statusText,
+          body: errorText
+        });
+        throw new Error(`HTTP ${res.status}: ${res.statusText} - ${errorText}`);
+      }
+      
+      const jsonData = await res.json();
+      console.log('✅ JSON response parsed successfully:', jsonData);
+      return jsonData;
+      
+    } catch (error) {
+      console.error('💥 fetchJSON error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        url: url
+      });
+      
+      // Enhanced error information
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        console.error('🚫 This is likely a CORS or network connectivity issue');
+        console.error('🔍 Troubleshooting info:', {
+          'Current API_BASE': API(),
+          'Target URL': url,
+          'Browser Origin': window.location.origin,
+          'User Agent': navigator.userAgent
+        });
+      }
+      
+      throw error;
+    }
   }
 
   async function loadConfig() {
@@ -283,16 +327,44 @@
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     
-    // Debug: Check config loading
-    console.log('window.APP_CONFIG:', window.APP_CONFIG);
-    console.log('Checking API_BASE availability...');
+    // Enhanced Debug: Check config loading
+    console.log('🔧 Debugging configuration loading...');
+    console.log('📋 window.APP_CONFIG:', window.APP_CONFIG);
+    console.log('🌐 API_BASE function result:', API());
+    console.log('🗝️ PLACES_KEY function result:', PLACES_KEY());
+    console.log('📍 Current page URL:', window.location.href);
+    console.log('🔗 Current origin:', window.location.origin);
+    
+    // Check if config loaded properly
+    if (!window.APP_CONFIG) {
+      console.error('❌ window.APP_CONFIG is not defined! config.js may not have loaded.');
+      showError('Configuration not loaded. Check if config.js is accessible.');
+      return;
+    }
+    
+    if (!API()) {
+      console.error('❌ API_BASE is empty or undefined!');
+      showError('API_BASE not configured. Check config.js file.');
+      return;
+    }
+    
+    console.log('✅ Configuration appears loaded, attempting API call...');
     
     // Load configuration
     try { 
       await loadConfig(); 
     } catch (e) { 
-      console.error('Config loading failed:', e);
-      showError('Failed to load configuration. Check API_BASE in config.js'); 
+      console.error('💥 Config loading failed with full error details:', e);
+      
+      // Enhanced error message
+      let errorMsg = 'Failed to load configuration.';
+      if (e.name === 'TypeError' && e.message.includes('Failed to fetch')) {
+        errorMsg += ' CORS or network issue detected.';
+      } else {
+        errorMsg += ` Error: ${e.message}`;
+      }
+      
+      showError(errorMsg); 
     }
     
     // Event listeners

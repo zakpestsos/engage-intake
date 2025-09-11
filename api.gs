@@ -7,12 +7,21 @@ function handleApiGet_(e) {
     console.log('📋 Request parameters:', e && e.parameter);
     console.log('🛣️ Path info:', e && e.pathInfo);
     
-    const { origin, ok } = allowOrigin_(e);
-    console.log('🌐 Origin check:', { origin, ok });
+    // Check if this is a JSONP request (has callback parameter)
+    const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : '';
+    const isJSONP = !!callback;
     
-    if (!ok) {
-      console.log('❌ Origin not allowed, returning 403');
-      return jsonResponse_({ error: 'Forbidden' }, origin, 403);
+    console.log('📞 JSONP request detected:', isJSONP);
+    
+    // Skip CORS validation for JSONP requests since script tags bypass CORS
+    if (!isJSONP) {
+      const { origin, ok } = allowOrigin_(e);
+      console.log('🌐 Origin check:', { origin, ok });
+      
+      if (!ok) {
+        console.log('❌ Origin not allowed, returning 403');
+        return jsonResponse_({ error: 'Forbidden' }, origin, 403);
+      }
     }
 
     // Check API endpoint from parameter or path
@@ -152,10 +161,9 @@ function normalizeLeadBody_(b) {
 }
 
 function jsonResponse_(obj, origin, status) {
-  // Simplified CORS approach for Apps Script compatibility
-  return ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeaders({
-      'Access-Control-Allow-Origin': '*'
-    });
+  // Fixed: Create output first, then set MIME type and headers separately
+  const output = ContentService.createTextOutput(JSON.stringify(obj));
+  output.setMimeType(ContentService.MimeType.JSON);
+  // Note: For JSONP, headers are not needed since script tags bypass CORS
+  return output;
 }

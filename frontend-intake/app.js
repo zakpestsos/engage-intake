@@ -95,6 +95,7 @@
 
   function updateTabIndexForCompanyMode() {
     // Shift all tabindex down by 1 since company field (tabindex 1) is hidden
+    // Also removed Lead Value field per requirements
     $('#firstName').setAttribute('tabindex', '1');
     $('#lastName').setAttribute('tabindex', '2');
     $('#addressStreet').setAttribute('tabindex', '3');
@@ -104,9 +105,8 @@
     $('#reason').setAttribute('tabindex', '7');
     $('#reasonOther').setAttribute('tabindex', '8');
     $('#product').setAttribute('tabindex', '9');
-    $('#leadValue').setAttribute('tabindex', '10');
-    $('#notes').setAttribute('tabindex', '11');
-    $('#submitBtn').setAttribute('tabindex', '12');
+    $('#notes').setAttribute('tabindex', '10');
+    $('#submitBtn').setAttribute('tabindex', '11');
   }
 
   function initPlaces() {
@@ -504,8 +504,8 @@
         reasonCustom: $('#reasonOther').value.trim(),
         productSku: opt ? opt.getAttribute('data-sku') : '',
         productName: productSel.value.trim(),
-        productPrice: $('#productPrice').value ? Number($('#productPrice').value) : '',
-        leadValue: $('#leadValue').value ? Number($('#leadValue').value) : '',
+        productPrice: $('#productPrice').value ? Number($('#productPrice').value.replace('$', '')) : '',
+        leadValue: $('#productPrice').value ? Number($('#productPrice').value.replace('$', '')) : '', // Use product price as lead value
         notes: $('#notes').value.trim()
       };
       

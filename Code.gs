@@ -68,9 +68,11 @@ const AUDIT_HEADERS = [
 // Allowed origins for CORS checks (update for your GitHub Pages domain)
 const ALLOWED_ORIGINS = [
   'https://script.google.com',
-  'https://sites.google.com',
+  'https://sites.google.com', 
   'https://script.googleusercontent.com',
   'https://zakpestsos.github.io',
+  'https://pest-sos.com',
+  'https://script.google.com/a/macros/pest-sos.com',
   'https://your-org.github.io',
   'https://your-user.github.io'
 ];
@@ -164,9 +166,9 @@ function doGet(e) {
       return ContentService.createTextOutput(callback + '(' + response + ');')
         .setMimeType(ContentService.MimeType.JAVASCRIPT);
     } else {
-      return ContentService.createTextOutput(response)
-        .setMimeType(ContentService.MimeType.JSON)
-        .setHeaders({ 'Access-Control-Allow-Origin': '*' });
+      const output = ContentService.createTextOutput(response);
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
     }
   }
 
@@ -235,14 +237,11 @@ function doPost(e) {
 }
 
 function doOptions(e) {
-  // Handle CORS preflight requests (simplified approach)
-  return ContentService.createTextOutput('')
-    .setMimeType(ContentService.MimeType.TEXT)
-    .setHeaders({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
-    });
+  // Handle CORS preflight requests (fixed chaining issue)
+  const output = ContentService.createTextOutput('');
+  output.setMimeType(ContentService.MimeType.TEXT);
+  // Note: JSONP bypasses CORS so this may not be needed
+  return output;
 }
 
 // API wrappers for HTMLService (google.script.run)

@@ -170,7 +170,10 @@
   }
 
   async function loadConfig() {
+    console.log('Loading config from:', API() + '/api/config');
+    console.log('API_BASE from config:', API());
     const cfg = await fetchJSON(API() + '/api/config');
+    console.log('Config loaded successfully:', cfg);
     PRODUCTS_BY_COMPANY = cfg.productsByCompany || {};
     populateCompanies(cfg.companies || []);
   }
@@ -202,10 +205,15 @@
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     
+    // Debug: Check config loading
+    console.log('window.APP_CONFIG:', window.APP_CONFIG);
+    console.log('Checking API_BASE availability...');
+    
     // Load configuration
     try { 
       await loadConfig(); 
     } catch (e) { 
+      console.error('Config loading failed:', e);
       showError('Failed to load configuration. Check API_BASE in config.js'); 
     }
     

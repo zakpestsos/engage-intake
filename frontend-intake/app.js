@@ -430,7 +430,17 @@
   }
 
   async function submitLead(payload) {
-    const res = await fetchJSON(API() + '?api=leads', {
+    // Add token to the request if we have one
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    const url = token ? 
+      API() + '?api=leads&token=' + encodeURIComponent(token) :
+      API() + '?api=leads';
+      
+    console.log('📤 Submit URL with token:', url);
+    
+    const res = await fetchJSON(url, {
       method: 'POST',
       body: JSON.stringify(payload)
     });

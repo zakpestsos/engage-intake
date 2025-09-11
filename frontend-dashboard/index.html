@@ -10,98 +10,147 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h2>Client Dashboard</h2>
-    <div id="unauthorized" class="error-banner" style="display:none;">401 Unauthorized: token required in URL (?token=...)</div>
-    <div id="errorBanner" class="error-banner" style="display:none;"></div>
-
-    <section class="filters">
-      <div class="row">
-        <div class="field">
-          <label>Status</label>
-          <select id="statusFilter">
-            <option value="">All</option>
-            <option>NEW</option>
-            <option>ACCEPTED</option>
-            <option>COMPLETED</option>
-            <option>CANCELLED</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>From</label>
-          <input type="date" id="fromDate">
-        </div>
-        <div class="field">
-          <label>To</label>
-          <input type="date" id="toDate">
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button id="applyFilters">Apply</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="overview">
-      <div class="card">
-        <div class="kpi" id="kpiNew">0</div>
-        <div class="kpi-label">New Leads</div>
-      </div>
-      <div class="card">
-        <div class="kpi" id="kpiCancel">0</div>
-        <div class="kpi-label">Cancellations</div>
-      </div>
-      <div class="card">
-        <div class="kpi" id="kpiAccepted">0</div>
-        <div class="kpi-label">Accepted</div>
-      </div>
-      <div class="card">
-        <div class="kpi" id="kpiCompleted">0</div>
-        <div class="kpi-label">Completed</div>
-      </div>
-      <div class="card">
-        <div class="kpi" id="kpiCaptured">$0</div>
-        <div class="kpi-label">Captured Value</div>
-      </div>
-      <div class="card">
-        <div class="kpi" id="kpiCommitted">$0</div>
-        <div class="kpi-label">Committed Value</div>
-      </div>
-    </section>
-
-    <section>
-      <h3>Leads</h3>
-      <div class="table-wrap">
-        <table id="leadsTable">
-          <thead>
-            <tr>
-              <th>Created At</th>
-              <th>Customer Name</th>
-              <th>City/State</th>
-              <th>Reason</th>
-              <th>Product</th>
-              <th>Lead Value</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="leadsBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <h3>Analytics</h3>
-      <div class="row">
-        <div id="chartLeadsByDay" class="chart"></div>
-        <div id="chartLeadsByReason" class="chart"></div>
-      </div>
-      <div class="row">
-        <div id="chartPvByMonth" class="chart"></div>
-      </div>
-    </section>
+  <!-- Loading Spinner -->
+  <div id="loadingSpinner" class="loading-container">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading dashboard data...</div>
   </div>
-  
+
+  <!-- Main Dashboard (hidden until loaded) -->
+  <div id="mainDashboard" style="display: none;">
+    <!-- Header with Navigation -->
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1 id="companyName">📊 Client Dashboard</h1>
+        <nav class="dashboard-nav">
+          <button id="leadsTab" class="nav-btn active">📋 Leads</button>
+          <button id="analyticsTab" class="nav-btn">📈 Analytics</button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="dashboard-container">
+      <div id="unauthorized" class="error-banner" style="display:none;">401 Unauthorized: token required in URL (?token=...)</div>
+      <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+      <!-- Leads Section -->
+      <section id="leadsSection" class="dashboard-section">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiNew">0</div>
+            <div class="kpi-label">New Leads</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiCancel">0</div>
+            <div class="kpi-label">Cancellations</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiAccepted">0</div>
+            <div class="kpi-label">Accepted</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiCompleted">0</div>
+            <div class="kpi-label">Completed</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiCaptured">$0</div>
+            <div class="kpi-label">Captured Value</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-value" id="kpiCommitted">$0</div>
+            <div class="kpi-label">Committed Value</div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+          <div class="filters-row">
+            <div class="filter-group">
+              <label>Status</label>
+              <select id="statusFilter">
+                <option value="">All</option>
+                <option>NEW</option>
+                <option>ACCEPTED</option>
+                <option>COMPLETED</option>
+                <option>CANCELLED</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>From</label>
+              <input type="date" id="fromDate">
+            </div>
+            <div class="filter-group">
+              <label>To</label>
+              <input type="date" id="toDate">
+            </div>
+            <div class="filter-group">
+              <button id="applyFilters" class="apply-btn">🔍 Apply Filters</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="leads-section">
+          <h3>📋 Lead Management</h3>
+          <div class="table-container">
+            <table id="leadsTable" class="leads-table">
+              <thead>
+                <tr>
+                  <th>Created</th>
+                  <th>Customer</th>
+                  <th>Location</th>
+                  <th>Reason</th>
+                  <th>Product</th>
+                  <th>Value</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Section (initially hidden) -->
+      <section id="analyticsSection" class="dashboard-section" style="display: none;">
+        <h3>📈 Analytics & Insights</h3>
+        
+        <!-- Date Range for Analytics -->
+        <div class="analytics-filters">
+          <div class="filter-group">
+            <label>Analysis Period</label>
+            <input type="date" id="analyticsFrom">
+          </div>
+          <div class="filter-group">
+            <label>To</label>
+            <input type="date" id="analyticsTo">
+          </div>
+          <div class="filter-group">
+            <button id="updateCharts" class="apply-btn">📊 Update Charts</button>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Leads by Day</h4>
+            <div id="chartLeadsByDay" class="chart-container"></div>
+          </div>
+          <div class="chart-card">
+            <h4>Leads by Reason</h4>
+            <div id="chartLeadsByReason" class="chart-container"></div>
+          </div>
+          <div class="chart-card">
+            <h4>Production Value by Month</h4>
+            <div id="chartProductionValue" class="chart-container"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>

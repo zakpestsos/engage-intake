@@ -103,19 +103,30 @@ function handleApiPost_(e) {
       return jsonResponse_(result, origin || '', 200);
     }
 
-    // PATCH via POST (with _method=PATCH) to api/leads/:id
-    const patchId = (path.match(/^api\/leads\/([^\/]+)$/) || [])[1];
-    if (patchId) {
-      const body = parseBody_(e);
-      const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
-      if (String(methodOverride).toUpperCase() !== 'PATCH') {
-        return jsonResponse_({ error: 'Use PATCH override' }, origin || '', 405);
-      }
+    // Handle PATCH requests (for lead status updates from dashboard)
+    const body = parseBody_(e);
+    const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
+    const leadId = (e.parameter && e.parameter.id) || (body && body.id);
+    
+    if (String(methodOverride).toUpperCase() === 'PATCH' && leadId && endpoint === 'leads') {
       const token = (e.parameter && e.parameter.token) || (body && body.token);
       const companyName = companyFromToken_(token);
       const status = (e.parameter && e.parameter.status) || (body && body.status);
-      const result = updateLeadStatusForCompany_(companyName, patchId, status, 'client ui');
+      console.log('🔄 PATCH request:', { leadId, companyName, status, methodOverride });
+      const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui');
       return jsonResponse_(result, origin || '', 200);
+    }
+    
+    // Debug: If we reach here for leads endpoint, something is wrong
+    if (endpoint === 'leads') {
+      console.log('⚠️ Leads endpoint reached but conditions not met:', {
+        methodOverride,
+        leadId,
+        endpoint,
+        isPatch: String(methodOverride).toUpperCase() === 'PATCH',
+        hasLeadId: !!leadId,
+        isLeadsEndpoint: endpoint === 'leads'
+      });
     }
 
     return jsonResponse_({ error: 'Not found' }, origin || '', 404);

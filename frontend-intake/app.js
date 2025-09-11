@@ -277,14 +277,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     const companyToken = urlParams.get('token');
     
-    console.log('Loading config from:', API() + '/api/config');
-    console.log('API_BASE from config:', API());
-    console.log('Company token from URL:', companyToken);
-    
     // If we have a token, load config for specific company
     const configUrl = companyToken ? 
       API() + '?api=config&token=' + encodeURIComponent(companyToken) :
       API() + '?api=config';
+      
+    console.log('Loading config from:', configUrl);
+    console.log('API_BASE from config:', API());
+    console.log('Company token from URL:', companyToken);
       
     const cfg = await fetchJSON(configUrl);
     console.log('Config loaded successfully:', cfg);

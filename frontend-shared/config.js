@@ -1,7 +1,7 @@
-// Configuration for the static frontend
+// Configuration for the static frontend (updated with parameter-based API)
 // Repository: https://github.com/zakpestsos/engage-intake
 window.APP_CONFIG = {
-  // Your Apps Script Web App URL (deployed and configured)
+  // Your Apps Script Web App URL (parameter-based routing with enhanced CORS)
   API_BASE: 'https://script.google.com/macros/s/AKfycbzI9AvgS6Ohmhu44zBULb8EM342LSkBSleGpu_SBtpdOumg1cuQAdaJMgOzx_uOw50E/exec',
   
   // Your Google Maps API key (configured for GitHub Pages domain)

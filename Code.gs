@@ -193,18 +193,18 @@ function doPost(e) {
 
 function doOptions(e) {
   // Handle CORS preflight requests
-  const { origin, ok } = allowOrigin_(e);
-  if (!ok) {
-    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.TEXT);
-  }
-  
   const out = ContentService.createTextOutput('')
     .setMimeType(ContentService.MimeType.TEXT);
   
-  out.addHeader('Access-Control-Allow-Origin', origin);
-  out.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  out.addHeader('Access-Control-Allow-Headers', 'Content-Type');
-  out.addHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  // Use appendAllHeaders for better CORS compatibility
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400'
+  };
+  
+  out.appendAllHeaders(headers);
   
   return out;
 }

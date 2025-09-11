@@ -1,11 +1,15 @@
-// Configuration for the static frontend (updated with parameter-based API)
+// Configuration for the static frontend - BREAKTHROUGH CORS FIX DEPLOYMENT
 // Repository: https://github.com/zakpestsos/engage-intake
+// Version: 2025.01.11 - text/plain Content-Type implementation
 window.APP_CONFIG = {
-  // Your Apps Script Web App URL (text/plain CORS bypass implementation)
+  // Your Apps Script Web App URL (BREAKTHROUGH: text/plain CORS bypass)
   API_BASE: 'https://script.google.com/macros/s/AKfycbzE-TwI_0mExwh3UCWezsb4l3_ZZlFsNeXkcMrqX3tEvLkvt3TBDReBny1zUW-tyq4/exec',
   
   // Your Google Maps API key (configured for GitHub Pages domain)
-  PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM'
+  PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM',
+  
+  // Debug flag for cache busting
+  VERSION: '2025.01.11-cors-breakthrough'
 };
 
 /* 

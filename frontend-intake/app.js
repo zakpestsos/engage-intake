@@ -346,6 +346,7 @@
     // Enhanced Debug: Check config loading
     console.log('🔧 Debugging configuration loading...');
     console.log('📋 window.APP_CONFIG:', window.APP_CONFIG);
+    console.log('🆔 Config VERSION:', window.APP_CONFIG && window.APP_CONFIG.VERSION);
     console.log('🌐 API_BASE function result:', API());
     console.log('🗝️ PLACES_KEY function result:', PLACES_KEY());
     console.log('📍 Current page URL:', window.location.href);

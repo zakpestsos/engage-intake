@@ -45,15 +45,15 @@
     sel.innerHTML = '<option value="">Select product</option>' + 
       items.map(p => '<option data-sku="' + sanitize(p.sku) + '" data-price="' + Number(p.price) + '">' + sanitize(p.name) + '</option>').join('');
     $('#productPrice').value = '';
-    $('#leadValue').value = '';
+    // Note: Lead Value field removed per requirements
   }
   
   function onProductChange() {
     const sel = $('#product'); 
     const opt = sel.options[sel.selectedIndex];
     const price = Number(opt && opt.getAttribute('data-price')) || 0;
-    $('#productPrice').value = price ? String(price) : '';
-    if (!$('#leadValue').value) $('#leadValue').value = price ? String(price) : '';
+    $('#productPrice').value = price ? '$' + price.toFixed(2) : '';
+    // Note: Lead Value field removed per requirements - value is set server-side to product price
   }
 
   function showLoading() {
@@ -415,7 +415,6 @@
     addressParts = { street: '', city: '', state: '', postal: '' };
     $('#product').innerHTML = '<option value="">Select product</option>';
     $('#productPrice').value = '';
-    $('#leadValue').value = '';
     $('#reasonOtherWrap').style.display = 'none';
     
     // Reset address field styling

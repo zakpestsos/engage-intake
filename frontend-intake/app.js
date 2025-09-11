@@ -224,15 +224,22 @@
     console.log('🌐 fetchJSON called with:', { url, opts });
     
     try {
-      const res = await fetch(url, Object.assign({ 
-        headers: { 'Content-Type': 'application/json' }
-      }, opts || {}));
+      // Use text/plain to avoid CORS preflight requests with Apps Script
+      const fetchOptions = Object.assign({ 
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      }, opts || {});
+      
+      console.log('📤 Fetch options:', fetchOptions);
+      
+      const res = await fetch(url, fetchOptions);
       
       console.log('📡 Fetch response received:', {
         status: res.status,
         statusText: res.statusText,
         headers: Object.fromEntries(res.headers.entries()),
-        url: res.url
+        url: res.url,
+        type: res.type,
+        redirected: res.redirected
       });
       
       if (!res.ok) {
@@ -245,9 +252,18 @@
         throw new Error(`HTTP ${res.status}: ${res.statusText} - ${errorText}`);
       }
       
-      const jsonData = await res.json();
-      console.log('✅ JSON response parsed successfully:', jsonData);
-      return jsonData;
+      const responseText = await res.text();
+      console.log('📝 Raw response text:', responseText);
+      
+      try {
+        const jsonData = JSON.parse(responseText);
+        console.log('✅ JSON response parsed successfully:', jsonData);
+        return jsonData;
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        console.error('📄 Response was not valid JSON:', responseText);
+        throw new Error(`Invalid JSON response: ${responseText}`);
+      }
       
     } catch (error) {
       console.error('💥 fetchJSON error details:', {

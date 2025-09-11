@@ -141,19 +141,10 @@ function normalizeLeadBody_(b) {
 }
 
 function jsonResponse_(obj, origin, status) {
-  // Set proper CORS headers for cross-origin requests
-  const out = ContentService.createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-  
-  // Add CORS headers using appendAllHeaders for better compatibility
-  const headers = {
-    'Access-Control-Allow-Origin': '*', // Allow all origins for now
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Max-Age': '86400'
-  };
-  
-  out.appendAllHeaders(headers);
-  
-  return out;
+  // Simplified CORS approach for Apps Script compatibility
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*'
+    });
 }

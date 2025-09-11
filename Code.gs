@@ -192,21 +192,14 @@ function doPost(e) {
 }
 
 function doOptions(e) {
-  // Handle CORS preflight requests
-  const out = ContentService.createTextOutput('')
-    .setMimeType(ContentService.MimeType.TEXT);
-  
-  // Use appendAllHeaders for better CORS compatibility
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Max-Age': '86400'
-  };
-  
-  out.appendAllHeaders(headers);
-  
-  return out;
+  // Handle CORS preflight requests (simplified approach)
+  return ContentService.createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT)
+    .setHeaders({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
 }
 
 // API wrappers for HTMLService (google.script.run)

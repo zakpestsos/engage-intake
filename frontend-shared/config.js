@@ -2,8 +2,8 @@
 // Repository: https://github.com/zakpestsos/engage-intake
 // Version: 2025.01.11 - text/plain Content-Type implementation
 window.APP_CONFIG = {
-  // Your Apps Script Web App URL (BREAKTHROUGH: JSONP CORS bypass)
-  API_BASE: 'https://script.google.com/macros/s/AKfycbyL2dJQ3pI3zRIfTz_eSFCl9yDE_VixOTMc0kXFDD3zAiXV4fQuV_TXeMlyBTYdKcTL/exec',
+  // Your Apps Script Web App URL (pest-sos.com domain deployment)
+  API_BASE: 'https://script.google.com/a/macros/pest-sos.com/s/AKfycbwwQzm1JKLd_cv7T5niv44KGI_Y5Q24xGomIYJXCUgzpJJGD9kJ2hL_w4-SNdhoPzPV/exec',
   
   // Your Google Maps API key (configured for GitHub Pages domain)
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM',

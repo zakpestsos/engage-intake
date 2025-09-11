@@ -427,21 +427,51 @@
     
     console.log('✅ Configuration appears loaded, attempting API call...');
     
-    // Load configuration
-    try { 
-      await loadConfig(); 
-    } catch (e) { 
-      console.error('💥 Config loading failed with full error details:', e);
+    // First test basic connectivity
+    console.log('🧪 Testing basic Apps Script connectivity...');
+    try {
+      const testUrl = API() + '?test=ping&callback=testPingCallback';
+      console.log('🧪 Testing URL:', testUrl);
       
-      // Enhanced error message
-      let errorMsg = 'Failed to load configuration.';
-      if (e.name === 'TypeError' && e.message.includes('Failed to fetch')) {
-        errorMsg += ' CORS or network issue detected.';
-      } else {
-        errorMsg += ` Error: ${e.message}`;
+      window.testPingCallback = function(data) {
+        console.log('🎉 BASIC CONNECTIVITY TEST SUCCESSFUL:', data);
+        delete window.testPingCallback;
+        
+        // Now try loading config
+        loadConfigAfterTest();
+      };
+      
+      const testScript = document.createElement('script');
+      testScript.src = testUrl;
+      testScript.onerror = function() {
+        console.error('❌ BASIC CONNECTIVITY TEST FAILED');
+        showError('Apps Script endpoint not responding. Check deployment.');
+      };
+      document.head.appendChild(testScript);
+      
+    } catch (e) {
+      console.error('💥 Basic connectivity test failed:', e);
+      showError('Failed to test Apps Script connectivity.');
+    }
+    
+    async function loadConfigAfterTest() {
+      console.log('🚀 Basic test passed, now loading config...');
+      
+      try { 
+        await loadConfig(); 
+      } catch (e) { 
+        console.error('💥 Config loading failed with full error details:', e);
+        
+        // Enhanced error message
+        let errorMsg = 'Failed to load configuration.';
+        if (e.name === 'TypeError' && e.message.includes('Failed to fetch')) {
+          errorMsg += ' CORS or network issue detected.';
+        } else {
+          errorMsg += ` Error: ${e.message}`;
+        }
+        
+        showError(errorMsg); 
       }
-      
-      showError(errorMsg); 
     }
     
     // Event listeners

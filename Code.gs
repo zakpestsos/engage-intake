@@ -154,23 +154,53 @@ function allowOrigin_(e) {
 
 // HTMLService entrypoints
 function doGet(e) {
+  // Simple test endpoint first
+  const test = (e && e.parameter && e.parameter.test) ? e.parameter.test : '';
+  if (test === 'ping') {
+    const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : '';
+    const response = JSON.stringify({ status: 'success', message: 'Apps Script is working!', timestamp: new Date().toISOString() });
+    
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + response + ');')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    } else {
+      return ContentService.createTextOutput(response)
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeaders({ 'Access-Control-Allow-Origin': '*' });
+    }
+  }
+
   // Check for JSONP callback parameter
   const callback = (e && e.parameter && e.parameter.callback) ? e.parameter.callback : '';
   
   // Check if this is an API request via parameter
   const apiEndpoint = (e && e.parameter && e.parameter.api) ? e.parameter.api : '';
   if (apiEndpoint) {
-    const result = handleApiGet_(e);
-    
-    // If JSONP callback requested, wrap response
-    if (callback) {
-      const jsonResponse = result.getContent();
-      const jsonpResponse = callback + '(' + jsonResponse + ');';
-      return ContentService.createTextOutput(jsonpResponse)
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    try {
+      const result = handleApiGet_(e);
+      
+      // If JSONP callback requested, wrap response
+      if (callback) {
+        const jsonResponse = result.getContent();
+        const jsonpResponse = callback + '(' + jsonResponse + ');';
+        return ContentService.createTextOutput(jsonpResponse)
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      
+      return result;
+    } catch (error) {
+      // Return error in JSONP format if callback requested
+      if (callback) {
+        const errorResponse = JSON.stringify({ error: String(error.message || error) });
+        const jsonpResponse = callback + '(' + errorResponse + ');';
+        return ContentService.createTextOutput(jsonpResponse)
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+      
+      // Return regular error response
+      return ContentService.createTextOutput(JSON.stringify({ error: String(error.message || error) }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
-    
-    return result;
   }
   
   // Serve HTML pages if no API requested

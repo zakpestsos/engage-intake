@@ -1,8 +1,8 @@
 // Configuration for the static frontend
 // Repository: https://github.com/zakpestsos/engage-intake
 window.APP_CONFIG = {
-  // Your Apps Script Web App URL (update this after deploying your web app)
-  API_BASE: 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec',
+  // Your Apps Script Web App URL (deployed and configured)
+  API_BASE: 'https://script.google.com/a/macros/pest-sos.com/s/AKfycbwxi1FZmV2jCT2SG5V63YLsecJ2mMy9U7y7BJMKzgklnZA5Pa8XyB7TyOgPx_TsrYtH/exec',
   
   // Your Google Maps API key (configured for GitHub Pages domain)
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM'

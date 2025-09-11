@@ -245,12 +245,27 @@
     if (!$('#reason').value.trim()) errors.reason = 'Required';
     if (!$('#product').value.trim()) errors.product = 'Required';
     
+    console.log('🔍 Validation errors found:', errors);
+    console.log('📋 Field values:', {
+      firstName: $('#firstName').value,
+      lastName: $('#lastName').value,
+      addressStreet: $('#addressStreet').value,
+      addressCity: $('#addressCity').value,
+      addressState: $('#addressState').value,
+      addressPostal: $('#addressPostal').value,
+      reason: $('#reason').value,
+      product: $('#product').value
+    });
+    
     document.querySelectorAll('.error').forEach(el => el.textContent = '');
     Object.keys(errors).forEach(k => { 
       const el = document.querySelector('.error[data-for="'+k+'"]'); 
       if (el) el.textContent = errors[k]; 
     });
-    return Object.keys(errors).length === 0;
+    
+    const isValid = Object.keys(errors).length === 0;
+    console.log('📊 Final validation result:', isValid, 'Errors:', Object.keys(errors));
+    return isValid;
   }
 
   async function fetchJSON(url, opts) {

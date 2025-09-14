@@ -19,7 +19,8 @@
     <!-- Main Form (hidden until loaded) -->
     <div id="mainForm" style="display: none;">
       <div class="intake-header">
-        <h2>📞 Call Intake Form</h2>
+        <h2>Call Intake Form</h2>
+        <div class="company-subtitle" id="companySubtitle" style="display: none;"></div>
       </div>
       
       <div id="errorBanner" class="error-banner" style="display:none;"></div>
@@ -27,9 +28,9 @@
     <form id="intakeForm" class="quick-form" autocomplete="off" novalidate>
     <!-- Company Selection -->
     <div class="form-section">
-      <div class="section-title">1. Company</div>
+      <div class="section-title">Company</div>
       <div class="quick-field">
-        <label>Select Company <span class="field-shortcut">(Tab to next)</span></label>
+        <label>Select Company <span class="field-shortcut">Tab to next</span></label>
         <select id="company" required autocomplete="off" tabindex="1">
           <option value="">Choose company...</option>
         </select>
@@ -39,7 +40,7 @@
 
     <!-- Customer Information -->
     <div class="form-section">
-      <div class="section-title">2. Customer Information</div>
+      <div class="section-title">Customer Information</div>
       <div class="customer-grid">
         <div class="quick-field">
           <label>First Name</label>
@@ -54,7 +55,7 @@
       </div>
       
       <div class="quick-field">
-        <label>Address <span class="field-shortcut">(Google Places autocomplete enabled)</span></label>
+        <label>Address <span class="field-shortcut">Google Places autocomplete enabled</span></label>
         <div class="address-grid">
           <input type="text" id="addressStreet" placeholder="Start typing address..." required autocomplete="off" tabindex="4">
           <input type="text" id="addressCity" placeholder="City (auto-filled)" required autocomplete="off" tabindex="5">
@@ -70,7 +71,7 @@
 
     <!-- Call Details -->
     <div class="form-section">
-      <div class="section-title">3. Call Details</div>
+      <div class="section-title">Call Details</div>
       <div class="quick-field">
         <label>Reason for Call</label>
         <select id="reason" required autocomplete="off" tabindex="8">
@@ -93,7 +94,7 @@
 
     <!-- Product & Pricing -->
     <div class="form-section">
-      <div class="section-title">4. Product & Pricing</div>
+      <div class="section-title">Product & Pricing</div>
       <div class="product-grid">
         <div class="quick-field">
           <label>Product/Service</label>
@@ -111,7 +112,7 @@
 
     <!-- Additional Notes -->
     <div class="form-section">
-      <div class="section-title">5. Notes (Optional)</div>
+      <div class="section-title">Additional Notes</div>
       <div class="quick-field">
         <label>Additional Information</label>
         <textarea id="notes" rows="3" placeholder="Any additional details about the call..." autocomplete="off" tabindex="12"></textarea>
@@ -121,10 +122,10 @@
     <!-- Submit -->
     <div class="submit-section">
       <button type="submit" id="submitBtn" class="submit-btn" tabindex="13">
-        💾 Save Lead (Ctrl+Enter)
+        Save Lead
       </button>
-      <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
-        Form will reset automatically after saving
+      <div style="margin-top: 16px; font-size: 14px; color: var(--muted);">
+        Form will reset automatically after saving • Press Ctrl+Enter to submit
       </div>
     </div>
     </form>

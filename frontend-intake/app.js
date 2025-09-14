@@ -75,8 +75,11 @@
     
     // Update the header to show the company name
     const header = document.querySelector('.intake-header h2');
-    if (header) {
-      header.innerHTML = `📞 Call Intake Form<br><span style="font-size: 0.7em; color: var(--primary); font-weight: normal;">for ${sanitize(company.name)}</span>`;
+    const subtitle = document.querySelector('#companySubtitle');
+    if (header && subtitle) {
+      header.textContent = 'Call Intake Form';
+      subtitle.textContent = `for ${sanitize(company.name)}`;
+      subtitle.style.display = 'block';
     }
     
     // Populate products for this company only
@@ -131,7 +134,7 @@
     
     if (!window.google || !window.google.maps || !window.google.maps.places) {
       console.error('Google Places API not available');
-      showToast('❌ Google Places API not loaded');
+      showToast('Google Places API not loaded');
       return;
     }
     
@@ -150,9 +153,9 @@
       console.log('Google Places autocomplete initialized successfully');
       
       // Visual indicator
-      streetInput.placeholder = '🌍 Start typing address...';
+      streetInput.placeholder = 'Start typing address...';
       streetInput.style.borderLeft = '3px solid #10b981';
-      showToast('📍 Google Places autocomplete ready!');
+      showToast('Google Places autocomplete ready!');
       
       placesAutocomplete.addListener('place_changed', () => {
         console.log('Place changed event triggered');
@@ -193,7 +196,7 @@
         if (postal) $('#addressPostal').value = postal;
         
         console.log('Address fields auto-filled:', addressParts);
-        showToast('✅ Address auto-filled from Google Places');
+        showToast('Address auto-filled from Google Places');
         
         // Auto-advance to next logical field
         setTimeout(() => {
@@ -204,7 +207,7 @@
       
     } catch (error) {
       console.error('Error initializing Google Places:', error);
-      showToast('❌ Failed to initialize Google Places: ' + error.message);
+      showToast('Failed to initialize Google Places: ' + error.message);
       
       streetInput.placeholder = 'Enter street address manually';
       streetInput.style.borderLeft = '3px solid #ef4444';
@@ -453,7 +456,7 @@
     // Reset address field styling
     const streetField = $('#addressStreet');
     if (streetField && window.google && window.google.maps) {
-      streetField.placeholder = '🌍 Start typing address...';
+      streetField.placeholder = 'Start typing address...';
       streetField.style.borderLeft = '3px solid #10b981';
     }
   }
@@ -613,20 +616,20 @@
       console.log('💾 Form submission payload:', payload);
       
       $('#submitBtn').disabled = true;
-      $('#submitBtn').textContent = '⏳ Saving...';
+      $('#submitBtn').textContent = 'Saving...';
       
       try {
         console.log('📤 Submitting lead...');
         const result = await submitLead(payload);
         console.log('✅ Lead submitted successfully:', result);
-        showToast('✅ Lead saved to CRM!');
+        showToast('Lead saved to CRM!');
         resetForm();
       } catch (err) {
         console.error('💥 Submit failed with error:', err);
         showError(`Submit failed: ${err.message}`);
       } finally {
         $('#submitBtn').disabled = false;
-        $('#submitBtn').textContent = '💾 Save Lead (Ctrl+Enter)';
+        $('#submitBtn').textContent = 'Save Lead';
       }
     });
 

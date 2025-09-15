@@ -49,38 +49,23 @@
     // Note: Lead Value field removed per requirements
   }
   
-  function onProductChange() {
-    const sel = $('#product'); 
-    const productName = sel.value;
+  function onAreaInputChange() {
+    const areaValue = Number($('#areaInput').value) || 0;
+    updateAreaConversion();
     
-    if (!productName || !window.COMPANY_PRODUCTS) {
-      hidePricingAndSqFt();
-      return;
-    }
-    
-    const productVariants = window.COMPANY_PRODUCTS[productName] || [];
-    
-    // Check if any variant has square footage requirements
-    const hasSquareFootageVariants = productVariants.some(p => p.sqFtMin > 0 || p.sqFtMax > 0);
-    
-    if (hasSquareFootageVariants) {
-      showSquareFootageField();
-      // Don't show pricing until square footage is entered
-      hidePricingGrid();
+    if (areaValue > 0) {
+      showProductDropdown();
+      onProductChange(); // Update pricing if product already selected
     } else {
-      hideSquareFootageField();
-      // Show pricing for the single variant
-      const product = productVariants[0];
-      if (product) {
-        showPricing(product.initialPrice, product.recurringPrice);
-      }
+      hideProductDropdown();
+      hidePricingGrid();
     }
   }
   
-  function onSquareFootageChange() {
-    const sel = $('#product');
+  function onProductChange() {
+    const sel = $('#product'); 
     const productName = sel.value;
-    const sqft = getSquareFootage(); // Use the converter function
+    const sqft = getSquareFootage();
     
     if (!productName || !window.COMPANY_PRODUCTS || sqft <= 0) {
       hidePricingGrid();
@@ -97,22 +82,34 @@
     if (matchingVariant) {
       showPricing(matchingVariant.initialPrice, matchingVariant.recurringPrice);
       clearError('#squareFootage');
+      clearError('#product');
     } else {
       hidePricingGrid();
       // Show error if no matching range found
       const ranges = productVariants.map(p => `${p.sqFtMin}-${p.sqFtMax}`).join(', ');
-      showFieldError('squareFootage', `No pricing for ${sqft} sq ft. Available ranges: ${ranges}`);
+      showFieldError('product', `No pricing for ${sqft} sq ft. Available ranges: ${ranges}`);
     }
   }
+  
+  function showProductDropdown() {
+    $('#productFieldWrap').style.display = 'block';
+  }
+  
+  function hideProductDropdown() {
+    $('#productFieldWrap').style.display = 'none';
+    $('#product').value = '';
+  }
+  
   
   function showSquareFootageField() {
     $('#sqftFieldWrap').style.display = 'block';
   }
   
-  function hideSquareFootageField() {
-    $('#sqftFieldWrap').style.display = 'none';
+  function resetAreaField() {
     $('#areaInput').value = '';
     $('#conversionDisplay').textContent = '';
+    hideProductDropdown();
+    hidePricingGrid();
   }
   
   function showPricing(initialPrice, recurringPrice) {
@@ -128,7 +125,7 @@
   }
   
   function hidePricingAndSqFt() {
-    hideSquareFootageField();
+    hideProductDropdown();
     hidePricingGrid();
   }
   
@@ -177,12 +174,9 @@
   function initAreaConverter() {
     const sqftBtn = $('#sqftBtn');
     const acreBtn = $('#acreBtn');
-    const areaInput = $('#areaInput');
-    const conversionDisplay = $('#conversionDisplay');
     
     sqftBtn.addEventListener('click', () => setAreaUnit('sqft'));
     acreBtn.addEventListener('click', () => setAreaUnit('acres'));
-    areaInput.addEventListener('input', updateAreaConversion);
   }
   
   function setAreaUnit(unit) {
@@ -201,8 +195,7 @@
       areaInput.placeholder = 'Enter acres';
     }
     
-    updateAreaConversion();
-    onSquareFootageChange(); // Trigger pricing update
+    onAreaInputChange(); // Trigger the new workflow
   }
   
   function updateAreaConversion() {
@@ -653,7 +646,7 @@
     addressParts = { street: '', city: '', state: '', postal: '' };
     $('#product').innerHTML = '<option value="">Select product/service...</option>';
     $('#reasonOtherWrap').style.display = 'none';
-    hidePricingAndSqFt();
+    resetAreaField();
     
     // Reset address field styling
     const streetField = $('#addressStreet');
@@ -745,10 +738,7 @@
     
     $('#product').addEventListener('change', onProductChange);
     
-    $('#areaInput').addEventListener('input', () => {
-      updateAreaConversion();
-      onSquareFootageChange();
-    });
+    $('#areaInput').addEventListener('input', onAreaInputChange);
     
     $('#reason').addEventListener('change', function(){ 
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
@@ -862,3 +852,4 @@
     }
   });
 })();
+

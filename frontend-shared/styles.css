@@ -571,13 +571,11 @@ th {
 
 /* Call Center Optimized Styles - Apple Design Language */
 .intake-container {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 16px;
   background: var(--bg);
   min-height: 100vh;
-  max-height: 100vh;
-  overflow-y: auto;
 }
 
 .intake-header {
@@ -609,20 +607,13 @@ th {
 
 .quick-form {
   background: var(--panel);
-  padding: 24px;
+  padding: 32px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.form-sections-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
+  gap: 32px;
 }
 
 .form-section {
@@ -646,7 +637,25 @@ th {
 }
 
 .quick-field {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-group {
+  margin-bottom: 24px;
+}
+
+.field-group .quick-field {
+  margin-bottom: 12px;
+}
+
+.field-group .quick-field:last-child {
+  margin-bottom: 0;
 }
 
 .quick-field label {
@@ -848,9 +857,8 @@ th {
     padding: 16px;
   }
   
-  .form-sections-grid {
+  .field-row {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
   
   .product-grid,

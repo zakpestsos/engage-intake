@@ -288,8 +288,22 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-// Setup initializer
+// Setup initializer - ONLY for creating new spreadsheets
 function setup() {
+  // Safety check: Don't run setup on existing spreadsheets
+  const props = PropertiesService.getScriptProperties();
+  const existingId = props.getProperty(SPREADSHEET_PROP_KEY);
+  if (existingId) {
+    return HtmlService.createHtmlOutput(
+      '<div style="font:14px/1.4 Arial, sans-serif;padding:24px">' +
+      '<h2>⚠️ Setup Already Complete</h2>' +
+      '<p>A spreadsheet is already configured. To prevent data loss, setup() will not run again.</p>' +
+      '<p>Existing spreadsheet ID: ' + existingId + '</p>' +
+      '<p>If you need to create a new spreadsheet, first clear the script properties.</p>' +
+      '</div>'
+    );
+  }
+
   const ss = SpreadsheetApp.create('Leads CRM (Apps Script)');
   setSpreadsheet_(ss);
 

@@ -252,15 +252,17 @@ th {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 20px;
+  padding: 0;
+  margin: 0;
   text-align: center;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
   background: var(--bg);
   z-index: 999;
+  box-sizing: border-box;
 }
 
 .loading-spinner {

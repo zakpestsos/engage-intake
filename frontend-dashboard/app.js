@@ -325,60 +325,70 @@
   }
   
   function drawMasterpieceCharts(leads, stats) {
-    if (!window.google || !google.charts) return;
+    console.log('🎨 Drawing masterpiece charts with', leads.length, 'leads');
+    
+    if (!window.google || !google.charts) {
+      console.error('❌ Google Charts not available');
+      return;
+    }
     
     const metrics = calculateAdvancedMetrics(leads, stats);
     updateExecutiveSummary(metrics);
     
     google.charts.load('current', { 
-      packages: ['corechart', 'bar', 'line', 'geochart', 'sankey'] 
+      packages: ['corechart'] 
     });
     
     google.charts.setOnLoadCallback(function(){
-      drawRevenueFunnel(leads);
-      drawLeadSources(leads);
-      drawGeographicDistribution(metrics.byState);
-      drawServicePerformance(metrics.byService);
-      drawTimeAnalysis(leads);
-      drawConversionTimeline(leads);
-      drawRevenueTrends(leads);
+      console.log('📊 Google Charts loaded, drawing charts...');
+      try {
+        drawRevenueFunnel(leads);
+        drawLeadSources(leads);
+        drawGeographicDistribution(metrics.byState);
+        drawServicePerformance(metrics.byService);
+        drawTimeAnalysis(leads);
+        drawConversionTimeline(leads);
+        drawRevenueTrends(leads);
+        console.log('✅ All charts drawn successfully');
+      } catch (error) {
+        console.error('❌ Error drawing charts:', error);
+      }
     });
   }
   
   function drawRevenueFunnel(leads) {
+    console.log('📊 Drawing revenue funnel...');
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'Stage');
     data.addColumn('number', 'Count');
-    data.addColumn('number', 'Revenue');
     
-    const stages = [
-      ['New Leads', leads.filter(l => l.status === 'NEW').length, leads.filter(l => l.status === 'NEW').reduce((s, l) => s + (l.leadValue || 0), 0)],
-      ['Accepted', leads.filter(l => l.status === 'ACCEPTED').length, leads.filter(l => l.status === 'ACCEPTED').reduce((s, l) => s + (l.leadValue || 0), 0)],
-      ['Completed', leads.filter(l => l.status === 'COMPLETED').length, leads.filter(l => l.status === 'COMPLETED').reduce((s, l) => s + (l.leadValue || 0), 0)]
-    ];
+    const newCount = leads.filter(l => l.status === 'NEW').length;
+    const acceptedCount = leads.filter(l => l.status === 'ACCEPTED').length;
+    const completedCount = leads.filter(l => l.status === 'COMPLETED').length;
     
-    data.addRows(stages);
+    data.addRows([
+      ['New Leads', newCount],
+      ['Accepted', acceptedCount],
+      ['Completed', completedCount]
+    ]);
     
     const options = {
-      title: 'Revenue Funnel Analysis',
+      title: 'Lead Conversion Funnel',
       backgroundColor: 'transparent',
       titleTextStyle: { color: '#f1f5f9', fontSize: 16 },
       hAxis: { textStyle: { color: '#94a3b8' } },
       vAxis: { textStyle: { color: '#94a3b8' } },
-      series: {
-        0: { color: '#3b82f6', targetAxisIndex: 0 },
-        1: { color: '#10b981', targetAxisIndex: 1, type: 'line' }
-      },
-      vAxes: {
-        0: { title: 'Lead Count', titleTextStyle: { color: '#94a3b8' } },
-        1: { title: 'Revenue ($)', titleTextStyle: { color: '#94a3b8' } }
-      }
+      colors: ['#3b82f6'],
+      height: 400
     };
     
-    new google.visualization.ComboChart(document.getElementById('chartRevenueFunnel')).draw(data, options);
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartRevenueFunnel'));
+    chart.draw(data, options);
+    console.log('✅ Revenue funnel drawn');
   }
   
   function drawLeadSources(leads) {
+    console.log('📊 Drawing lead sources...');
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'Source');
     data.addColumn('number', 'Leads');
@@ -387,50 +397,64 @@
     data.addRows([
       ['Call Center', leads.length],
       ['Web Form', 0],
-      ['Referral', 0],
-      ['Social Media', 0]
+      ['Referral', 0]
     ]);
     
     const options = {
       backgroundColor: 'transparent',
       titleTextStyle: { color: '#f1f5f9' },
       legend: { textStyle: { color: '#94a3b8' } },
-      colors: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6']
+      colors: ['#3b82f6', '#10b981', '#f59e0b'],
+      height: 300
     };
     
-    new google.visualization.PieChart(document.getElementById('chartLeadSources')).draw(data, options);
+    const chart = new google.visualization.PieChart(document.getElementById('chartLeadSources'));
+    chart.draw(data, options);
+    console.log('✅ Lead sources drawn');
   }
   
   function drawGeographicDistribution(byState) {
+    console.log('📊 Drawing geographic distribution...', byState);
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'State');
     data.addColumn('number', 'Leads');
     
     const stateData = Object.entries(byState).map(([state, count]) => [state, count]);
+    if (stateData.length === 0) {
+      stateData.push(['No Data', 0]);
+    }
     data.addRows(stateData);
     
     const options = {
       backgroundColor: 'transparent',
       titleTextStyle: { color: '#f1f5f9' },
-      legend: { textStyle: { color: '#94a3b8' } },
-      colors: ['#3b82f6']
+      hAxis: { textStyle: { color: '#94a3b8' } },
+      vAxis: { textStyle: { color: '#94a3b8' } },
+      colors: ['#3b82f6'],
+      height: 300
     };
     
-    new google.visualization.ColumnChart(document.getElementById('chartGeographic')).draw(data, options);
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartGeographic'));
+    chart.draw(data, options);
     
     // Update top region
-    if (stateData.length > 0) {
+    if (stateData.length > 0 && stateData[0][0] !== 'No Data') {
       const topState = stateData.reduce((a, b) => a[1] > b[1] ? a : b);
       $('#topRegion').textContent = `Top: ${topState[0]} (${topState[1]} leads)`;
     }
+    console.log('✅ Geographic distribution drawn');
   }
   
   function drawServicePerformance(byService) {
+    console.log('📊 Drawing service performance...', byService);
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'Service');
     data.addColumn('number', 'Revenue');
     
     const serviceData = Object.entries(byService).map(([service, revenue]) => [service, revenue]);
+    if (serviceData.length === 0) {
+      serviceData.push(['No Data', 0]);
+    }
     data.addRows(serviceData);
     
     const options = {
@@ -438,74 +462,75 @@
       titleTextStyle: { color: '#f1f5f9' },
       hAxis: { textStyle: { color: '#94a3b8' } },
       vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#10b981']
+      colors: ['#10b981'],
+      height: 300
     };
     
-    new google.visualization.ColumnChart(document.getElementById('chartServicePerformance')).draw(data, options);
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartServicePerformance'));
+    chart.draw(data, options);
     
     // Update top service
-    if (serviceData.length > 0) {
+    if (serviceData.length > 0 && serviceData[0][0] !== 'No Data') {
       const topService = serviceData.reduce((a, b) => a[1] > b[1] ? a : b);
       $('#topService').textContent = `Best: ${topService[0]} (${fmtMoney(topService[1])})`;
     }
+    console.log('✅ Service performance drawn');
   }
   
   function drawTimeAnalysis(leads) {
-    const hourCounts = new Array(24).fill(0);
-    
-    leads.forEach(l => {
-      const hour = new Date(l.createdAt).getHours();
-      hourCounts[hour]++;
-    });
-    
+    console.log('📊 Drawing time analysis...');
     const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Hour');
-    data.addColumn('number', 'Leads');
+    data.addColumn('string', 'Reason');
+    data.addColumn('number', 'Count');
     
-    hourCounts.forEach((count, hour) => {
-      const timeLabel = hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
-      data.addRow([timeLabel, count]);
+    // Group by reason for call
+    const reasonCounts = {};
+    leads.forEach(l => {
+      const reason = l.reason || 'Other';
+      reasonCounts[reason] = (reasonCounts[reason] || 0) + 1;
     });
+    
+    const reasonData = Object.entries(reasonCounts).map(([reason, count]) => [reason, count]);
+    if (reasonData.length === 0) {
+      reasonData.push(['No Data', 0]);
+    }
+    data.addRows(reasonData);
     
     const options = {
       backgroundColor: 'transparent',
       titleTextStyle: { color: '#f1f5f9' },
       hAxis: { textStyle: { color: '#94a3b8' } },
       vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#f59e0b']
+      colors: ['#f59e0b'],
+      height: 300
     };
     
-    new google.visualization.AreaChart(document.getElementById('chartTimeAnalysis')).draw(data, options);
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartTimeAnalysis'));
+    chart.draw(data, options);
     
-    // Find peak hour
-    const peakHour = hourCounts.indexOf(Math.max(...hourCounts));
-    const peakLabel = peakHour === 0 ? '12 AM' : peakHour < 12 ? `${peakHour} AM` : peakHour === 12 ? '12 PM' : `${peakHour - 12} PM`;
-    $('#peakHour').textContent = `Peak: ${peakLabel} (${hourCounts[peakHour]} leads)`;
+    // Find top reason
+    if (reasonData.length > 0 && reasonData[0][0] !== 'No Data') {
+      const topReason = reasonData.reduce((a, b) => a[1] > b[1] ? a : b);
+      $('#peakHour').textContent = `Top: ${topReason[0]} (${topReason[1]} leads)`;
+    }
+    console.log('✅ Time analysis drawn');
   }
   
   function drawConversionTimeline(leads) {
+    console.log('📊 Drawing conversion timeline...');
     const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Days to Convert');
-    data.addColumn('number', 'Leads');
+    data.addColumn('string', 'Status');
+    data.addColumn('number', 'Count');
     
-    const conversionTimes = [];
-    leads.filter(l => l.status === 'COMPLETED' && l.completedAt).forEach(l => {
-      const created = new Date(l.createdAt);
-      const completed = new Date(l.completedAt);
-      const days = Math.floor((completed - created) / (24 * 60 * 60 * 1000));
-      conversionTimes.push(days);
-    });
+    const statusCounts = {
+      'NEW': leads.filter(l => l.status === 'NEW').length,
+      'ACCEPTED': leads.filter(l => l.status === 'ACCEPTED').length,
+      'COMPLETED': leads.filter(l => l.status === 'COMPLETED').length,
+      'CANCELLED': leads.filter(l => l.status === 'CANCELLED').length
+    };
     
-    const timeBuckets = { '0-1': 0, '2-7': 0, '8-30': 0, '31+': 0 };
-    conversionTimes.forEach(days => {
-      if (days <= 1) timeBuckets['0-1']++;
-      else if (days <= 7) timeBuckets['2-7']++;
-      else if (days <= 30) timeBuckets['8-30']++;
-      else timeBuckets['31+']++;
-    });
-    
-    Object.entries(timeBuckets).forEach(([bucket, count]) => {
-      data.addRow([bucket + ' days', count]);
+    Object.entries(statusCounts).forEach(([status, count]) => {
+      data.addRow([status, count]);
     });
     
     const options = {
@@ -513,41 +538,39 @@
       titleTextStyle: { color: '#f1f5f9' },
       hAxis: { textStyle: { color: '#94a3b8' } },
       vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#8b5cf6']
+      colors: ['#8b5cf6'],
+      height: 300
     };
     
-    new google.visualization.ColumnChart(document.getElementById('chartConversionTimeline')).draw(data, options);
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartConversionTimeline'));
+    chart.draw(data, options);
     
-    // Calculate average conversion time
-    const avgTime = conversionTimes.length > 0 ? conversionTimes.reduce((a, b) => a + b, 0) / conversionTimes.length : 0;
-    $('#avgConversionTime').textContent = `Avg: ${avgTime.toFixed(1)} days`;
+    // Calculate completion rate
+    const completionRate = leads.length > 0 ? (statusCounts.COMPLETED / leads.length * 100) : 0;
+    $('#avgConversionTime').textContent = `Completion: ${completionRate.toFixed(1)}%`;
+    console.log('✅ Conversion timeline drawn');
   }
   
   function drawRevenueTrends(leads) {
+    console.log('📊 Drawing revenue trends...');
     const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Month');
-    data.addColumn('number', 'Revenue');
-    data.addColumn('number', 'Forecast');
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Daily Revenue');
     
-    // Group by month
-    const monthlyRevenue = {};
+    // Group by day for more granular view
+    const dailyRevenue = {};
     leads.forEach(l => {
-      const month = l.createdAt.substring(0, 7); // YYYY-MM
-      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + (l.leadValue || 0);
+      const date = l.createdAt.substring(0, 10); // YYYY-MM-DD
+      dailyRevenue[date] = (dailyRevenue[date] || 0) + (l.leadValue || 0);
     });
     
-    const sortedMonths = Object.keys(monthlyRevenue).sort();
-    sortedMonths.forEach(month => {
-      data.addRow([month, monthlyRevenue[month], null]);
+    const sortedDates = Object.keys(dailyRevenue).sort();
+    sortedDates.forEach(date => {
+      data.addRow([date, dailyRevenue[date]]);
     });
     
-    // Add forecast (simplified)
-    if (sortedMonths.length > 0) {
-      const lastMonth = monthlyRevenue[sortedMonths[sortedMonths.length - 1]];
-      const nextMonth = new Date();
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      const nextMonthStr = nextMonth.toISOString().substring(0, 7);
-      data.addRow([nextMonthStr, null, lastMonth * 1.15]); // 15% growth forecast
+    if (sortedDates.length === 0) {
+      data.addRow(['No Data', 0]);
     }
     
     const options = {
@@ -555,13 +578,15 @@
       titleTextStyle: { color: '#f1f5f9' },
       hAxis: { textStyle: { color: '#94a3b8' } },
       vAxis: { textStyle: { color: '#94a3b8' } },
-      series: {
-        0: { color: '#10b981', lineWidth: 3 },
-        1: { color: '#f59e0b', lineDashStyle: [4, 4] }
-      }
+      colors: ['#10b981'],
+      height: 500,
+      lineWidth: 3,
+      pointSize: 5
     };
     
-    new google.visualization.LineChart(document.getElementById('chartRevenueTrends')).draw(data, options);
+    const chart = new google.visualization.LineChart(document.getElementById('chartRevenueTrends'));
+    chart.draw(data, options);
+    console.log('✅ Revenue trends drawn');
   }
   
   function updatePerformanceMetrics(metrics) {
@@ -761,6 +786,12 @@
         this.textContent = originalText;
       }
     });
+    
+    // Set default date range to last 7 days
+    const today = new Date();
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    $('#analyticsFrom').value = sevenDaysAgo.toISOString().split('T')[0];
+    $('#analyticsTo').value = today.toISOString().split('T')[0];
     
     try {
       const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);

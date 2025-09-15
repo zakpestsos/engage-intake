@@ -212,6 +212,9 @@ function listLeadsForCompany_(companyName, query) {
   const values = sheet.getDataRange().getValues();
   const idx = {};
   header.forEach((h, i) => idx[h] = i);
+  console.log('🔍 HEADER DEBUG - Available headers:', header);
+  console.log('🔍 INDEX DEBUG - Customer_First_Name index:', idx['Customer_First_Name']);
+  console.log('🔍 INDEX DEBUG - Customer_Last_Name index:', idx['Customer_Last_Name']);
 
   const statusFilter = (query && query.status) ? String(query.status).toUpperCase() : '';
   const fromDate = clampDate_(query && query.from);
@@ -232,7 +235,12 @@ function listLeadsForCompany_(companyName, query) {
       id: row[idx['Lead_ID']],
       createdAt: createdAtStr,
       updatedAt: row[idx['Updated_At']],
-      customerName: (row[idx['Customer_First_Name']] || '') + ' ' + (row[idx['Customer_Last_Name']] || ''),
+      customerName: (() => {
+        const firstName = row[idx['Customer_First_Name']] || '';
+        const lastName = row[idx['Customer_Last_Name']] || '';
+        console.log('🔍 CUSTOMER NAME DEBUG - Row:', r, 'First:', firstName, 'Last:', lastName, 'Type First:', typeof firstName, 'Type Last:', typeof lastName);
+        return String(firstName) + ' ' + String(lastName);
+      })(),
       customerPhone: row[idx['Phone_Number']],
       addressStreet: row[idx['Address_Street']],
       city: row[idx['Address_City']],

@@ -28,8 +28,11 @@ function handleApiGet_(e) {
         // Token-based config: return company-specific data
         const companyName = companyFromToken_(token);
         const company = { name: companyName };
-        const allProductsByCompany = getProductsByCompany_();
-        const products = allProductsByCompany[companyName] || [];
+        
+        // EMERGENCY: Try direct Products sheet access to bypass all functions
+        console.log('🚨 EMERGENCY - Direct Products sheet access for token config');
+        const products = getProductsDirectly_(companyName);
+        
         console.log('🏢 Token-based config for:', companyName);
         console.log('📦 Products for company:', products);
         const payload = { company, products };
@@ -183,6 +186,71 @@ function normalizeLeadBody_(b) {
     leadValue: b.leadValue,
     notes: b.notes
   };
+}
+
+// EMERGENCY FUNCTION: Direct Products sheet access without any infrastructure
+function getProductsDirectly_(companyName) {
+  console.log('🚨 EMERGENCY DIRECT ACCESS - Getting products for:', companyName);
+  
+  try {
+    // Get spreadsheet directly
+    const props = PropertiesService.getScriptProperties();
+    const ssId = props.getProperty('PRIMARY_SPREADSHEET_ID');
+    if (!ssId) {
+      console.log('🚨 EMERGENCY - No spreadsheet ID found');
+      return [];
+    }
+    
+    const ss = SpreadsheetApp.openById(ssId);
+    const sheet = ss.getSheetByName('Products');
+    
+    if (!sheet) {
+      console.log('🚨 EMERGENCY - Products sheet does not exist');
+      return [];
+    }
+    
+    console.log('✅ EMERGENCY - Products sheet found, last row:', sheet.getLastRow());
+    
+    if (sheet.getLastRow() <= 1) {
+      console.log('🚨 EMERGENCY - Products sheet is empty');
+      return [];
+    }
+    
+    // Read all data
+    const values = sheet.getDataRange().getValues();
+    console.log('✅ EMERGENCY - Read', values.length, 'rows from Products sheet');
+    
+    const products = [];
+    
+    // Process each row (skip header row)
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const rowCompany = String(row[0] || '').trim();
+      const active = String(row[5] || '').toLowerCase() === 'true';
+      
+      console.log('🔍 EMERGENCY - Row', i, 'Company:', rowCompany, 'Active:', active, 'Target:', companyName);
+      
+      if (active && rowCompany === companyName) {
+        const product = {
+          sku: String(row[1] || ''),
+          name: String(row[2] || ''),
+          initialPrice: Number(row[3] || 0),
+          recurringPrice: Number(row[4] || 0),
+          sqFtMin: Number(row[7] || 0),
+          sqFtMax: Number(row[8] || 0)
+        };
+        products.push(product);
+        console.log('✅ EMERGENCY - Added product:', product);
+      }
+    }
+    
+    console.log('✅ EMERGENCY - Final products for', companyName, ':', products);
+    return products;
+    
+  } catch (error) {
+    console.error('❌ EMERGENCY - Error in direct access:', error);
+    return [];
+  }
 }
 
 function jsonResponse_(obj, origin, status) {

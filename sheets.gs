@@ -45,32 +45,51 @@ function getCompanies_() {
 }
 
 function getProductsByCompany_() {
-  const { sheet, header } = getSheetWithHeader_(SHEET_PRODUCTS, PRODUCTS_HEADERS);
+  console.log('🔍 EMERGENCY DEBUG - getProductsByCompany_ called');
+  
+  // EMERGENCY BYPASS: Direct sheet access without any header checking
+  const ss = getSpreadsheet_();
+  let sheet = ss.getSheetByName(SHEET_PRODUCTS);
+  
+  if (!sheet) {
+    console.log('🚨 EMERGENCY - Products sheet does not exist!');
+    return {}; // Return empty to avoid errors
+  }
+  
+  console.log('✅ EMERGENCY - Products sheet found, last row:', sheet.getLastRow());
+  
+  // Read all data directly without header validation
   const values = sheet.getDataRange().getValues();
-  const idxCompany = header.indexOf('Company_Name');
-  const idxSku = header.indexOf('Product_SKU');
-  const idxName = header.indexOf('Product_Name');
-  const idxInitialPrice = header.indexOf('Initial_Price');
-  const idxRecurringPrice = header.indexOf('Recurring_Price');
-  const idxActive = header.indexOf('Active');
-  const idxSqFtMin = header.indexOf('sq_ft_min');
-  const idxSqFtMax = header.indexOf('sq_ft_max');
+  if (values.length <= 1) {
+    console.log('🚨 EMERGENCY - Products sheet is empty or only has headers');
+    return {}; // Return empty if no data
+  }
+  
+  // Hardcode the column indices based on your actual table structure
   const map = {};
-  values.slice(1).forEach(r => {
-    const active = String(r[idxActive]).toLowerCase() === 'true';
-    if (!active) return;
-    const company = String(r[idxCompany] || '');
-    if (!company) return;
-    if (!map[company]) map[company] = [];
-    map[company].push({
-      sku: String(r[idxSku] || ''),
-      name: String(r[idxName] || ''),
-      initialPrice: Number(r[idxInitialPrice] || 0),
-      recurringPrice: Number(r[idxRecurringPrice] || 0),
-      sqFtMin: Number(r[idxSqFtMin] || 0),
-      sqFtMax: Number(r[idxSqFtMax] || 0)
-    });
+  values.slice(1).forEach((r, rowIndex) => {
+    try {
+      // Your table structure: Company_Name(0), Product_SKU(1), Product_Name(2), Initial_Price(3), Recurring_Price(4), Active(5), lead_value(6), sq_ft_min(7), sq_ft_max(8)
+      const active = String(r[5]).toLowerCase() === 'true';
+      if (!active) return;
+      const company = String(r[0] || '');
+      if (!company) return;
+      if (!map[company]) map[company] = [];
+      map[company].push({
+        sku: String(r[1] || ''),
+        name: String(r[2] || ''),
+        initialPrice: Number(r[3] || 0),
+        recurringPrice: Number(r[4] || 0),
+        sqFtMin: Number(r[7] || 0),
+        sqFtMax: Number(r[8] || 0)
+      });
+      console.log('✅ EMERGENCY - Processed product row:', rowIndex + 1, 'Company:', company, 'Product:', r[2]);
+    } catch (error) {
+      console.error('❌ EMERGENCY - Error processing product row:', rowIndex + 1, error);
+    }
   });
+  
+  console.log('✅ EMERGENCY - Final products map:', map);
   return map;
 }
 

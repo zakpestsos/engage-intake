@@ -134,8 +134,15 @@
   function renderLeads(leads) {
     const tbody = $('#leadsBody'); 
     tbody.innerHTML = '';
+    
+    // Store leads data globally for modal access
+    window.CURRENT_LEADS = leads;
+    
     leads.forEach(ld => {
       const tr = document.createElement('tr');
+      tr.style.cursor = 'pointer';
+      tr.setAttribute('data-lead-id', ld.id);
+      
       const createdDate = new Date(ld.createdAt).toLocaleDateString();
       tr.innerHTML =
         '<td>' + sanitize(createdDate) + '</td>' +
@@ -146,12 +153,48 @@
         '<td>' + fmtMoney(ld.leadValue) + '</td>' +
         '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span></td>' +
         '<td>' +
-          '<button class="small" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button> ' +
-          '<button class="small" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button> ' +
-          '<button class="small danger" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
+          '<button class="small action-btn" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button> ' +
+          '<button class="small action-btn" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button> ' +
+          '<button class="small action-btn danger" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
         '</td>';
       tbody.appendChild(tr);
     });
+  }
+  
+  function openLeadModal(leadId) {
+    const lead = window.CURRENT_LEADS.find(l => l.id === leadId);
+    if (!lead) return;
+    
+    // Populate modal with lead data
+    $('#modalLeadName').textContent = lead.customerName;
+    $('#modalCustomerName').textContent = lead.customerName;
+    $('#modalPhone').textContent = lead.customerPhone || 'Not provided';
+    $('#modalProduct').textContent = lead.product || 'Not specified';
+    $('#modalSquareFootage').textContent = lead.squareFootage ? lead.squareFootage.toLocaleString() + ' sq ft' : 'Not provided';
+    $('#modalInitialPrice').textContent = lead.initialPrice ? fmtMoney(lead.initialPrice) : 'Not set';
+    $('#modalRecurringPrice').textContent = lead.recurringPrice ? fmtMoney(lead.recurringPrice) : 'Not set';
+    $('#modalReason').textContent = lead.reason || 'Not specified';
+    $('#modalNotes').textContent = lead.notes || 'No additional notes';
+    $('#modalStatus').value = lead.status || 'NEW';
+    
+    // Format address
+    const addressParts = [
+      lead.addressStreet || lead.street || '',
+      lead.city || '',
+      lead.state || '',
+      lead.addressPostal || lead.postal || ''
+    ].filter(Boolean);
+    $('#modalAddress').textContent = addressParts.join(', ') || 'Address not provided';
+    
+    // Store current lead ID for status updates
+    $('#updateStatus').setAttribute('data-lead-id', leadId);
+    
+    // Show modal
+    $('#leadModal').style.display = 'flex';
+  }
+  
+  function closeLeadModal() {
+    $('#leadModal').style.display = 'none';
   }
 
   function drawCharts(stats) {
@@ -270,24 +313,69 @@
     });
     
     $('#leadsBody').addEventListener('click', async function(e){
+      // Check if it's an action button
       const btn = e.target.closest('button[data-action]'); 
-      if (!btn) return;
-      const id = btn.getAttribute('data-id'); 
-      const action = btn.getAttribute('data-action');
+      if (btn) {
+        e.stopPropagation(); // Prevent row click
+        const id = btn.getAttribute('data-id'); 
+        const action = btn.getAttribute('data-action');
+        
+        // Visual feedback
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = '⏳';
+        
+        try { 
+          await updateLead(token, id, action); 
+          showToast('Status updated to: ' + action); 
+          $('#applyFilters').click(); 
+        } catch (e) { 
+          showError('Update failed: ' + e.message); 
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+        return;
+      }
+      
+      // Check if it's a row click (but not on action buttons)
+      const row = e.target.closest('tr[data-lead-id]');
+      if (row) {
+        const leadId = row.getAttribute('data-lead-id');
+        openLeadModal(leadId);
+      }
+    });
+    
+    // Modal event listeners
+    $('#closeModal').addEventListener('click', closeLeadModal);
+    
+    $('#leadModal').addEventListener('click', function(e) {
+      // Close modal if clicking outside the content
+      if (e.target === this) {
+        closeLeadModal();
+      }
+    });
+    
+    $('#updateStatus').addEventListener('click', async function() {
+      const leadId = this.getAttribute('data-lead-id');
+      const newStatus = $('#modalStatus').value;
+      
+      if (!leadId || !newStatus) return;
       
       // Visual feedback
-      btn.disabled = true;
-      const originalText = btn.textContent;
-      btn.textContent = '⏳';
+      this.disabled = true;
+      const originalText = this.textContent;
+      this.textContent = 'Updating...';
       
-      try { 
-        await updateLead(token, id, action); 
-        showToast('✅ Status updated to: ' + action); 
-        $('#applyFilters').click(); 
-      } catch (e) { 
-        showError('Update failed: ' + e.message); 
-        btn.textContent = originalText;
-        btn.disabled = false;
+      try {
+        await updateLead(token, leadId, newStatus);
+        showToast('Status updated to: ' + newStatus);
+        closeLeadModal();
+        $('#applyFilters').click(); // Refresh the leads table
+      } catch (e) {
+        showError('Update failed: ' + e.message);
+      } finally {
+        this.disabled = false;
+        this.textContent = originalText;
       }
     });
     

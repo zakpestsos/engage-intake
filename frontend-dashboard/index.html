@@ -151,6 +151,102 @@
     </div>
   </div>
 
+  <!-- Lead Detail Modal -->
+  <div id="leadModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalLeadName">Lead Details</h3>
+        <button id="closeModal" class="modal-close">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="modal-sections">
+          <!-- Customer Information -->
+          <div class="modal-section">
+            <h4>Customer Information</h4>
+            <div class="modal-field">
+              <label>Name:</label>
+              <span id="modalCustomerName"></span>
+            </div>
+            <div class="modal-field">
+              <label>Phone:</label>
+              <span id="modalPhone"></span>
+            </div>
+          </div>
+
+          <!-- Service Details -->
+          <div class="modal-section">
+            <h4>Service</h4>
+            <div class="modal-field">
+              <label>Product/Service:</label>
+              <span id="modalProduct"></span>
+            </div>
+            <div class="modal-field">
+              <label>Square Footage:</label>
+              <span id="modalSquareFootage"></span>
+            </div>
+          </div>
+
+          <!-- Pricing Details -->
+          <div class="modal-section">
+            <h4>Pricing Details</h4>
+            <div class="modal-field">
+              <label>Initial Price:</label>
+              <span id="modalInitialPrice"></span>
+            </div>
+            <div class="modal-field">
+              <label>Recurring Price:</label>
+              <span id="modalRecurringPrice"></span>
+            </div>
+          </div>
+
+          <!-- Property Address -->
+          <div class="modal-section">
+            <h4>Property Address</h4>
+            <div class="modal-field">
+              <span id="modalAddress"></span>
+            </div>
+          </div>
+
+          <!-- Contact Preference & Marketing Source -->
+          <div class="modal-section">
+            <h4>Contact Preference & Marketing Source</h4>
+            <div class="modal-field">
+              <label>Reason for Call:</label>
+              <span id="modalReason"></span>
+            </div>
+            <div class="modal-field">
+              <label>Source:</label>
+              <span>Call Center</span>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="modal-section">
+            <h4>Notes</h4>
+            <div class="modal-field">
+              <span id="modalNotes"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Update -->
+        <div class="modal-actions">
+          <div class="status-update">
+            <label>Status:</label>
+            <select id="modalStatus">
+              <option value="NEW">New</option>
+              <option value="ACCEPTED">Accepted</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <button id="updateStatus" class="apply-btn">Update Status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>

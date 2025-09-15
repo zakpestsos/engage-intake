@@ -1,14 +1,18 @@
 /* Sheets read/write helpers */
 
 function ensureSheetWithHeaders_(ss, name, headers) {
+  console.log('🔍 DEBUGGING - ensureSheetWithHeaders_ called for sheet:', name);
   let sh = ss.getSheetByName(name);
   if (!sh) {
+    console.log('🔍 DEBUGGING - Sheet does not exist, creating new sheet:', name);
     // Only create new sheet if it doesn't exist at all
     sh = ss.insertSheet(name);
     // Add headers to the new empty sheet
     sh.getRange(1, 1, 1, headers.length).setValues([headers]);
     sh.setFrozenRows(1);
     sh.autoResizeColumns(1, headers.length);
+  } else {
+    console.log('🔍 DEBUGGING - Sheet exists, returning as-is:', name, 'Last row:', sh.getLastRow());
   }
   // If sheet already exists, NEVER modify it - just return it as-is
   return sh;

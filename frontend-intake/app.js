@@ -51,12 +51,17 @@
   
   function onAreaInputChange() {
     const areaValue = Number($('#areaInput').value) || 0;
+    console.log('🔍 DEBUGGING - Area input changed:', areaValue);
+    console.log('🔍 DEBUGGING - Current COMPANY_PRODUCTS:', window.COMPANY_PRODUCTS);
+    
     updateAreaConversion();
     
     if (areaValue > 0) {
+      console.log('🔍 DEBUGGING - Showing product dropdown');
       showProductDropdown();
       onProductChange(); // Update pricing if product already selected
     } else {
+      console.log('🔍 DEBUGGING - Hiding product dropdown');
       hideProductDropdown();
       hidePricingGrid();
     }
@@ -609,6 +614,7 @@
       
     const cfg = await fetchJSON(configUrl);
     console.log('Config loaded successfully:', cfg);
+    console.log('🔍 DEBUGGING - Products data loaded:', cfg.products || cfg.productsByCompany);
     
     // Store the company info if token-based
     if (companyToken && cfg.company) {

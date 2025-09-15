@@ -8,11 +8,11 @@ window.APP_CONFIG = {
   // Your Google Maps API key (configured for GitHub Pages domain)
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM',
   
-  // Debug flag for cache busting - JSONP IMPLEMENTATION
-  VERSION: '2025.01.11-jsonp-cors-bypass',
+  // Debug flag for cache busting - BULLETPROOF DATA PROTECTION
+  VERSION: '2025.01.15-bulletproof-fix',
   
-  // Force cache refresh timestamp
-  CACHE_BUSTER: Date.now()
+  // Force cache refresh timestamp - FORCE FRESH CODE
+  CACHE_BUSTER: Date.now() + Math.random()
 };
 
 /* 

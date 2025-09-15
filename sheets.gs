@@ -20,7 +20,15 @@ function ensureSheetWithHeaders_(ss, name, headers) {
 
 function getSheetWithHeader_(name, headers) {
   const ss = getSpreadsheet_();
-  const sheet = ensureSheetWithHeaders_(ss, name, headers);
+  
+  // NUCLEAR OPTION: Just get the sheet directly, never call ensureSheetWithHeaders_
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    console.log('🚨 CRITICAL: Sheet does not exist:', name);
+    throw new Error('Sheet "' + name + '" does not exist. Please create it manually.');
+  }
+  
+  console.log('✅ SAFE: Using existing sheet without modification:', name);
   const header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const mapByHeader = {};
   header.forEach((h, i) => mapByHeader[h] = i);

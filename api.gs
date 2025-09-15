@@ -166,6 +166,7 @@ function normalizeLeadBody_(b) {
     companyName: b.companyName,
     customerFirstName: b.customerFirstName,
     customerLastName: b.customerLastName,
+    customerPhone: b.customerPhone,
     address: {
       street: b.addressStreet || (b.address && b.address.street),
       city: b.addressCity || (b.address && b.address.city),
@@ -176,7 +177,9 @@ function normalizeLeadBody_(b) {
     reasonCustom: b.reasonCustom,
     productSku: b.productSku,
     productName: b.productName,
-    productPrice: b.productPrice,
+    initialPrice: b.initialPrice,
+    recurringPrice: b.recurringPrice,
+    squareFootage: b.squareFootage,
     leadValue: b.leadValue,
     notes: b.notes
   };

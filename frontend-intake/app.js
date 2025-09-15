@@ -5,6 +5,7 @@
   let PRODUCTS_BY_COMPANY = {};
   let addressParts = { street: '', city: '', state: '', postal: '' };
   let placesAutocomplete = null;
+  let currentAreaUnit = 'sqft'; // 'sqft' or 'acres'
 
   const $ = sel => document.querySelector(sel);
   
@@ -79,7 +80,7 @@
   function onSquareFootageChange() {
     const sel = $('#product');
     const productName = sel.value;
-    const sqft = Number($('#squareFootage').value) || 0;
+    const sqft = getSquareFootage(); // Use the converter function
     
     if (!productName || !window.COMPANY_PRODUCTS || sqft <= 0) {
       hidePricingGrid();
@@ -110,7 +111,8 @@
   
   function hideSquareFootageField() {
     $('#sqftFieldWrap').style.display = 'none';
-    $('#squareFootage').value = '';
+    $('#areaInput').value = '';
+    $('#conversionDisplay').textContent = '';
   }
   
   function showPricing(initialPrice, recurringPrice) {
@@ -134,6 +136,102 @@
     const errorEl = document.querySelector('.error[data-for="' + fieldId + '"]');
     if (errorEl) {
       errorEl.textContent = message;
+    }
+  }
+  
+  // Theme toggle functionality
+  function initThemeToggle() {
+    const toggle = $('#themeToggle');
+    const body = document.body;
+    
+    // Set initial theme to dark
+    body.setAttribute('data-theme', 'dark');
+    toggle.textContent = '☀️ Light Mode';
+    
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    setTheme(savedTheme);
+    
+    toggle.addEventListener('click', () => {
+      const currentTheme = body.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      setTheme(newTheme);
+    });
+  }
+  
+  function setTheme(theme) {
+    const body = document.body;
+    const toggle = $('#themeToggle');
+    
+    body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    if (theme === 'dark') {
+      toggle.textContent = '☀️ Light Mode';
+    } else {
+      toggle.textContent = '🌙 Dark Mode';
+    }
+  }
+  
+  // Area converter functionality
+  function initAreaConverter() {
+    const sqftBtn = $('#sqftBtn');
+    const acreBtn = $('#acreBtn');
+    const areaInput = $('#areaInput');
+    const conversionDisplay = $('#conversionDisplay');
+    
+    sqftBtn.addEventListener('click', () => setAreaUnit('sqft'));
+    acreBtn.addEventListener('click', () => setAreaUnit('acres'));
+    areaInput.addEventListener('input', updateAreaConversion);
+  }
+  
+  function setAreaUnit(unit) {
+    currentAreaUnit = unit;
+    const sqftBtn = $('#sqftBtn');
+    const acreBtn = $('#acreBtn');
+    const areaInput = $('#areaInput');
+    
+    if (unit === 'sqft') {
+      sqftBtn.classList.add('active');
+      acreBtn.classList.remove('active');
+      areaInput.placeholder = 'Enter square feet';
+    } else {
+      acreBtn.classList.add('active');
+      sqftBtn.classList.remove('active');
+      areaInput.placeholder = 'Enter acres';
+    }
+    
+    updateAreaConversion();
+    onSquareFootageChange(); // Trigger pricing update
+  }
+  
+  function updateAreaConversion() {
+    const areaInput = $('#areaInput');
+    const conversionDisplay = $('#conversionDisplay');
+    const value = Number(areaInput.value) || 0;
+    
+    if (value <= 0) {
+      conversionDisplay.textContent = '';
+      return;
+    }
+    
+    if (currentAreaUnit === 'acres') {
+      const sqft = Math.round(value * 43560); // 1 acre = 43,560 sq ft
+      conversionDisplay.textContent = `= ${sqft.toLocaleString()} square feet`;
+    } else {
+      const acres = (value / 43560).toFixed(3);
+      conversionDisplay.textContent = `= ${acres} acres`;
+    }
+  }
+  
+  function getSquareFootage() {
+    const areaInput = $('#areaInput');
+    const value = Number(areaInput.value) || 0;
+    
+    if (currentAreaUnit === 'acres') {
+      return Math.round(value * 43560); // Convert acres to square feet
+    } else {
+      return value; // Already in square feet
     }
   }
 
@@ -219,7 +317,7 @@
     $('#reasonOther').setAttribute('tabindex', '9');
     $('#notes').setAttribute('tabindex', '10');
     $('#product').setAttribute('tabindex', '11');
-    $('#squareFootage').setAttribute('tabindex', '12');
+    $('#areaInput').setAttribute('tabindex', '12');
     $('#submitBtn').setAttribute('tabindex', '13');
   }
 
@@ -339,11 +437,11 @@
     if (!$('#reason').value.trim()) errors.reason = 'Required';
     if (!$('#product').value.trim()) errors.product = 'Required';
     
-    // Validate square footage if field is visible
+    // Validate area input if field is visible
     const sqftField = $('#sqftFieldWrap');
     if (sqftField && sqftField.style.display !== 'none') {
-      const sqft = Number($('#squareFootage').value) || 0;
-      if (sqft <= 0) {
+      const areaValue = Number($('#areaInput').value) || 0;
+      if (areaValue <= 0) {
         errors.squareFootage = 'Required for selected product';
       }
     }
@@ -568,6 +666,10 @@
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     
+    // Initialize theme toggle and area converter
+    initThemeToggle();
+    initAreaConverter();
+    
     // Basic config check
     console.log('Loading intake form...');
     
@@ -643,7 +745,10 @@
     
     $('#product').addEventListener('change', onProductChange);
     
-    $('#squareFootage').addEventListener('input', onSquareFootageChange);
+    $('#areaInput').addEventListener('input', () => {
+      updateAreaConversion();
+      onSquareFootageChange();
+    });
     
     $('#reason').addEventListener('change', function(){ 
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
@@ -720,7 +825,7 @@
         productName: productSel.value.trim(),
         initialPrice: initialPriceValue,
         recurringPrice: recurringPriceValue,
-        squareFootage: Number($('#squareFootage').value) || 0,
+        squareFootage: getSquareFootage(),
         leadValue: initialPriceValue, // Use initial price as lead value
         notes: $('#notes').value.trim()
       };

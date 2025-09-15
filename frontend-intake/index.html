@@ -9,6 +9,9 @@
   <script src="../frontend-shared/config.js"></script>
 </head>
 <body>
+  <!-- Theme Toggle -->
+  <button id="themeToggle" class="theme-toggle">🌙 Dark Mode</button>
+
   <div class="intake-container">
     <!-- Loading Spinner -->
     <div id="loadingSpinner" class="loading-container">
@@ -116,9 +119,16 @@
 
         <div class="sqft-field" id="sqftFieldWrap" style="display:none;">
           <div class="quick-field">
-            <label>Square Footage <span class="field-shortcut">Required for pricing</span></label>
-            <input type="number" id="squareFootage" placeholder="Enter square footage" autocomplete="off" tabindex="13" min="0" step="1">
+            <label>Area Measurement <span class="field-shortcut">Required for pricing</span></label>
+            <div class="area-converter">
+              <div class="area-toggle">
+                <button type="button" id="sqftBtn" class="active">Square Feet</button>
+                <button type="button" id="acreBtn">Acres</button>
+              </div>
+              <input type="number" id="areaInput" placeholder="Enter area" autocomplete="off" tabindex="13" min="0" step="0.01">
+            </div>
             <div class="error" data-for="squareFootage"></div>
+            <div id="conversionDisplay" style="font-size: 12px; color: var(--muted); margin-top: 4px;"></div>
           </div>
         </div>
 

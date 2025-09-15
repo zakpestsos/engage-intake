@@ -44,8 +44,8 @@ function getProductsByCompany_() {
   const idxInitialPrice = header.indexOf('Initial_Price');
   const idxRecurringPrice = header.indexOf('Recurring_Price');
   const idxActive = header.indexOf('Active');
-  const idxSqFtMin = header.indexOf('Sq_Ft_Min');
-  const idxSqFtMax = header.indexOf('Sq_Ft_Max');
+  const idxSqFtMin = header.indexOf('sq_ft_min');
+  const idxSqFtMax = header.indexOf('sq_ft_max');
   const map = {};
   values.slice(1).forEach(r => {
     const active = String(r[idxActive]).toLowerCase() === 'true';
@@ -145,7 +145,7 @@ function createLead_(payload, actor) {
   row[idx['Company_Name']] = companyName;
   row[idx['Customer_First_Name']] = String(payload.customerFirstName || '');
   row[idx['Customer_Last_Name']] = String(payload.customerLastName || '');
-  row[idx['Customer_Phone']] = String(payload.customerPhone || '');
+  row[idx['Phone_Number']] = String(payload.customerPhone || '');
   row[idx['Address_Street']] = String(addr.street || '');
   row[idx['Address_City']] = String(addr.city || '');
   row[idx['Address_State']] = String(addr.state || '');
@@ -205,7 +205,7 @@ function listLeadsForCompany_(companyName, query) {
       createdAt: createdAtStr,
       updatedAt: row[idx['Updated_At']],
       customerName: (row[idx['Customer_First_Name']] || '') + ' ' + (row[idx['Customer_Last_Name']] || ''),
-      customerPhone: row[idx['Customer_Phone']],
+      customerPhone: row[idx['Phone_Number']],
       city: row[idx['Address_City']],
       state: row[idx['Address_State']],
       reason: row[idx['Reason_For_Call']],

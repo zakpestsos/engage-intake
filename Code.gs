@@ -15,6 +15,7 @@ const LEADS_HEADERS = [
   'Company_Name',
   'Customer_First_Name',
   'Customer_Last_Name',
+  'Customer_Phone',
   'Address_Street',
   'Address_City',
   'Address_State',
@@ -23,7 +24,9 @@ const LEADS_HEADERS = [
   'Reason_Custom',
   'Product_SKU',
   'Product_Name',
-  'Product_Price',
+  'Initial_Price',
+  'Recurring_Price',
+  'Square_Footage',
   'Lead_Value',
   'Status',
   'Accepted_At',
@@ -38,8 +41,11 @@ const PRODUCTS_HEADERS = [
   'Company_Name',
   'Product_SKU',
   'Product_Name',
-  'Product_Price',
-  'Active'
+  'Initial_Price',
+  'Recurring_Price',
+  'Active',
+  'Sq_Ft_Min',
+  'Sq_Ft_Max'
 ];
 
 const COMPANIES_HEADERS = [

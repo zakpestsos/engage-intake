@@ -50,10 +50,91 @@
   
   function onProductChange() {
     const sel = $('#product'); 
-    const opt = sel.options[sel.selectedIndex];
-    const price = Number(opt && opt.getAttribute('data-price')) || 0;
-    $('#productPrice').value = price ? '$' + price.toFixed(2) : '';
-    // Note: Lead Value field removed per requirements - value is set server-side to product price
+    const productName = sel.value;
+    
+    if (!productName || !window.COMPANY_PRODUCTS) {
+      hidePricingAndSqFt();
+      return;
+    }
+    
+    const productVariants = window.COMPANY_PRODUCTS[productName] || [];
+    
+    // Check if any variant has square footage requirements
+    const hasSquareFootageVariants = productVariants.some(p => p.sqFtMin > 0 || p.sqFtMax > 0);
+    
+    if (hasSquareFootageVariants) {
+      showSquareFootageField();
+      // Don't show pricing until square footage is entered
+      hidePricingGrid();
+    } else {
+      hideSquareFootageField();
+      // Show pricing for the single variant
+      const product = productVariants[0];
+      if (product) {
+        showPricing(product.initialPrice, product.recurringPrice);
+      }
+    }
+  }
+  
+  function onSquareFootageChange() {
+    const sel = $('#product');
+    const productName = sel.value;
+    const sqft = Number($('#squareFootage').value) || 0;
+    
+    if (!productName || !window.COMPANY_PRODUCTS || sqft <= 0) {
+      hidePricingGrid();
+      return;
+    }
+    
+    const productVariants = window.COMPANY_PRODUCTS[productName] || [];
+    
+    // Find the variant that matches the square footage
+    const matchingVariant = productVariants.find(p => 
+      sqft >= p.sqFtMin && sqft <= p.sqFtMax
+    );
+    
+    if (matchingVariant) {
+      showPricing(matchingVariant.initialPrice, matchingVariant.recurringPrice);
+      clearError('#squareFootage');
+    } else {
+      hidePricingGrid();
+      // Show error if no matching range found
+      const ranges = productVariants.map(p => `${p.sqFtMin}-${p.sqFtMax}`).join(', ');
+      showFieldError('squareFootage', `No pricing for ${sqft} sq ft. Available ranges: ${ranges}`);
+    }
+  }
+  
+  function showSquareFootageField() {
+    $('#sqftFieldWrap').style.display = 'block';
+  }
+  
+  function hideSquareFootageField() {
+    $('#sqftFieldWrap').style.display = 'none';
+    $('#squareFootage').value = '';
+  }
+  
+  function showPricing(initialPrice, recurringPrice) {
+    $('#initialPrice').value = initialPrice ? '$' + initialPrice.toFixed(2) : '';
+    $('#recurringPrice').value = recurringPrice ? '$' + recurringPrice.toFixed(2) : '';
+    $('#pricingGrid').style.display = 'grid';
+  }
+  
+  function hidePricingGrid() {
+    $('#pricingGrid').style.display = 'none';
+    $('#initialPrice').value = '';
+    $('#recurringPrice').value = '';
+  }
+  
+  function hidePricingAndSqFt() {
+    hideSquareFootageField();
+    hidePricingGrid();
+  }
+  
+  function showFieldError(fieldId, message) {
+    const errorEl = document.querySelector('.error[data-for="' + fieldId + '"]');
+    if (errorEl) {
+      errorEl.textContent = message;
+    }
   }
 
   function showLoading() {
@@ -68,7 +149,7 @@
 
   function setupCompanyMode(company, products) {
     // Hide the company selection section
-    const companySection = document.querySelector('.form-section');
+    const companySection = document.querySelector('#companySection');
     if (companySection) {
       companySection.style.display = 'none';
     }
@@ -89,14 +170,26 @@
     // Ensure products is an array
     const productArray = Array.isArray(products) ? products : [];
     
+    // Group products by name to handle multiple sq ft ranges
+    const productGroups = {};
     productArray.forEach(p => {
+      if (!productGroups[p.name]) {
+        productGroups[p.name] = [];
+      }
+      productGroups[p.name].push(p);
+    });
+    
+    Object.keys(productGroups).forEach(productName => {
       const opt = document.createElement('option');
-      opt.value = p.name;
-      opt.setAttribute('data-sku', p.sku);
-      opt.setAttribute('data-price', p.price);
-      opt.textContent = `${p.name} - $${p.price}`;
+      opt.value = productName;
+      const firstProduct = productGroups[productName][0];
+      opt.setAttribute('data-sku', firstProduct.sku);
+      opt.textContent = productName;
       sel.appendChild(opt);
     });
+    
+    // Store products for later use
+    window.COMPANY_PRODUCTS = productGroups;
     
     // Store company info for form submission
     window.SELECTED_COMPANY = company.name;
@@ -115,18 +208,19 @@
 
   function updateTabIndexForCompanyMode() {
     // Shift all tabindex down by 1 since company field (tabindex 1) is hidden
-    // Also removed Lead Value field per requirements
     $('#firstName').setAttribute('tabindex', '1');
     $('#lastName').setAttribute('tabindex', '2');
-    $('#addressStreet').setAttribute('tabindex', '3');
-    $('#addressCity').setAttribute('tabindex', '4');
-    $('#addressState').setAttribute('tabindex', '5');
-    $('#addressPostal').setAttribute('tabindex', '6');
-    $('#reason').setAttribute('tabindex', '7');
-    $('#reasonOther').setAttribute('tabindex', '8');
-    $('#product').setAttribute('tabindex', '9');
+    $('#customerPhone').setAttribute('tabindex', '3');
+    $('#addressStreet').setAttribute('tabindex', '4');
+    $('#addressCity').setAttribute('tabindex', '5');
+    $('#addressState').setAttribute('tabindex', '6');
+    $('#addressPostal').setAttribute('tabindex', '7');
+    $('#reason').setAttribute('tabindex', '8');
+    $('#reasonOther').setAttribute('tabindex', '9');
     $('#notes').setAttribute('tabindex', '10');
-    $('#submitBtn').setAttribute('tabindex', '11');
+    $('#product').setAttribute('tabindex', '11');
+    $('#squareFootage').setAttribute('tabindex', '12');
+    $('#submitBtn').setAttribute('tabindex', '13');
   }
 
   function initPlaces() {
@@ -237,12 +331,22 @@
     
     if (!$('#firstName').value.trim()) errors.firstName = 'Required';
     if (!$('#lastName').value.trim()) errors.lastName = 'Required';
+    if (!$('#customerPhone').value.trim()) errors.customerPhone = 'Required';
     if (!$('#addressStreet').value.trim()) errors.addressStreet = 'Required';
     if (!$('#addressCity').value.trim()) errors.addressCity = 'Required';
     if (!$('#addressState').value.trim()) errors.addressState = 'Required';
     if (!$('#addressPostal').value.trim()) errors.addressPostal = 'Required';
     if (!$('#reason').value.trim()) errors.reason = 'Required';
     if (!$('#product').value.trim()) errors.product = 'Required';
+    
+    // Validate square footage if field is visible
+    const sqftField = $('#sqftFieldWrap');
+    if (sqftField && sqftField.style.display !== 'none') {
+      const sqft = Number($('#squareFootage').value) || 0;
+      if (sqft <= 0) {
+        errors.squareFootage = 'Required for selected product';
+      }
+    }
     
     console.log('🔍 Validation errors found:', errors);
     console.log('📋 Field values:', {
@@ -449,9 +553,9 @@
   function resetForm() {
     $('#intakeForm').reset();
     addressParts = { street: '', city: '', state: '', postal: '' };
-    $('#product').innerHTML = '<option value="">Select product</option>';
-    $('#productPrice').value = '';
+    $('#product').innerHTML = '<option value="">Select product/service...</option>';
     $('#reasonOtherWrap').style.display = 'none';
+    hidePricingAndSqFt();
     
     // Reset address field styling
     const streetField = $('#addressStreet');
@@ -539,6 +643,8 @@
     
     $('#product').addEventListener('change', onProductChange);
     
+    $('#squareFootage').addEventListener('input', onSquareFootageChange);
+    
     $('#reason').addEventListener('change', function(){ 
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
     });
@@ -594,10 +700,14 @@
       console.log('🏢 Company for submission:', companyName);
       console.log('📦 Selected product:', opt ? opt.value : 'none');
       
+      const initialPriceValue = $('#initialPrice').value ? Number($('#initialPrice').value.replace('$', '')) : 0;
+      const recurringPriceValue = $('#recurringPrice').value ? Number($('#recurringPrice').value.replace('$', '')) : 0;
+      
       const payload = {
         companyName: companyName,
         customerFirstName: $('#firstName').value.trim(),
         customerLastName: $('#lastName').value.trim(),
+        customerPhone: $('#customerPhone').value.trim(),
         address: {
           street: $('#addressStreet').value.trim(),
           city: $('#addressCity').value.trim(),
@@ -608,8 +718,10 @@
         reasonCustom: $('#reasonOther').value.trim(),
         productSku: opt ? opt.getAttribute('data-sku') : '',
         productName: productSel.value.trim(),
-        productPrice: $('#productPrice').value ? Number($('#productPrice').value.replace('$', '')) : '',
-        leadValue: $('#productPrice').value ? Number($('#productPrice').value.replace('$', '')) : '', // Use product price as lead value
+        initialPrice: initialPriceValue,
+        recurringPrice: recurringPriceValue,
+        squareFootage: Number($('#squareFootage').value) || 0,
+        leadValue: initialPriceValue, // Use initial price as lead value
         notes: $('#notes').value.trim()
       };
       

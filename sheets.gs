@@ -41,8 +41,11 @@ function getProductsByCompany_() {
   const idxCompany = header.indexOf('Company_Name');
   const idxSku = header.indexOf('Product_SKU');
   const idxName = header.indexOf('Product_Name');
-  const idxPrice = header.indexOf('Product_Price');
+  const idxInitialPrice = header.indexOf('Initial_Price');
+  const idxRecurringPrice = header.indexOf('Recurring_Price');
   const idxActive = header.indexOf('Active');
+  const idxSqFtMin = header.indexOf('Sq_Ft_Min');
+  const idxSqFtMax = header.indexOf('Sq_Ft_Max');
   const map = {};
   values.slice(1).forEach(r => {
     const active = String(r[idxActive]).toLowerCase() === 'true';
@@ -53,7 +56,10 @@ function getProductsByCompany_() {
     map[company].push({
       sku: String(r[idxSku] || ''),
       name: String(r[idxName] || ''),
-      price: Number(r[idxPrice] || 0)
+      initialPrice: Number(r[idxInitialPrice] || 0),
+      recurringPrice: Number(r[idxRecurringPrice] || 0),
+      sqFtMin: Number(r[idxSqFtMin] || 0),
+      sqFtMax: Number(r[idxSqFtMax] || 0)
     });
   });
   return map;
@@ -79,33 +85,42 @@ function createLead_(payload, actor) {
   // Resolve company token to stamp
   const token = (companies.find(c => c.name === companyName) || {}).token || '';
 
-  // Resolve product from SKU or name if possible
+  // Resolve product from SKU or name with square footage pricing
   const productsMap = getProductsByCompany_();
   const companyProducts = productsMap[companyName] || [];
   let prodSku = String(payload.productSku || '').trim();
   let prodName = String(payload.productName || '').trim();
-  let prodPrice = toNumberOrZero_(payload.productPrice);
-  if (!prodSku && prodName) {
-    const found = companyProducts.find(p => p.name === prodName);
-    if (found) {
-      prodSku = found.sku;
-      if (!prodPrice) prodPrice = found.price;
+  let initialPrice = toNumberOrZero_(payload.initialPrice);
+  let recurringPrice = toNumberOrZero_(payload.recurringPrice);
+  const squareFootage = toNumberOrZero_(payload.squareFootage);
+  
+  // Find matching product with square footage consideration
+  let matchedProduct = null;
+  if (prodName || prodSku) {
+    // Filter products by name/sku first
+    const candidates = companyProducts.filter(p => 
+      (prodName && p.name === prodName) || (prodSku && p.sku === prodSku)
+    );
+    
+    // If square footage provided, find the matching range
+    if (squareFootage > 0 && candidates.length > 0) {
+      matchedProduct = candidates.find(p => 
+        squareFootage >= p.sqFtMin && squareFootage <= p.sqFtMax
+      ) || candidates[0]; // fallback to first match if no range matches
+    } else if (candidates.length > 0) {
+      // No square footage, use first match or one without sq ft restrictions
+      matchedProduct = candidates.find(p => p.sqFtMin === 0 && p.sqFtMax === 0) || candidates[0];
     }
-  } else if (prodSku && !prodName) {
-    const found = companyProducts.find(p => p.sku === prodSku);
-    if (found) {
-      prodName = found.name;
-      if (!prodPrice) prodPrice = found.price;
-    }
-  }
-  if (!prodPrice) {
-    const found = companyProducts.find(p => p.name === prodName || p.sku === prodSku);
-    if (found) {
-      prodPrice = found.price;
+    
+    if (matchedProduct) {
+      prodSku = matchedProduct.sku;
+      prodName = matchedProduct.name;
+      if (!initialPrice) initialPrice = matchedProduct.initialPrice;
+      if (!recurringPrice) recurringPrice = matchedProduct.recurringPrice;
     }
   }
 
-  const leadValue = payload.leadValue !== '' && payload.leadValue != null ? toNumberOrZero_(payload.leadValue) : (prodPrice || 0);
+  const leadValue = payload.leadValue !== '' && payload.leadValue != null ? toNumberOrZero_(payload.leadValue) : (initialPrice || 0);
 
   const reason = String(payload.reasonForCall || '').trim() || 'New Sale';
   const status = (reason === 'Cancellation') ? 'CANCELLED' : 'NEW';
@@ -130,6 +145,7 @@ function createLead_(payload, actor) {
   row[idx['Company_Name']] = companyName;
   row[idx['Customer_First_Name']] = String(payload.customerFirstName || '');
   row[idx['Customer_Last_Name']] = String(payload.customerLastName || '');
+  row[idx['Customer_Phone']] = String(payload.customerPhone || '');
   row[idx['Address_Street']] = String(addr.street || '');
   row[idx['Address_City']] = String(addr.city || '');
   row[idx['Address_State']] = String(addr.state || '');
@@ -138,7 +154,9 @@ function createLead_(payload, actor) {
   row[idx['Reason_Custom']] = String(payload.reasonCustom || '');
   row[idx['Product_SKU']] = prodSku;
   row[idx['Product_Name']] = prodName;
-  row[idx['Product_Price']] = prodPrice;
+  row[idx['Initial_Price']] = initialPrice;
+  row[idx['Recurring_Price']] = recurringPrice;
+  row[idx['Square_Footage']] = squareFootage;
   row[idx['Lead_Value']] = leadValue;
   row[idx['Status']] = status;
   row[idx['Accepted_At']] = acceptedAt;
@@ -187,13 +205,16 @@ function listLeadsForCompany_(companyName, query) {
       createdAt: createdAtStr,
       updatedAt: row[idx['Updated_At']],
       customerName: (row[idx['Customer_First_Name']] || '') + ' ' + (row[idx['Customer_Last_Name']] || ''),
+      customerPhone: row[idx['Customer_Phone']],
       city: row[idx['Address_City']],
       state: row[idx['Address_State']],
       reason: row[idx['Reason_For_Call']],
       reasonCustom: row[idx['Reason_Custom']],
       product: row[idx['Product_Name']],
       productSku: row[idx['Product_SKU']],
-      productPrice: Number(row[idx['Product_Price']] || 0),
+      initialPrice: Number(row[idx['Initial_Price']] || 0),
+      recurringPrice: Number(row[idx['Recurring_Price']] || 0),
+      squareFootage: Number(row[idx['Square_Footage']] || 0),
       leadValue: Number(row[idx['Lead_Value']] || 0),
       status: row[idx['Status']],
       acceptedAt: row[idx['Accepted_At']],

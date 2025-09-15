@@ -27,7 +27,7 @@
     
     <form id="intakeForm" class="quick-form" autocomplete="off" novalidate>
     <!-- Company Selection -->
-    <div class="form-section full-width">
+    <div class="form-section" id="companySection">
       <div class="section-title">Company</div>
       <div class="quick-field">
         <label>Select Company <span class="field-shortcut">Tab to next</span></label>
@@ -38,86 +38,106 @@
       </div>
     </div>
 
-    <!-- Customer Information -->
-    <div class="form-section">
-      <div class="section-title">Customer Information</div>
-      <div class="quick-field">
-        <label>First Name</label>
-        <input type="text" id="firstName" placeholder="John" required autocomplete="off" tabindex="2">
-        <div class="error" data-for="firstName"></div>
-      </div>
-      <div class="quick-field">
-        <label>Last Name</label>
-        <input type="text" id="lastName" placeholder="Smith" required autocomplete="off" tabindex="3">
-        <div class="error" data-for="lastName"></div>
-      </div>
-      <div class="quick-field">
-        <label>Street Address <span class="field-shortcut">Google Places enabled</span></label>
-        <input type="text" id="addressStreet" placeholder="Start typing address..." required autocomplete="off" tabindex="4">
-        <div class="error" data-for="addressStreet"></div>
-      </div>
-      <div class="quick-field">
-        <label>City</label>
-        <input type="text" id="addressCity" placeholder="City (auto-filled)" required autocomplete="off" tabindex="5">
-        <div class="error" data-for="addressCity"></div>
-      </div>
-      <div class="quick-field">
-        <label>State</label>
-        <input type="text" id="addressState" placeholder="ST" required autocomplete="off" tabindex="6" maxlength="2" style="text-transform: uppercase;">
-        <div class="error" data-for="addressState"></div>
-      </div>
-      <div class="quick-field">
-        <label>Zip Code</label>
-        <input type="text" id="addressPostal" placeholder="Zip (auto-filled)" required autocomplete="off" tabindex="7" maxlength="10">
-        <div class="error" data-for="addressPostal"></div>
-      </div>
-    </div>
-
-    <!-- Call Details -->
-    <div class="form-section">
-      <div class="section-title">Call Details</div>
-      <div class="quick-field">
-        <label>Reason for Call</label>
-        <select id="reason" required autocomplete="off" tabindex="8">
-          <option value="">Select reason...</option>
-          <option value="Schedule">Schedule Appointment</option>
-          <option value="Reschedule">Reschedule Appointment</option>
-          <option value="New Sale">New Sale</option>
-          <option value="Cancellation">Cancellation</option>
-          <option value="Complaint">Complaint</option>
-          <option value="Other…">Other...</option>
-        </select>
-        <div class="error" data-for="reason"></div>
+    <div class="form-sections-grid">
+      <!-- Customer Information -->
+      <div class="form-section">
+        <div class="section-title">Customer Information</div>
+        <div class="quick-field">
+          <label>First Name</label>
+          <input type="text" id="firstName" placeholder="John" required autocomplete="off" tabindex="2">
+          <div class="error" data-for="firstName"></div>
+        </div>
+        <div class="quick-field">
+          <label>Last Name</label>
+          <input type="text" id="lastName" placeholder="Smith" required autocomplete="off" tabindex="3">
+          <div class="error" data-for="lastName"></div>
+        </div>
+        <div class="quick-field">
+          <label>Phone Number</label>
+          <input type="tel" id="customerPhone" placeholder="(555) 123-4567" required autocomplete="off" tabindex="4">
+          <div class="error" data-for="customerPhone"></div>
+        </div>
+        <div class="quick-field">
+          <label>Street Address <span class="field-shortcut">Google Places enabled</span></label>
+          <input type="text" id="addressStreet" placeholder="Start typing address..." required autocomplete="off" tabindex="5">
+          <div class="error" data-for="addressStreet"></div>
+        </div>
+        <div class="quick-field">
+          <label>City</label>
+          <input type="text" id="addressCity" placeholder="City (auto-filled)" required autocomplete="off" tabindex="6">
+          <div class="error" data-for="addressCity"></div>
+        </div>
+        <div class="quick-field">
+          <label>State</label>
+          <input type="text" id="addressState" placeholder="ST" required autocomplete="off" tabindex="7" maxlength="2" style="text-transform: uppercase;">
+          <div class="error" data-for="addressState"></div>
+        </div>
+        <div class="quick-field">
+          <label>Zip Code</label>
+          <input type="text" id="addressPostal" placeholder="Zip (auto-filled)" required autocomplete="off" tabindex="8" maxlength="10">
+          <div class="error" data-for="addressPostal"></div>
+        </div>
       </div>
 
-      <div class="quick-field" id="reasonOtherWrap" style="display:none;">
-        <label>Specify Other Reason</label>
-        <input type="text" id="reasonOther" placeholder="Please specify..." autocomplete="off" tabindex="9">
-      </div>
+      <!-- Call Details -->
+      <div class="form-section">
+        <div class="section-title">Call Details</div>
+        <div class="quick-field">
+          <label>Reason for Call</label>
+          <select id="reason" required autocomplete="off" tabindex="9">
+            <option value="">Select reason...</option>
+            <option value="Schedule">Schedule Appointment</option>
+            <option value="Reschedule">Reschedule Appointment</option>
+            <option value="New Sale">New Sale</option>
+            <option value="Cancellation">Cancellation</option>
+            <option value="Complaint">Complaint</option>
+            <option value="Other…">Other...</option>
+          </select>
+          <div class="error" data-for="reason"></div>
+        </div>
 
-      <div class="product-grid">
+        <div class="quick-field" id="reasonOtherWrap" style="display:none;">
+          <label>Specify Other Reason</label>
+          <input type="text" id="reasonOther" placeholder="Please specify..." autocomplete="off" tabindex="10">
+        </div>
+
+        <div class="quick-field">
+          <label>What the Customer Needed</label>
+          <textarea id="notes" rows="2" placeholder="Call notes and details..." autocomplete="off" tabindex="11"></textarea>
+        </div>
+
         <div class="quick-field">
           <label>Product/Service</label>
-          <select id="product" required autocomplete="off" tabindex="10">
-            <option value="">Select product...</option>
+          <select id="product" required autocomplete="off" tabindex="12">
+            <option value="">Select product/service...</option>
           </select>
           <div class="error" data-for="product"></div>
         </div>
-        <div class="quick-field">
-          <label>Price</label>
-          <input type="text" id="productPrice" readonly tabindex="-1" style="background: var(--bg-secondary); color: var(--muted);">
-        </div>
-      </div>
 
-      <div class="quick-field">
-        <label>Additional Notes</label>
-        <textarea id="notes" rows="2" placeholder="Any additional details about the call..." autocomplete="off" tabindex="12"></textarea>
+        <div class="sqft-field" id="sqftFieldWrap" style="display:none;">
+          <div class="quick-field">
+            <label>Square Footage <span class="field-shortcut">Required for pricing</span></label>
+            <input type="number" id="squareFootage" placeholder="Enter square footage" autocomplete="off" tabindex="13" min="0" step="1">
+            <div class="error" data-for="squareFootage"></div>
+          </div>
+        </div>
+
+        <div class="pricing-grid" id="pricingGrid" style="display:none;">
+          <div class="quick-field">
+            <label>Initial Price</label>
+            <input type="text" id="initialPrice" readonly tabindex="-1" style="background: var(--bg-secondary); color: var(--muted);">
+          </div>
+          <div class="quick-field">
+            <label>Recurring Price</label>
+            <input type="text" id="recurringPrice" readonly tabindex="-1" style="background: var(--bg-secondary); color: var(--muted);">
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Submit -->
     <div class="submit-section">
-      <button type="submit" id="submitBtn" class="submit-btn" tabindex="13">
+      <button type="submit" id="submitBtn" class="submit-btn" tabindex="14">
         Save Lead
       </button>
       <div style="margin-top: 12px; font-size: 12px; color: var(--muted);">

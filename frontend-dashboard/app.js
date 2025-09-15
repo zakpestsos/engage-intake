@@ -2,6 +2,8 @@
   const API = () => (window.APP_CONFIG && window.APP_CONFIG.API_BASE) || '';
   const $ = sel => document.querySelector(sel);
   
+  let currentSort = { field: 'createdAt', direction: 'desc' };
+  
   function showError(msg) { 
     const b = $('#errorBanner'); 
     b.textContent = msg; 
@@ -131,14 +133,50 @@
     $('#kpiCommitted').textContent = fmtMoney(pv.committedTotal || 0);
   }
 
+  function sortLeads(leads, field, direction) {
+    return [...leads].sort((a, b) => {
+      let aVal = a[field];
+      let bVal = b[field];
+      
+      // Handle different data types
+      if (field === 'createdAt') {
+        aVal = new Date(aVal);
+        bVal = new Date(bVal);
+      } else if (field === 'leadValue') {
+        aVal = Number(aVal) || 0;
+        bVal = Number(bVal) || 0;
+      } else {
+        aVal = String(aVal || '').toLowerCase();
+        bVal = String(bVal || '').toLowerCase();
+      }
+      
+      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+  
   function renderLeads(leads) {
     const tbody = $('#leadsBody'); 
     tbody.innerHTML = '';
     
-    // Store leads data globally for modal access
-    window.CURRENT_LEADS = leads;
+    // Sort leads based on current sort settings
+    const sortedLeads = sortLeads(leads, currentSort.field, currentSort.direction);
     
-    leads.forEach(ld => {
+    // Store leads data globally for modal access
+    window.CURRENT_LEADS_ORIGINAL = leads; // Store original for re-sorting
+    window.CURRENT_LEADS = sortedLeads;
+    
+    // Update sort indicators
+    document.querySelectorAll('.leads-table th').forEach(th => {
+      th.classList.remove('sorted-asc', 'sorted-desc');
+      const sortField = th.getAttribute('data-sort');
+      if (sortField === currentSort.field) {
+        th.classList.add(currentSort.direction === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      }
+    });
+    
+    sortedLeads.forEach(ld => {
       const tr = document.createElement('tr');
       tr.style.cursor = 'pointer';
       tr.setAttribute('data-lead-id', ld.id);
@@ -152,10 +190,12 @@
         '<td>' + sanitize(ld.product || ld.productSku || '') + '</td>' +
         '<td>' + fmtMoney(ld.leadValue) + '</td>' +
         '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span></td>' +
-        '<td>' +
-          '<button class="small action-btn" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button> ' +
-          '<button class="small action-btn" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button> ' +
-          '<button class="small action-btn danger" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
+        '<td class="actions-cell">' +
+          '<div class="action-buttons">' +
+            '<button class="action-btn accept" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button>' +
+            '<button class="action-btn complete" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button>' +
+            '<button class="action-btn cancel" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
+          '</div>' +
         '</td>';
       tbody.appendChild(tr);
     });
@@ -177,14 +217,22 @@
     $('#modalNotes').textContent = lead.notes || 'No additional notes';
     $('#modalStatus').value = lead.status || 'NEW';
     
-    // Format address
-    const addressParts = [
-      lead.addressStreet || lead.street || '',
-      lead.city || '',
-      lead.state || '',
-      lead.addressPostal || lead.postal || ''
-    ].filter(Boolean);
-    $('#modalAddress').textContent = addressParts.join(', ') || 'Address not provided';
+    // Format full address
+    const street = lead.addressStreet || lead.street || '';
+    const city = lead.city || '';
+    const state = lead.state || '';
+    const postal = lead.addressPostal || lead.postal || '';
+    
+    const fullAddress = [
+      street,
+      [city, state].filter(Boolean).join(', '),
+      postal
+    ].filter(Boolean).join('\n');
+    $('#modalAddress').innerHTML = fullAddress.replace(/\n/g, '<br>') || 'Address not provided';
+    
+    // Populate bottom right summary
+    $('#modalProductSummary').textContent = lead.product || 'Service';
+    $('#modalLeadValue').textContent = fmtMoney(lead.leadValue || 0);
     
     // Store current lead ID for status updates
     $('#updateStatus').setAttribute('data-lead-id', leadId);
@@ -297,6 +345,24 @@
     $('#leadsTab').addEventListener('click', () => showSection('leadsSection'));
     $('#analyticsTab').addEventListener('click', () => showSection('analyticsSection'));
     
+    // Set up column sorting
+    document.querySelectorAll('.leads-table th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const field = th.getAttribute('data-sort');
+        if (currentSort.field === field) {
+          currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSort.field = field;
+          currentSort.direction = 'asc';
+        }
+        
+        // Re-render with new sort
+        if (window.CURRENT_LEADS) {
+          renderLeads(window.CURRENT_LEADS_ORIGINAL || window.CURRENT_LEADS);
+        }
+      });
+    });
+    
     $('#applyFilters').addEventListener('click', async function(){
       clearError();
       try {
@@ -384,8 +450,8 @@
       
       // Update company name in header
       if (leads && leads.length > 0) {
-        const companyName = leads[0].Company_Name || 'Client';
-        $('#companyName').textContent = `📊 ${companyName} Dashboard`;
+        const companyName = leads[0].companyName || leads[0].Company_Name || 'Client';
+        $('#companyName').textContent = `${companyName} Dashboard`;
       }
       
       renderLeads(leads); 

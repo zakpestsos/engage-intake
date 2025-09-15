@@ -465,6 +465,7 @@ th {
 .leads-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .leads-table th {
@@ -476,6 +477,48 @@ th {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  resize: horizontal;
+  overflow: hidden;
+}
+
+.leads-table th:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.leads-table th.sortable::after {
+  content: '⇅';
+  position: absolute;
+  right: 8px;
+  opacity: 0.5;
+  font-size: 10px;
+}
+
+.leads-table th.sorted-asc::after {
+  content: '↑';
+  opacity: 1;
+}
+
+.leads-table th.sorted-desc::after {
+  content: '↓';
+  opacity: 1;
+}
+
+.column-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.column-resizer:hover {
+  background: var(--accent);
 }
 
 .leads-table td {
@@ -535,9 +578,63 @@ th {
 .action-btn.complete { border-color: #3b82f6; color: #3b82f6; }
 .action-btn.cancel { border-color: #ef4444; color: #ef4444; }
 
-.action-btn.accept:hover { background: #10b981; color: white; }
-.action-btn.complete:hover { background: #3b82f6; color: white; }
-.action-btn.cancel:hover { background: #ef4444; color: white; }
+.actions-cell {
+  padding: 8px !important;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 50px;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.action-btn.accept { 
+  border-color: #10b981; 
+  color: #10b981; 
+}
+
+.action-btn.complete { 
+  border-color: #3b82f6; 
+  color: #3b82f6; 
+}
+
+.action-btn.cancel { 
+  border-color: #ef4444; 
+  color: #ef4444; 
+}
+
+.action-btn.accept:hover { 
+  background: #10b981; 
+  color: white; 
+}
+
+.action-btn.complete:hover { 
+  background: #3b82f6; 
+  color: white; 
+}
+
+.action-btn.cancel:hover { 
+  background: #ef4444; 
+  color: white; 
+}
 
 .action-btn:disabled {
   opacity: 0.5;
@@ -899,7 +996,7 @@ th {
   margin-bottom: 8px;
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 4px;
 }
 
 .modal-field:last-child {
@@ -909,25 +1006,59 @@ th {
 .modal-field label {
   font-weight: 500;
   color: var(--muted);
-  min-width: 80px;
+  min-width: 60px;
   font-size: 13px;
+  flex-shrink: 0;
 }
 
 .modal-field span {
   color: var(--text);
   font-size: 14px;
   line-height: 1.4;
+  flex: 1;
+}
+
+.sqft-highlight {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .modal-actions {
   border-top: 1px solid var(--border);
   padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .status-update {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.lead-summary {
+  text-align: right;
+}
+
+.lead-product {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.lead-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--success);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .status-update label {

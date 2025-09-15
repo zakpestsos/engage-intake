@@ -21,10 +21,10 @@
     <!-- Header with Navigation -->
     <header class="dashboard-header">
       <div class="header-content">
-        <h1 id="companyName">📊 Client Dashboard</h1>
+        <h1 id="companyName">Client Dashboard</h1>
         <nav class="dashboard-nav">
-          <button id="leadsTab" class="nav-btn active">📋 Leads</button>
-          <button id="analyticsTab" class="nav-btn">📈 Analytics</button>
+          <button id="leadsTab" class="nav-btn active">Leads</button>
+          <button id="analyticsTab" class="nav-btn">Analytics</button>
         </nav>
       </div>
     </header>
@@ -92,19 +92,19 @@
 
         <!-- Leads Table -->
         <div class="leads-section">
-          <h3>📋 Lead Management</h3>
+          <h3>Lead Management</h3>
           <div class="table-container">
             <table id="leadsTable" class="leads-table">
               <thead>
                 <tr>
-                  <th>Created</th>
-                  <th>Customer</th>
-                  <th>Location</th>
-                  <th>Reason</th>
-                  <th>Product</th>
-                  <th>Value</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th class="sortable" data-sort="createdAt" style="width: 120px;">Created</th>
+                  <th class="sortable" data-sort="customerName" style="width: 150px;">Customer</th>
+                  <th class="sortable" data-sort="city" style="width: 140px;">Location</th>
+                  <th class="sortable" data-sort="reason" style="width: 120px;">Reason</th>
+                  <th class="sortable" data-sort="product" style="width: 160px;">Product</th>
+                  <th class="sortable" data-sort="leadValue" style="width: 100px;">Value</th>
+                  <th class="sortable" data-sort="status" style="width: 100px;">Status</th>
+                  <th style="width: 200px;">Actions</th>
                 </tr>
               </thead>
               <tbody id="leadsBody"></tbody>
@@ -181,10 +181,6 @@
               <label>Product/Service:</label>
               <span id="modalProduct"></span>
             </div>
-            <div class="modal-field">
-              <label>Square Footage:</label>
-              <span id="modalSquareFootage"></span>
-            </div>
           </div>
 
           <!-- Pricing Details -->
@@ -205,6 +201,10 @@
             <h4>Property Address</h4>
             <div class="modal-field">
               <span id="modalAddress"></span>
+            </div>
+            <div class="modal-field">
+              <label>Square Footage:</label>
+              <span id="modalSquareFootage" class="sqft-highlight"></span>
             </div>
           </div>
 
@@ -241,6 +241,10 @@
               <option value="CANCELLED">Cancelled</option>
             </select>
             <button id="updateStatus" class="apply-btn">Update Status</button>
+          </div>
+          <div class="lead-summary">
+            <div class="lead-product" id="modalProductSummary"></div>
+            <div class="lead-value" id="modalLeadValue"></div>
           </div>
         </div>
       </div>

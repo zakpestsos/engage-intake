@@ -5,15 +5,16 @@ function ensureSheetWithHeaders_(ss, name, headers) {
   if (!sh) {
     sh = ss.insertSheet(name);
   }
-  // Set headers if row 1 is empty or different
-  const firstRow = sh.getRange(1, 1, 1, headers.length).getValues()[0];
-  const needHeaders = firstRow.filter(Boolean).length === 0 || firstRow.length !== headers.length || firstRow.some((v, i) => v !== headers[i]);
-  if (needHeaders) {
-    sh.clear();
+  
+  // Only set headers if the sheet is completely empty (no data at all)
+  const lastRow = sh.getLastRow();
+  if (lastRow === 0) {
+    // Sheet is empty, safe to add headers
     sh.getRange(1, 1, 1, headers.length).setValues([headers]);
     sh.setFrozenRows(1);
     sh.autoResizeColumns(1, headers.length);
   }
+  // If sheet has data, don't touch it - just return the existing sheet
   return sh;
 }
 

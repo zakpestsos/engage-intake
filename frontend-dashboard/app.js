@@ -217,22 +217,31 @@
     $('#modalNotes').textContent = lead.notes || 'No additional notes';
     $('#modalStatus').value = lead.status || 'NEW';
     
-    // Format full address
+    // Format full address with Google Maps link
     const street = lead.addressStreet || lead.street || '';
-    const city = lead.city || '';
-    const state = lead.state || '';
+    const city = lead.addressCity || lead.city || '';
+    const state = lead.addressState || lead.state || '';
     const postal = lead.addressPostal || lead.postal || '';
     
-    const fullAddress = [
-      street,
-      [city, state].filter(Boolean).join(', '),
-      postal
-    ].filter(Boolean).join('\n');
-    $('#modalAddress').innerHTML = fullAddress.replace(/\n/g, '<br>') || 'Address not provided';
+    const addressParts = [street, city, state, postal].filter(Boolean);
+    const fullAddressText = addressParts.join(', ');
+    const googleMapsUrl = 'https://maps.google.com/maps?q=' + encodeURIComponent(fullAddressText);
+    
+    if (fullAddressText) {
+      $('#modalAddress').innerHTML = 
+        `<a href="${googleMapsUrl}" target="_blank" style="color: var(--accent); text-decoration: none;">` +
+        `${street}<br>${city}, ${state} ${postal}` +
+        `</a>`;
+    } else {
+      $('#modalAddress').innerHTML = 'Address not provided';
+    }
     
     // Populate bottom right summary
     $('#modalProductSummary').textContent = lead.product || 'Service';
     $('#modalLeadValue').textContent = fmtMoney(lead.leadValue || 0);
+    
+    // Populate debug Lead_ID in bottom left
+    $('#modalLeadId').textContent = 'Lead ID: ' + leadId;
     
     // Store current lead ID for status updates
     $('#updateStatus').setAttribute('data-lead-id', leadId);
@@ -448,11 +457,26 @@
     try {
       const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);
       
-      // Update company name in header
-      if (leads && leads.length > 0) {
-        const companyName = leads[0].companyName || leads[0].Company_Name || 'Client';
-        $('#companyName').textContent = `${companyName} Dashboard`;
+      // Update company name in header - get from token first, then from leads
+      let companyName = 'Client';
+      
+      // Try to get company name from the token first (more reliable)
+      try {
+        const configUrl = API() + '?api=config&token=' + encodeURIComponent(token);
+        const config = await fetchJSON(configUrl);
+        if (config && config.company && config.company.name) {
+          companyName = config.company.name;
+        }
+      } catch (e) {
+        console.log('Could not get company name from token, using leads data');
       }
+      
+      // Fallback to leads data
+      if (companyName === 'Client' && leads && leads.length > 0) {
+        companyName = leads[0].companyName || leads[0].Company_Name || 'Client';
+      }
+      
+      $('#companyName').textContent = `${companyName} Dashboard`;
       
       renderLeads(leads); 
       renderKPIs(stats); 

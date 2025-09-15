@@ -1034,13 +1034,41 @@ th {
   padding-top: 20px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+}
+
+.modal-bottom-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lead-id-debug {
+  font-size: 10px;
+  color: var(--muted);
+  opacity: 0.6;
+  font-family: monospace;
 }
 
 .status-update {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.address-field {
+  margin-bottom: 12px !important;
+}
+
+.sqft-field-modal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0 !important;
+}
+
+.sqft-field-modal .sqft-highlight {
+  margin-left: auto;
 }
 
 .lead-summary {

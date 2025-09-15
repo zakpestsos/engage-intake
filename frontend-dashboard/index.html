@@ -85,7 +85,7 @@
               <input type="date" id="toDate">
             </div>
             <div class="filter-group">
-              <button id="applyFilters" class="apply-btn">🔍 Apply Filters</button>
+              <button id="applyFilters" class="apply-btn">Apply Filters</button>
             </div>
           </div>
         </div>
@@ -199,10 +199,10 @@
           <!-- Property Address -->
           <div class="modal-section">
             <h4>Property Address</h4>
-            <div class="modal-field">
+            <div class="modal-field address-field">
               <span id="modalAddress"></span>
             </div>
-            <div class="modal-field">
+            <div class="modal-field sqft-field-modal">
               <label>Square Footage:</label>
               <span id="modalSquareFootage" class="sqft-highlight"></span>
             </div>
@@ -232,15 +232,18 @@
 
         <!-- Status Update -->
         <div class="modal-actions">
-          <div class="status-update">
-            <label>Status:</label>
-            <select id="modalStatus">
-              <option value="NEW">New</option>
-              <option value="ACCEPTED">Accepted</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-            <button id="updateStatus" class="apply-btn">Update Status</button>
+          <div class="modal-bottom-left">
+            <div class="lead-id-debug" id="modalLeadId"></div>
+            <div class="status-update">
+              <label>Status:</label>
+              <select id="modalStatus">
+                <option value="NEW">New</option>
+                <option value="ACCEPTED">Accepted</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+              <button id="updateStatus" class="apply-btn">Update Status</button>
+            </div>
           </div>
           <div class="lead-summary">
             <div class="lead-product" id="modalProductSummary"></div>

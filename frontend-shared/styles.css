@@ -551,18 +551,20 @@ th {
 
 /* Call Center Optimized Styles - Apple Design Language */
 .intake-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 16px;
   background: var(--bg);
   min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
 }
 
 .intake-header {
   background: var(--panel);
-  padding: 32px 32px 24px;
-  border-radius: var(--radius-lg);
-  margin-bottom: 32px;
+  padding: 20px 24px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   text-align: center;
@@ -571,15 +573,15 @@ th {
 .intake-header h2 {
   margin: 0;
   color: var(--text);
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.025em;
   line-height: 1.2;
 }
 
 .company-subtitle {
-  margin-top: 8px;
-  font-size: 18px;
+  margin-top: 4px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
   letter-spacing: -0.01em;
@@ -587,43 +589,45 @@ th {
 
 .quick-form {
   background: var(--panel);
-  padding: 40px;
-  border-radius: var(--radius-lg);
+  padding: 24px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
 }
 
 .form-section {
-  margin-bottom: 40px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid var(--border);
-}
-
-.form-section:last-child {
-  border-bottom: none;
   margin-bottom: 0;
   padding-bottom: 0;
+  border-bottom: none;
+}
+
+.form-section.full-width {
+  grid-column: 1 / -1;
 }
 
 .section-title {
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 24px;
-  font-size: 20px;
+  margin-bottom: 16px;
+  font-size: 16px;
   letter-spacing: -0.01em;
   line-height: 1.3;
 }
 
 .quick-field {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .quick-field label {
   display: block;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: var(--text);
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: -0.005em;
 }
 
@@ -631,12 +635,12 @@ th {
 .quick-field select,
 .quick-field textarea {
   width: 100%;
-  padding: 16px 16px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--panel);
   color: var(--text);
-  font-size: 16px;
+  font-size: 14px;
   font-family: inherit;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
@@ -671,32 +675,33 @@ th {
 
 .product-grid {
   display: grid;
-  grid-template-columns: 2fr 120px;
-  gap: 16px;
+  grid-template-columns: 1fr 140px;
+  gap: 12px;
   align-items: end;
 }
 
 .submit-section {
   background: var(--bg-secondary);
-  padding: 32px;
-  border-radius: var(--radius-lg);
+  padding: 20px;
+  border-radius: var(--radius-md);
   text-align: center;
-  margin-top: 40px;
+  margin-top: 20px;
   border: 1px solid var(--border);
+  grid-column: 1 / -1;
 }
 
 .submit-btn {
   background: var(--accent);
   color: white;
   border: 0;
-  padding: 16px 48px;
-  border-radius: var(--radius-md);
+  padding: 14px 32px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 240px;
+  min-width: 180px;
   box-shadow: var(--shadow-md);
   letter-spacing: -0.005em;
 }
@@ -728,39 +733,39 @@ th {
 
 @media (max-width: 768px) {
   .intake-container {
-    padding: 16px;
+    padding: 12px;
   }
   
   .intake-header {
-    padding: 24px 20px 16px;
-    margin-bottom: 24px;
+    padding: 16px;
+    margin-bottom: 16px;
   }
   
   .intake-header h2 {
-    font-size: 28px;
+    font-size: 20px;
   }
   
   .company-subtitle {
-    font-size: 16px;
+    font-size: 12px;
   }
   
   .quick-form {
-    padding: 24px;
+    padding: 16px;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
   
-  .address-grid,
-  .customer-grid,
   .product-grid {
     grid-template-columns: 1fr;
   }
   
   .submit-section {
-    padding: 24px;
+    padding: 16px;
   }
   
   .submit-btn {
-    min-width: 200px;
-    padding: 14px 32px;
+    min-width: 160px;
+    padding: 12px 24px;
   }
 }
 

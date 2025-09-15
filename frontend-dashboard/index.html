@@ -156,7 +156,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalLeadName">Lead Details</h3>
-        <button id="closeModal" class="modal-close">&times;</button>
+        <div class="modal-header-right">
+          <span id="modalStatusBadge" class="status-badge-modal"></span>
+          <button id="closeModal" class="modal-close">&times;</button>
+        </div>
       </div>
       
       <div class="modal-body">
@@ -235,7 +238,7 @@
           <div class="modal-bottom-left">
             <div class="lead-id-debug" id="modalLeadId"></div>
             <div class="status-update">
-              <label>Status:</label>
+              <label>Update Status:</label>
               <select id="modalStatus">
                 <option value="NEW">New</option>
                 <option value="ACCEPTED">Accepted</option>

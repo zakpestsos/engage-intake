@@ -217,6 +217,12 @@
     $('#modalNotes').textContent = lead.notes || 'No additional notes';
     $('#modalStatus').value = lead.status || 'NEW';
     
+    // Set status badge in header
+    const status = (lead.status || 'NEW').toLowerCase();
+    const statusBadge = $('#modalStatusBadge');
+    statusBadge.textContent = lead.status || 'NEW';
+    statusBadge.className = 'status-badge-modal ' + status;
+    
     // Format full address with Google Maps link
     const street = lead.addressStreet || lead.street || '';
     const city = lead.addressCity || lead.city || '';
@@ -443,9 +449,20 @@
       
       try {
         await updateLead(token, leadId, newStatus);
+        
+        // Update the status badge in the modal header
+        const statusBadge = $('#modalStatusBadge');
+        statusBadge.textContent = newStatus;
+        statusBadge.className = 'status-badge-modal ' + newStatus.toLowerCase();
+        
         showToast('Status updated to: ' + newStatus);
-        closeLeadModal();
-        $('#applyFilters').click(); // Refresh the leads table
+        
+        // Refresh the leads table after a short delay to show the badge update
+        setTimeout(() => {
+          $('#applyFilters').click();
+          closeLeadModal();
+        }, 1000);
+        
       } catch (e) {
         showError('Update failed: ' + e.message);
       } finally {

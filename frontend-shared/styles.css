@@ -456,6 +456,17 @@ th {
   background: #3730a3;
 }
 
+.button-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+}
+
 .leads-section h3 {
   margin-bottom: 16px;
   color: var(--text);

@@ -696,16 +696,39 @@
     
     $('#applyFilters').addEventListener('click', async function(){
       clearError();
+      
+      // Add loading feedback
+      const originalText = this.textContent;
+      this.disabled = true;
+      this.innerHTML = '<div class="button-spinner"></div> Filtering...';
+      
       try {
         const [leads, stats] = await Promise.all([ 
           listLeads(currentFilters()), 
           getStats(currentFilters()) 
         ]);
+        
+        // Store updated data globally
+        window.CURRENT_LEADS_ORIGINAL = leads;
+        window.CURRENT_STATS = stats;
+        
         renderLeads(leads); 
         renderKPIs(stats); 
-        drawCharts(stats);
+        
+        // Update analytics if on analytics tab
+        if ($('#analyticsSection').style.display !== 'none') {
+          const metrics = calculateAdvancedMetrics(leads, stats);
+          updatePerformanceMetrics(metrics);
+          drawMasterpieceCharts(leads, stats);
+        }
+        
       } catch (e) { 
-        showError('Failed to load data. Check API_BASE in config.js'); 
+        console.error('Filter error:', e);
+        showError('Failed to apply filters: ' + e.message); 
+      } finally {
+        // Restore button
+        this.disabled = false;
+        this.textContent = originalText;
       }
     });
     

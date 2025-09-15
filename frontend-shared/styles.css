@@ -254,7 +254,13 @@ th {
   justify-content: center;
   padding: 80px 20px;
   text-align: center;
-  min-height: 50vh;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: var(--bg);
+  z-index: 999;
 }
 
 .loading-spinner {

@@ -184,7 +184,7 @@ function createLead_(payload, actor) {
   row[idx['Product_Name']] = prodName;
   row[idx['Initial_Price']] = initialPrice;
   row[idx['Recurring_Price']] = recurringPrice;
-  row[idx['Square_Footage']] = squareFootage;
+  row[idx['sq_ft']] = squareFootage;
   row[idx['Lead_Value']] = leadValue;
   row[idx['Status']] = status;
   row[idx['Accepted_At']] = acceptedAt;
@@ -242,7 +242,7 @@ function listLeadsForCompany_(companyName, query) {
       productSku: row[idx['Product_SKU']],
       initialPrice: Number(row[idx['Initial_Price']] || 0),
       recurringPrice: Number(row[idx['Recurring_Price']] || 0),
-      squareFootage: Number(row[idx['Square_Footage']] || 0),
+      squareFootage: Number(row[idx['sq_ft']] || 0),
       leadValue: Number(row[idx['Lead_Value']] || 0),
       status: row[idx['Status']],
       acceptedAt: row[idx['Accepted_At']],

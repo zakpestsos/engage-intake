@@ -26,7 +26,7 @@ const LEADS_HEADERS = [
   'Product_Name',
   'Initial_Price',
   'Recurring_Price',
-  'Square_Footage',
+  'sq_ft',
   'Lead_Value',
   'Status',
   'Accepted_At',

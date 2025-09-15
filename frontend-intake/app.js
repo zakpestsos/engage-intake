@@ -141,6 +141,37 @@
     }
   }
   
+  // Phone number formatting
+  function formatPhoneNumber(value) {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+    
+    // Format as (000) 000-0000
+    if (digits.length >= 10) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+    } else if (digits.length >= 6) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    } else if (digits.length >= 3) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    } else {
+      return digits;
+    }
+  }
+  
+  function onPhoneInput(e) {
+    const input = e.target;
+    const cursorPos = input.selectionStart;
+    const oldValue = input.value;
+    const formatted = formatPhoneNumber(oldValue);
+    
+    if (formatted !== oldValue) {
+      input.value = formatted;
+      // Adjust cursor position
+      const diff = formatted.length - oldValue.length;
+      input.setSelectionRange(cursorPos + diff, cursorPos + diff);
+    }
+  }
+  
   // Theme toggle functionality
   function initThemeToggle() {
     const toggle = $('#themeToggle');
@@ -311,11 +342,11 @@
     $('#addressCity').setAttribute('tabindex', '5');
     $('#addressState').setAttribute('tabindex', '6');
     $('#addressPostal').setAttribute('tabindex', '7');
-    $('#reason').setAttribute('tabindex', '8');
-    $('#reasonOther').setAttribute('tabindex', '9');
-    $('#notes').setAttribute('tabindex', '10');
-    $('#product').setAttribute('tabindex', '11');
-    $('#areaInput').setAttribute('tabindex', '12');
+    $('#areaInput').setAttribute('tabindex', '8');
+    $('#reason').setAttribute('tabindex', '9');
+    $('#reasonOther').setAttribute('tabindex', '10');
+    $('#notes').setAttribute('tabindex', '11');
+    $('#product').setAttribute('tabindex', '12');
     $('#submitBtn').setAttribute('tabindex', '13');
   }
 
@@ -745,6 +776,8 @@
     $('#product').addEventListener('change', onProductChange);
     
     $('#areaInput').addEventListener('input', onAreaInputChange);
+    
+    $('#customerPhone').addEventListener('input', onPhoneInput);
     
     $('#reason').addEventListener('change', function(){ 
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 

@@ -994,9 +994,10 @@ th {
 
 .modal-field {
   margin-bottom: 8px;
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 8px;
+  align-items: start;
 }
 
 .modal-field:last-child {
@@ -1006,16 +1007,15 @@ th {
 .modal-field label {
   font-weight: 500;
   color: var(--muted);
-  min-width: 60px;
   font-size: 13px;
-  flex-shrink: 0;
+  text-align: right;
+  padding-right: 4px;
 }
 
 .modal-field span {
   color: var(--text);
   font-size: 14px;
   line-height: 1.4;
-  flex: 1;
 }
 
 .sqft-highlight {
@@ -1058,17 +1058,30 @@ th {
 
 .address-field {
   margin-bottom: 12px !important;
+  display: block !important;
+  grid-template-columns: none !important;
+}
+
+.address-field span {
+  display: block;
+  line-height: 1.6;
 }
 
 .sqft-field-modal {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 80px 1fr;
   gap: 8px;
+  align-items: center;
   margin-bottom: 0 !important;
 }
 
+.sqft-field-modal label {
+  text-align: right;
+  padding-right: 4px;
+}
+
 .sqft-field-modal .sqft-highlight {
-  margin-left: auto;
+  justify-self: start;
 }
 
 .lead-summary {

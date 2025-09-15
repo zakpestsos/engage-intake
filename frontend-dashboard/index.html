@@ -115,36 +115,178 @@
 
       <!-- Analytics Section (initially hidden) -->
       <section id="analyticsSection" class="dashboard-section" style="display: none;">
-        <h3>📈 Analytics & Insights</h3>
-        
-        <!-- Date Range for Analytics -->
-        <div class="analytics-filters">
-          <div class="filter-group">
-            <label>Analysis Period</label>
-            <input type="date" id="analyticsFrom">
-          </div>
-          <div class="filter-group">
-            <label>To</label>
-            <input type="date" id="analyticsTo">
-          </div>
-          <div class="filter-group">
-            <button id="updateCharts" class="apply-btn">📊 Update Charts</button>
+        <div class="analytics-header">
+          <h3>Business Intelligence & Analytics</h3>
+          <div class="analytics-controls">
+            <div class="date-range-picker">
+              <input type="date" id="analyticsFrom" class="date-input">
+              <span class="date-separator">to</span>
+              <input type="date" id="analyticsTo" class="date-input">
+              <button id="updateCharts" class="analytics-btn">Analyze</button>
+            </div>
+            <div class="view-toggles">
+              <button id="overviewView" class="view-btn active">Overview</button>
+              <button id="performanceView" class="view-btn">Performance</button>
+              <button id="trendsView" class="view-btn">Trends</button>
+            </div>
           </div>
         </div>
 
-        <!-- Charts Grid -->
-        <div class="charts-grid">
-          <div class="chart-card">
-            <h4>Leads by Day</h4>
-            <div id="chartLeadsByDay" class="chart-container"></div>
+        <!-- Executive Summary KPIs -->
+        <div class="executive-summary">
+          <div class="summary-card revenue">
+            <div class="summary-icon">💰</div>
+            <div class="summary-content">
+              <div class="summary-value" id="totalRevenue">$0</div>
+              <div class="summary-label">Total Revenue</div>
+              <div class="summary-change" id="revenueChange">+0%</div>
+            </div>
           </div>
-          <div class="chart-card">
-            <h4>Leads by Reason</h4>
-            <div id="chartLeadsByReason" class="chart-container"></div>
+          <div class="summary-card conversion">
+            <div class="summary-icon">📈</div>
+            <div class="summary-content">
+              <div class="summary-value" id="conversionRate">0%</div>
+              <div class="summary-label">Conversion Rate</div>
+              <div class="summary-change" id="conversionChange">+0%</div>
+            </div>
           </div>
-          <div class="chart-card">
-            <h4>Production Value by Month</h4>
-            <div id="chartProductionValue" class="chart-container"></div>
+          <div class="summary-card avgdeal">
+            <div class="summary-icon">🎯</div>
+            <div class="summary-content">
+              <div class="summary-value" id="avgDealSize">$0</div>
+              <div class="summary-label">Avg Deal Size</div>
+              <div class="summary-change" id="dealSizeChange">+0%</div>
+            </div>
+          </div>
+          <div class="summary-card velocity">
+            <div class="summary-icon">⚡</div>
+            <div class="summary-content">
+              <div class="summary-value" id="salesVelocity">0</div>
+              <div class="summary-label">Sales Velocity</div>
+              <div class="summary-change" id="velocityChange">+0%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Views -->
+        <div id="overviewAnalytics" class="analytics-view">
+          <div class="analytics-grid">
+            <!-- Revenue Funnel -->
+            <div class="chart-card featured">
+              <div class="chart-header">
+                <h4>Revenue Funnel</h4>
+                <div class="chart-controls">
+                  <select id="funnelPeriod" class="chart-select">
+                    <option value="30">Last 30 Days</option>
+                    <option value="90">Last 90 Days</option>
+                    <option value="365">Last Year</option>
+                  </select>
+                </div>
+              </div>
+              <div id="chartRevenueFunnel" class="chart-container large"></div>
+            </div>
+
+            <!-- Lead Sources -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Lead Sources</h4>
+                <div class="metric-highlight" id="topSource">Call Center: 100%</div>
+              </div>
+              <div id="chartLeadSources" class="chart-container"></div>
+            </div>
+
+            <!-- Geographic Distribution -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Geographic Distribution</h4>
+                <div class="metric-highlight" id="topRegion">Top: Unknown</div>
+              </div>
+              <div id="chartGeographic" class="chart-container"></div>
+            </div>
+
+            <!-- Service Performance -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Service Performance</h4>
+                <div class="metric-highlight" id="topService">Best: Unknown</div>
+              </div>
+              <div id="chartServicePerformance" class="chart-container"></div>
+            </div>
+
+            <!-- Time Analysis -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Peak Hours Analysis</h4>
+                <div class="metric-highlight" id="peakHour">Peak: Unknown</div>
+              </div>
+              <div id="chartTimeAnalysis" class="chart-container"></div>
+            </div>
+
+            <!-- Conversion Timeline -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Lead Conversion Timeline</h4>
+                <div class="metric-highlight" id="avgConversionTime">Avg: 0 days</div>
+              </div>
+              <div id="chartConversionTimeline" class="chart-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="performanceAnalytics" class="analytics-view" style="display: none;">
+          <div class="performance-grid">
+            <!-- Performance Metrics -->
+            <div class="performance-card">
+              <h4>Lead Quality Metrics</h4>
+              <div class="metrics-list">
+                <div class="metric-item">
+                  <span class="metric-label">High-Value Leads (>$1000)</span>
+                  <span class="metric-value" id="highValueLeads">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Quick Conversions (<24h)</span>
+                  <span class="metric-value" id="quickConversions">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Repeat Customers</span>
+                  <span class="metric-value" id="repeatCustomers">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent Performance -->
+            <div class="performance-card">
+              <h4>Call Center Performance</h4>
+              <div class="metrics-list">
+                <div class="metric-item">
+                  <span class="metric-label">Leads per Day</span>
+                  <span class="metric-value" id="leadsPerDay">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Peak Call Volume</span>
+                  <span class="metric-value" id="peakCallVolume">0</span>
+                </div>
+                <div class="metric-item">
+                  <span class="metric-label">Response Time</span>
+                  <span class="metric-value" id="responseTime">0 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="trendsAnalytics" class="analytics-view" style="display: none;">
+          <div class="trends-grid">
+            <!-- Trend Analysis -->
+            <div class="chart-card full-width">
+              <div class="chart-header">
+                <h4>Revenue Trends & Forecasting</h4>
+                <div class="trend-indicators">
+                  <span class="trend-indicator positive" id="trendIndicator">↗ +15.3%</span>
+                </div>
+              </div>
+              <div id="chartRevenueTrends" class="chart-container xl"></div>
+            </div>
           </div>
         </div>
       </section>

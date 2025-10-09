@@ -163,6 +163,23 @@ function allowOrigin_(e) {
 
 // HTMLService entrypoints
 function doGet(e) {
+  // Setup route for adding companies
+  const setup = (e && e.parameter && e.parameter.setup) ? e.parameter.setup : '';
+  if (setup === 'jem-pest-solutions') {
+    try {
+      const result = addJemPestSolutions();
+      const output = ContentService.createTextOutput(JSON.stringify(result));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
+    } catch (error) {
+      const output = ContentService.createTextOutput(JSON.stringify({ 
+        error: String(error.message || error) 
+      }));
+      output.setMimeType(ContentService.MimeType.JSON);
+      return output;
+    }
+  }
+  
   // Simple test endpoint first
   const test = (e && e.parameter && e.parameter.test) ? e.parameter.test : '';
   if (test === 'ping') {

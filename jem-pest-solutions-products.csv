@@ -1,0 +1,29 @@
+Company_Name,Product_SKU,Product_Name,Initial_Price,Recurring_Price,Active,lead_value,sq_ft_min,sq_ft_max
+Jem Pest Solutions,JPS-HPP-001,Home Protection Plan (Quarterly),225,55,TRUE,225,0,100000
+Jem Pest Solutions,JPS-HPP-MOS-001,Home Protection Plan + Mosquito Bundle,275,55,TRUE,275,0,100000
+Jem Pest Solutions,JPS-HPP-TER-001,Home Protection Plan + Termite Bundle,724,85,TRUE,724,0,100000
+Jem Pest Solutions,JPS-OT-GEN-001,One-Time General Treatment,225,0,TRUE,225,0,100000
+Jem Pest Solutions,JPS-HPP-RCH-001,Home Protection Plan – Roach Coverage,550,55,TRUE,550,0,100000
+Jem Pest Solutions,JPS-HPP-RDT-001,Home Protection Plan – Rodent Coverage (Mice),550,55,TRUE,550,0,100000
+Jem Pest Solutions,JPS-HPP-RDT-002,Home Protection Plan – Rodent Coverage (Rats),700,55,TRUE,700,0,100000
+Jem Pest Solutions,JPS-MOS-OT-001,Mosquito Control (One-Time),129,0,TRUE,129,0,21780
+Jem Pest Solutions,JPS-MOS-FS-001,Mosquito Control (Full Season - 10 Services),89,0,TRUE,89,0,21780
+Jem Pest Solutions,JPS-RDT-30D-001,Rodent Trapping 30-Day (Mice),550,0,TRUE,550,0,100000
+Jem Pest Solutions,JPS-RDT-30D-002,Rodent Trapping 30-Day (Rats),700,0,TRUE,700,0,100000
+Jem Pest Solutions,JPS-RCH-30D-001,Roach Cleanout 30-Day Program,550,0,TRUE,550,0,100000
+Jem Pest Solutions,JPS-BB-INSP-001,Bed Bug Inspection (Free),0,0,TRUE,0,0,100000
+Jem Pest Solutions,JPS-BB-PREV-001,Bed Bug Prevention (Monthly),225,150,TRUE,225,0,1500
+Jem Pest Solutions,JPS-BB-MON-001,Bed Bug Monitoring (Monthly),175,125,TRUE,175,0,1500
+Jem Pest Solutions,JPS-TER-INSP-001,Termite Inspection (Free),0,0,TRUE,0,0,100000
+Jem Pest Solutions,JPS-TER-TPP-001,Termite Protection Plan (Quarterly),599,30,TRUE,599,0,100000
+Jem Pest Solutions,JPS-TER-MON-001,Termite Monitoring (Annual),199,0,TRUE,199,0,100000
+Jem Pest Solutions,JPS-SNK-001,Snake Control (Monthly),450,175,TRUE,450,0,100000
+Jem Pest Solutions,JPS-BAT-INSP-001,Bat Exclusion Inspection (Free),0,0,TRUE,0,0,100000
+Jem Pest Solutions,JPS-SQR-INSP-001,Squirrel/Raccoon Exclusion Inspection (Free),0,0,TRUE,0,0,100000
+Jem Pest Solutions,JPS-BRD-CLN-001,Bird Vent Cleanout (Ground Level),275,0,TRUE,275,0,100000
+Jem Pest Solutions,JPS-BRD-CLN-002,Bird Vent Cleanout (Above 1st Floor),325,0,TRUE,325,0,100000
+Jem Pest Solutions,JPS-BRD-CLN-003,Bird Vent Cleanout (Above 2nd Floor),375,0,TRUE,375,0,100000
+Jem Pest Solutions,JPS-GH-TRAP-001,Groundhog Trapping (Setup Fee),275,0,TRUE,275,0,100000
+Jem Pest Solutions,JPS-GH-REM-001,Groundhog Removal (Per Animal),150,0,TRUE,150,0,100000
+Jem Pest Solutions,JPS-GH-REBAIT-001,Groundhog Trap Re-Bait,75,0,TRUE,75,0,100000
+

@@ -44,22 +44,6 @@
     return span.innerHTML; 
   }
 
-  // Update time display
-  function updateTime() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      second: '2-digit'
-    });
-    const timeEl = $('#currentTime');
-    if (timeEl) {
-      timeEl.textContent = timeStr;
-    }
-  }
-
-  setInterval(updateTime, 1000);
-  updateTime();
 
   // Area Converter
   function initAreaConverter() {

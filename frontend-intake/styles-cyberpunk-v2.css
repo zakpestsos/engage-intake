@@ -34,11 +34,13 @@ body {
 /* Header */
 .cyber-header {
   background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
-  padding: 0.75rem 1.5rem;
+  padding: 1rem 1.5rem;
   border-bottom: 2px solid var(--accent-blue);
   position: relative;
   overflow: hidden;
-  height: 70px;
+  height: 85px;
+  display: flex;
+  align-items: center;
 }
 
 .cyber-header::before {
@@ -58,13 +60,11 @@ body {
 }
 
 .cyber-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   position: relative;
   z-index: 2;
   max-width: 1800px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .company-info h1 {
@@ -79,26 +79,15 @@ body {
 
 .subtitle {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+  margin-top: 0.25rem;
+  line-height: 1.2;
 }
 
-.current-time {
-  background: linear-gradient(135deg, var(--bg-secondary), #334155);
-  border: 1px solid var(--accent-blue);
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--accent-blue-light);
-  text-shadow: 0 0 10px var(--glow-blue);
-  min-width: 120px;
-  text-align: center;
-}
 
 /* Loading Screen */
 .loading-screen {
@@ -151,7 +140,7 @@ body {
   max-width: 1800px;
   margin: 0 auto;
   padding: 1rem 1.5rem;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 85px);
   overflow-y: auto;
 }
 

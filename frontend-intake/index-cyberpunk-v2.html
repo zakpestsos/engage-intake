@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Agent Intake - Jem Pest Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-cyberpunk-v2.css">
+  <script src="../frontend-shared/config.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <div class="cyber-header">
+    <div class="cyber-header-content">
+      <div class="company-info">
+        <h1 id="companyName">Jem Pest Solutions</h1>
+        <div class="subtitle">Agent Intake System</div>
+      </div>
+      <div class="header-right">
+        <div class="current-time" id="currentTime">00:00:00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loadingSpinner" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading company information...</div>
+  </div>
+
+  <!-- Error Banner -->
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+  <!-- Main Form Container -->
+  <div id="mainForm" class="main-form-container" style="display: none;">
+    <form id="intakeForm" class="intake-form" autocomplete="off" novalidate>
+      
+      <!-- Top Row: Customer & Address -->
+      <div class="form-row-container">
+        <!-- Customer Information -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-title">Customer Information</div>
+          </div>
+          <div class="card-body">
+            <div class="field-group">
+              <div class="field-row">
+                <div class="form-field">
+                  <label>First Name <span class="required">*</span></label>
+                  <input type="text" id="firstName" placeholder="John" required>
+                  <div class="error" data-for="firstName"></div>
+                </div>
+                <div class="form-field">
+                  <label>Last Name <span class="required">*</span></label>
+                  <input type="text" id="lastName" placeholder="Smith" required>
+                  <div class="error" data-for="lastName"></div>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="form-field">
+                  <label>Phone <span class="required">*</span></label>
+                  <input type="tel" id="customerPhone" placeholder="(555) 123-4567" required>
+                  <div class="error" data-for="customerPhone"></div>
+                </div>
+                <div class="form-field">
+                  <label>Email</label>
+                  <input type="email" id="customerEmail" placeholder="customer@example.com">
+                  <div class="error" data-for="customerEmail"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address & Property -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-title">Address & Property</div>
+          </div>
+          <div class="card-body">
+            <div class="field-group">
+              <div class="form-field">
+                <label>Street Address <span class="required">*</span> <span class="hint">Google Places enabled</span></label>
+                <input type="text" id="addressStreet" placeholder="Start typing address..." required>
+                <div class="error" data-for="addressStreet"></div>
+              </div>
+              <div class="field-row-3">
+                <div class="form-field">
+                  <label>City <span class="required">*</span></label>
+                  <input type="text" id="addressCity" placeholder="City" required>
+                  <div class="error" data-for="addressCity"></div>
+                </div>
+                <div class="form-field">
+                  <label>State <span class="required">*</span></label>
+                  <input type="text" id="addressState" placeholder="DE" required maxlength="2" style="text-transform: uppercase;">
+                  <div class="error" data-for="addressState"></div>
+                </div>
+                <div class="form-field">
+                  <label>Zip <span class="required">*</span></label>
+                  <input type="text" id="addressPostal" placeholder="19901" required maxlength="10">
+                  <div class="error" data-for="addressPostal"></div>
+                </div>
+              </div>
+              <div class="form-field">
+                <label>Property Area <span class="hint">Enter to load services</span></label>
+                <div class="area-container">
+                  <div class="area-toggles">
+                    <button type="button" class="area-toggle active" id="sqftBtn">Sq Ft</button>
+                    <button type="button" class="area-toggle" id="acreBtn">Acres</button>
+                  </div>
+                  <input type="number" id="areaInput" placeholder="Enter area" min="0" step="0.01">
+                </div>
+                <div id="conversionDisplay" class="conversion"></div>
+                <div class="error" data-for="squareFootage"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle Row: Service Selection (Full Width) -->
+      <div class="form-card service-card">
+        <div class="card-header">
+          <div class="card-title">
+            Select Service <span class="required">*</span>
+            <span class="service-count" id="serviceCount">Enter property area first</span>
+          </div>
+          <input type="text" id="serviceSearch" class="service-search" placeholder="🔍 Search services...">
+        </div>
+        <div class="card-body">
+          <div class="service-grid" id="serviceGrid">
+            <div class="no-services">
+              <div class="no-services-icon">📏</div>
+              <div class="no-services-text">Enter property area above to view available services</div>
+            </div>
+          </div>
+          <div class="error" data-for="product"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Call Details & Submit -->
+      <div class="form-row-container">
+        <!-- Call Details -->
+        <div class="form-card">
+          <div class="card-header">
+            <div class="card-title">Call Details</div>
+          </div>
+          <div class="card-body">
+            <div class="field-group">
+              <div class="form-field">
+                <label>Reason for Call <span class="required">*</span></label>
+                <select id="reason" required>
+                  <option value="">Select reason...</option>
+                  <option value="Schedule">Schedule Appointment</option>
+                  <option value="Reschedule">Reschedule Appointment</option>
+                  <option value="New Sale">New Sale</option>
+                  <option value="Cancellation">Cancellation</option>
+                  <option value="Complaint">Complaint</option>
+                  <option value="Other…">Other...</option>
+                </select>
+                <div class="error" data-for="reason"></div>
+              </div>
+              <div class="form-field" id="reasonOtherWrap" style="display:none;">
+                <label>Specify Other</label>
+                <input type="text" id="reasonOther" placeholder="Please specify...">
+              </div>
+              <div class="form-field">
+                <label>What the Customer Needed</label>
+                <textarea id="notes" rows="3" placeholder="Call notes and details..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Service & Submit -->
+        <div class="form-card submit-card">
+          <div class="card-header">
+            <div class="card-title">Selected Service</div>
+          </div>
+          <div class="card-body">
+            <div id="selectedServiceDisplay" class="selected-service-display">
+              <div class="no-selection">
+                <div class="no-selection-icon">⬆️</div>
+                <div class="no-selection-text">Select a service above</div>
+              </div>
+            </div>
+            <button type="submit" id="submitBtn" class="submit-btn">
+              <span class="btn-icon">💾</span>
+              <span class="btn-text">Save Lead</span>
+              <span class="btn-arrow">→</span>
+            </button>
+            <div class="submit-hint">Press Ctrl+Enter to quick submit</div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app-cyberpunk-v2.js"></script>
+</body>
+</html>
+

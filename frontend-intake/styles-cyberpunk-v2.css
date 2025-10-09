@@ -150,6 +150,86 @@ body {
   gap: 1rem;
 }
 
+/* Call Type Selector */
+.call-type-selector {
+  margin-bottom: 1.5rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.call-type-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-blue-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.call-type-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.call-type-btn {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 2px solid var(--border-primary);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.call-type-btn:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+}
+
+.call-type-btn.active {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-color: var(--accent-blue-light);
+  box-shadow: 0 0 30px var(--glow-blue);
+}
+
+.call-type-btn .btn-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.call-type-btn .btn-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.call-type-btn.active .btn-label {
+  color: white;
+}
+
+.call-type-btn .btn-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.call-type-btn.active .btn-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* Form Row Container */
 .form-row-container {
   display: grid;

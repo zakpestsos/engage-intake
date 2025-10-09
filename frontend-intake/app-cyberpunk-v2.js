@@ -9,6 +9,7 @@
   let addressParts = { street: '', city: '', state: '', postal: '' };
   let placesAutocomplete = null;
   let currentAreaUnit = 'sqft';
+  let currentCallType = 'new-sale'; // 'new-sale' or 'service'
 
   const $ = sel => document.querySelector(sel);
   const $$ = sel => document.querySelectorAll(sel);
@@ -44,6 +45,45 @@
     return span.innerHTML; 
   }
 
+  // Call Type Handling
+  function setCallType(type) {
+    currentCallType = type;
+    
+    // Update button states
+    $('#newSaleBtn').classList.toggle('active', type === 'new-sale');
+    $('#serviceBtn').classList.toggle('active', type === 'service');
+    
+    if (type === 'new-sale') {
+      // New Sale mode: Show service selection, show new sale reason
+      $('#serviceGrid').closest('.service-card').style.display = 'block';
+      $('#newSaleReasonWrap').style.display = 'block';
+      $('#serviceIssueWrap').style.display = 'none';
+      $('#serviceOtherWrap').style.display = 'none';
+      $('#notesLabel').textContent = 'Call Notes & Details';
+      showToast('New Sale mode - Service selection required');
+    } else {
+      // Service mode: Hide service selection, show service issue reason
+      $('#serviceGrid').closest('.service-card').style.display = 'none';
+      $('#newSaleReasonWrap').style.display = 'none';
+      $('#serviceIssueWrap').style.display = 'block';
+      $('#notesLabel').textContent = 'Service Issue Details';
+      showToast('Service Call mode - Describe the issue');
+      
+      // Clear selected service when switching to service mode
+      selectedService = null;
+      hideSelectedService();
+    }
+  }
+
+  function initCallTypeButtons() {
+    $('#newSaleBtn').addEventListener('click', () => setCallType('new-sale'));
+    $('#serviceBtn').addEventListener('click', () => setCallType('service'));
+    
+    // Handle service issue "Other" option
+    $('#serviceIssue').addEventListener('change', function() {
+      $('#serviceOtherWrap').style.display = (this.value === 'Service - Other') ? 'block' : 'none';
+    });
+  }
 
   // Area Converter
   function initAreaConverter() {
@@ -357,6 +397,7 @@
   function validate() {
     const errors = {};
     
+    // Basic customer information
     if (!$('#firstName').value.trim()) errors.firstName = 'Required';
     if (!$('#lastName').value.trim()) errors.lastName = 'Required';
     if (!$('#customerPhone').value.trim()) errors.customerPhone = 'Required';
@@ -364,13 +405,21 @@
     if (!$('#addressCity').value.trim()) errors.addressCity = 'Required';
     if (!$('#addressState').value.trim()) errors.addressState = 'Required';
     if (!$('#addressPostal').value.trim()) errors.addressPostal = 'Required';
-    if (!$('#reason').value.trim()) errors.reason = 'Required';
     if (!$('#schedulingTold').value.trim()) errors.schedulingTold = 'Required';
-    if (!selectedService) errors.product = 'Please select a service';
     
-    const areaValue = Number($('#areaInput').value) || 0;
-    if (areaValue <= 0) {
-      errors.squareFootage = 'Required';
+    // Call type specific validation
+    if (currentCallType === 'new-sale') {
+      // New Sale: Require service selection and new sale reason
+      if (!$('#newSaleReason').value.trim()) errors.newSaleReason = 'Required';
+      if (!selectedService) errors.product = 'Please select a service';
+      
+      const areaValue = Number($('#areaInput').value) || 0;
+      if (areaValue <= 0) {
+        errors.squareFootage = 'Required for new sales';
+      }
+    } else {
+      // Service Call: Require service issue type
+      if (!$('#serviceIssue').value.trim()) errors.serviceIssue = 'Required';
     }
     
     $$('.error').forEach(el => el.textContent = '');
@@ -513,11 +562,14 @@
   function resetForm() {
     $('#intakeForm').reset();
     addressParts = { street: '', city: '', state: '', postal: '' };
-    $('#reasonOtherWrap').style.display = 'none';
+    $('#serviceOtherWrap').style.display = 'none';
     selectedService = null;
     clearServiceGrid();
     currentAreaUnit = 'sqft';
     setAreaUnit('sqft');
+    
+    // Reset to New Sale mode
+    setCallType('new-sale');
     
     // Clear all error messages
     $$('.error').forEach(el => el.textContent = '');
@@ -526,6 +578,7 @@
   // Initialize
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
+    initCallTypeButtons();
     initAreaConverter();
     initServiceSearch();
     
@@ -546,11 +599,6 @@
     $('#areaInput').addEventListener('input', onAreaInputChange);
     $('#customerPhone').addEventListener('input', onPhoneInput);
     
-    // Reason for call - show "Other" field
-    $('#reason').addEventListener('change', function(){ 
-      $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
-    });
-    
     $('#intakeForm').addEventListener('submit', async function(e){
       e.preventDefault();
       clearError();
@@ -561,6 +609,16 @@
       }
       
       const companyName = window.SELECTED_COMPANY;
+      
+      // Determine reason for call based on call type
+      let reasonForCall, reasonCustom;
+      if (currentCallType === 'new-sale') {
+        reasonForCall = $('#newSaleReason').value.trim();
+        reasonCustom = '';
+      } else {
+        reasonForCall = $('#serviceIssue').value.trim();
+        reasonCustom = reasonForCall === 'Service - Other' ? $('#serviceOther').value.trim() : '';
+      }
       
       const payload = {
         companyName: companyName,
@@ -574,17 +632,28 @@
           state: $('#addressState').value.trim(),
           postal: $('#addressPostal').value.trim()
         },
-        reasonForCall: $('#reason').value.trim(),
-        reasonCustom: $('#reasonOther').value.trim(),
+        reasonForCall: reasonForCall,
+        reasonCustom: reasonCustom,
         schedulingTold: $('#schedulingTold').value.trim(),
-        productSku: selectedService.sku,
-        productName: selectedService.name,
-        initialPrice: selectedService.initialPrice,
-        recurringPrice: selectedService.recurringPrice,
-        squareFootage: getSquareFootage(),
-        leadValue: selectedService.initialPrice,
+        squareFootage: currentCallType === 'new-sale' ? getSquareFootage() : 0,
         notes: $('#notes').value.trim()
       };
+      
+      // Add product info only for new sales
+      if (currentCallType === 'new-sale' && selectedService) {
+        payload.productSku = selectedService.sku;
+        payload.productName = selectedService.name;
+        payload.initialPrice = selectedService.initialPrice;
+        payload.recurringPrice = selectedService.recurringPrice;
+        payload.leadValue = selectedService.initialPrice;
+      } else {
+        // Service calls - no product selected
+        payload.productSku = '';
+        payload.productName = '';
+        payload.initialPrice = 0;
+        payload.recurringPrice = 0;
+        payload.leadValue = 0;
+      }
       
       $('#submitBtn').disabled = true;
       $('#submitBtn').querySelector('.btn-text').textContent = 'Saving...';

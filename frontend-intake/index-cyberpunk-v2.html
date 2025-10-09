@@ -33,6 +33,23 @@
   <div id="mainForm" class="main-form-container" style="display: none;">
     <form id="intakeForm" class="intake-form" autocomplete="off" novalidate>
       
+      <!-- Call Type Selector (New Top Section) -->
+      <div class="call-type-selector">
+        <div class="call-type-label">What type of call is this?</div>
+        <div class="call-type-buttons">
+          <button type="button" class="call-type-btn active" id="newSaleBtn" data-type="new-sale">
+            <span class="btn-icon">💰</span>
+            <span class="btn-label">New Sale</span>
+            <span class="btn-desc">Customer wants to purchase a service</span>
+          </button>
+          <button type="button" class="call-type-btn" id="serviceBtn" data-type="service">
+            <span class="btn-icon">🛠️</span>
+            <span class="btn-label">Service Call</span>
+            <span class="btn-desc">Existing customer needs assistance</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Top Row: Customer & Address -->
       <div class="form-row-container">
         <!-- Customer Information -->
@@ -145,22 +162,38 @@
           </div>
           <div class="card-body">
             <div class="field-group">
-              <div class="form-field">
-                <label>Reason for Call <span class="required">*</span></label>
-                <select id="reason" required>
-                  <option value="">Select reason...</option>
-                  <option value="Schedule">Schedule Appointment</option>
-                  <option value="Reschedule">Reschedule Appointment</option>
-                  <option value="New Sale">New Sale</option>
-                  <option value="Cancellation">Cancellation</option>
-                  <option value="Complaint">Complaint</option>
-                  <option value="Other…">Other...</option>
+              
+              <!-- New Sale Reason (shown for New Sale calls) -->
+              <div class="form-field" id="newSaleReasonWrap">
+                <label>New Sale Type <span class="required">*</span></label>
+                <select id="newSaleReason">
+                  <option value="">Select type...</option>
+                  <option value="New Sale - Initial Purchase">Initial Purchase</option>
+                  <option value="New Sale - Additional Service">Additional Service</option>
+                  <option value="New Sale - Upgrade">Service Upgrade</option>
                 </select>
-                <div class="error" data-for="reason"></div>
+                <div class="error" data-for="newSaleReason"></div>
               </div>
-              <div class="form-field" id="reasonOtherWrap" style="display:none;">
-                <label>Specify Other</label>
-                <input type="text" id="reasonOther" placeholder="Please specify...">
+              
+              <!-- Service Issue Type (shown for Service calls) -->
+              <div class="form-field" id="serviceIssueWrap" style="display:none;">
+                <label>Service Issue Type <span class="required">*</span></label>
+                <select id="serviceIssue">
+                  <option value="">Select issue type...</option>
+                  <option value="Service - Schedule Appointment">Schedule Appointment</option>
+                  <option value="Service - Reschedule Appointment">Reschedule Appointment</option>
+                  <option value="Service - Cancellation">Cancellation</option>
+                  <option value="Service - Billing Question">Billing Question</option>
+                  <option value="Service - Service Complaint">Service Complaint</option>
+                  <option value="Service - Technical Issue">Technical Issue</option>
+                  <option value="Service - Other">Other...</option>
+                </select>
+                <div class="error" data-for="serviceIssue"></div>
+              </div>
+              
+              <div class="form-field" id="serviceOtherWrap" style="display:none;">
+                <label>Specify Other Issue</label>
+                <input type="text" id="serviceOther" placeholder="Please specify...">
               </div>
               
               <!-- Scheduling Information -->
@@ -178,8 +211,8 @@
               </div>
               
               <div class="form-field">
-                <label>What the Customer Needed</label>
-                <textarea id="notes" rows="3" placeholder="Call notes and details..."></textarea>
+                <label id="notesLabel">Call Notes & Details</label>
+                <textarea id="notes" rows="4" placeholder="Enter call notes and details..."></textarea>
               </div>
             </div>
           </div>

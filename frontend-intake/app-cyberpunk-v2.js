@@ -62,18 +62,15 @@
       $('#newSaleServiceContent').style.display = 'block';
       $('#serviceCallNeedsContent').style.display = 'none';
       $('#newSaleReasonWrap').style.display = 'block';
-      $('#serviceIssueWrap').style.display = 'none';
-      $('#serviceOtherWrap').style.display = 'none';
       $('#notesLabel').textContent = 'Call Notes & Details';
       showToast('New Sale mode - Service selection required');
     } else {
-      // Service mode: Show customer needs
+      // Service mode: Show customer needs (replaces service issue dropdown)
       $('#serviceCardTitle').innerHTML = 'What Does Customer Need? <span class="required">*</span>';
       $('#serviceSearch').style.display = 'none';
       $('#newSaleServiceContent').style.display = 'none';
       $('#serviceCallNeedsContent').style.display = 'block';
       $('#newSaleReasonWrap').style.display = 'none';
-      $('#serviceIssueWrap').style.display = 'block';
       $('#notesLabel').textContent = 'Service Issue Details';
       showToast('Service Call mode - Select customer need');
       
@@ -87,11 +84,6 @@
   function initCallTypeButtons() {
     $('#newSaleBtn').addEventListener('click', () => setCallType('new-sale'));
     $('#serviceBtn').addEventListener('click', () => setCallType('service'));
-    
-    // Handle service issue "Other" option
-    $('#serviceIssue').addEventListener('change', function() {
-      $('#serviceOtherWrap').style.display = (this.value === 'Service - Other') ? 'block' : 'none';
-    });
   }
 
   // Customer Needs Selection
@@ -451,8 +443,7 @@
         errors.squareFootage = 'Required for new sales';
       }
     } else {
-      // Service Call: Require service issue type and customer need
-      if (!$('#serviceIssue').value.trim()) errors.serviceIssue = 'Required';
+      // Service Call: Require customer need selection
       if (!selectedCustomerNeed) errors.customerNeed = 'Please select what customer needs';
     }
     
@@ -596,7 +587,6 @@
   function resetForm() {
     $('#intakeForm').reset();
     addressParts = { street: '', city: '', state: '', postal: '' };
-    $('#serviceOtherWrap').style.display = 'none';
     selectedService = null;
     selectedCustomerNeed = null;
     clearServiceGrid();
@@ -655,13 +645,9 @@
         reasonForCall = $('#newSaleReason').value.trim();
         reasonCustom = '';
       } else {
-        reasonForCall = $('#serviceIssue').value.trim();
-        reasonCustom = reasonForCall === 'Service - Other' ? $('#serviceOther').value.trim() : '';
-        
-        // Add customer need to custom field if not "Other"
-        if (reasonCustom === '' && selectedCustomerNeed) {
-          reasonCustom = 'Customer Need: ' + selectedCustomerNeed;
-        }
+        // Service Call: Use customer need as reason
+        reasonForCall = 'Service Call';
+        reasonCustom = selectedCustomerNeed || '';
       }
       
       const payload = {

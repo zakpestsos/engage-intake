@@ -214,6 +214,7 @@
     $('#modalInitialPrice').textContent = lead.initialPrice ? fmtMoney(lead.initialPrice) : 'Not set';
     $('#modalRecurringPrice').textContent = lead.recurringPrice ? fmtMoney(lead.recurringPrice) : 'Not set';
     $('#modalReason').textContent = lead.reason || 'Not specified';
+    $('#modalScheduling').textContent = lead.schedulingTold || 'Not specified';
     $('#modalNotes').textContent = lead.notes || 'No additional notes';
     $('#modalStatus').value = lead.status || 'NEW';
     

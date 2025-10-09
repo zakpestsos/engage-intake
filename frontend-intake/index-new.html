@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Agent Intake - Jem Pest Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-cyberpunk.css">
+  <script src="../frontend-shared/config.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <div class="cyber-header">
+    <div class="cyber-header-content">
+      <div class="company-info">
+        <h1 id="companyName">Call Center Intake</h1>
+        <div class="location" id="companySubtitle"></div>
+      </div>
+      <div class="header-actions">
+        <div class="current-time" id="currentTime">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loadingSpinner" class="loading-screen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading company information...</div>
+  </div>
+
+  <!-- Error Banner -->
+  <div id="errorBanner" class="error-banner" style="display:none;"></div>
+
+  <!-- Main Form Container -->
+  <div id="mainForm" class="main-container" style="display: none;">
+    <form id="intakeForm" class="cyber-form" autocomplete="off" novalidate>
+      
+      <!-- Left Column -->
+      <div class="form-column">
+        <!-- Customer Information -->
+        <div class="form-card">
+          <div class="card-title">Customer Information</div>
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label>First Name <span class="required">*</span></label>
+              <input type="text" id="firstName" placeholder="John" required autocomplete="off">
+              <div class="error" data-for="firstName"></div>
+            </div>
+            <div class="form-field">
+              <label>Last Name <span class="required">*</span></label>
+              <input type="text" id="lastName" placeholder="Smith" required autocomplete="off">
+              <div class="error" data-for="lastName"></div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label>Phone Number <span class="required">*</span></label>
+              <input type="tel" id="customerPhone" placeholder="(555) 123-4567" required autocomplete="off">
+              <div class="error" data-for="customerPhone"></div>
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" id="customerEmail" placeholder="customer@example.com" autocomplete="off">
+              <div class="error" data-for="customerEmail"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address & Property -->
+        <div class="form-card">
+          <div class="card-title">Address & Property Details</div>
+          
+          <div class="form-field">
+            <label>Street Address <span class="required">*</span> <span class="field-hint">Google Places enabled</span></label>
+            <input type="text" id="addressStreet" placeholder="Start typing address..." required autocomplete="off">
+            <div class="error" data-for="addressStreet"></div>
+          </div>
+
+          <div class="form-row form-row-3">
+            <div class="form-field">
+              <label>City <span class="required">*</span></label>
+              <input type="text" id="addressCity" placeholder="City" required autocomplete="off">
+              <div class="error" data-for="addressCity"></div>
+            </div>
+            <div class="form-field">
+              <label>State <span class="required">*</span></label>
+              <input type="text" id="addressState" placeholder="DE" required autocomplete="off" maxlength="2" style="text-transform: uppercase;">
+              <div class="error" data-for="addressState"></div>
+            </div>
+            <div class="form-field">
+              <label>Zip Code <span class="required">*</span></label>
+              <input type="text" id="addressPostal" placeholder="19901" required autocomplete="off" maxlength="10">
+              <div class="error" data-for="addressPostal"></div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Area Measurement <span class="field-hint">Enter to see available services</span></label>
+            <div class="area-input-container">
+              <div class="area-toggle">
+                <button type="button" id="sqftBtn" class="toggle-btn active">Square Feet</button>
+                <button type="button" id="acreBtn" class="toggle-btn">Acres</button>
+              </div>
+              <input type="number" id="areaInput" placeholder="Enter area" autocomplete="off" min="0" step="0.01">
+            </div>
+            <div id="conversionDisplay" class="conversion-display"></div>
+            <div class="error" data-for="squareFootage"></div>
+          </div>
+        </div>
+
+        <!-- Call Details -->
+        <div class="form-card">
+          <div class="card-title">Call Details</div>
+          
+          <div class="form-field">
+            <label>Reason for Call <span class="required">*</span></label>
+            <select id="reason" required autocomplete="off">
+              <option value="">Select reason...</option>
+              <option value="Schedule">Schedule Appointment</option>
+              <option value="Reschedule">Reschedule Appointment</option>
+              <option value="New Sale">New Sale</option>
+              <option value="Cancellation">Cancellation</option>
+              <option value="Complaint">Complaint</option>
+              <option value="Other…">Other...</option>
+            </select>
+            <div class="error" data-for="reason"></div>
+          </div>
+
+          <div class="form-field" id="reasonOtherWrap" style="display:none;">
+            <label>Specify Other Reason</label>
+            <input type="text" id="reasonOther" placeholder="Please specify..." autocomplete="off">
+          </div>
+
+          <div class="form-field">
+            <label>What the Customer Needed</label>
+            <textarea id="notes" rows="3" placeholder="Call notes and details..." autocomplete="off"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="form-column">
+        <!-- Service Selection -->
+        <div class="form-card service-selection-card">
+          <div class="card-title">
+            Select Service <span class="required">*</span>
+            <span class="service-count" id="serviceCount">0 services</span>
+          </div>
+          
+          <div class="service-search-container">
+            <input type="text" id="serviceSearch" placeholder="🔍 Search services..." autocomplete="off">
+          </div>
+
+          <div id="serviceGridContainer" class="service-grid-container">
+            <div class="service-grid" id="serviceGrid">
+              <!-- Services will be dynamically loaded here -->
+              <div class="no-services-message">
+                <p>Enter property area to view available services</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Service Display -->
+          <div id="selectedServiceDisplay" class="selected-service" style="display:none;">
+            <div class="selected-service-header">
+              <div class="selected-service-name" id="selectedServiceName"></div>
+              <button type="button" class="clear-selection-btn" id="clearSelectionBtn">✕ Clear</button>
+            </div>
+            <div class="selected-service-pricing">
+              <div class="pricing-item">
+                <div class="pricing-label">Initial Price</div>
+                <div class="pricing-value" id="selectedInitialPrice">$0.00</div>
+              </div>
+              <div class="pricing-item">
+                <div class="pricing-label">Recurring Price</div>
+                <div class="pricing-value" id="selectedRecurringPrice">$0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="error" data-for="product"></div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="submit-container">
+          <button type="submit" id="submitBtn" class="cyber-submit-btn">
+            <span class="btn-text">Save Lead</span>
+            <span class="btn-icon">→</span>
+          </button>
+          <div class="submit-hint">
+            Press Ctrl+Enter to quick submit • Form will reset after saving
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app-cyberpunk.js"></script>
+</body>
+</html>
+

@@ -174,12 +174,14 @@ function createLead_(payload, actor) {
   row[idx['Customer_First_Name']] = String(payload.customerFirstName || '');
   row[idx['Customer_Last_Name']] = String(payload.customerLastName || '');
   row[idx['Phone_Number']] = String(payload.customerPhone || '');
+  row[idx['Customer_Email']] = String(payload.customerEmail || '');
   row[idx['Address_Street']] = String(addr.street || '');
   row[idx['Address_City']] = String(addr.city || '');
   row[idx['Address_State']] = String(addr.state || '');
   row[idx['Address_Postal']] = String(addr.postal || '');
   row[idx['Reason_For_Call']] = reason;
   row[idx['Reason_Custom']] = String(payload.reasonCustom || '');
+  row[idx['Scheduling_Told']] = String(payload.schedulingTold || '');
   row[idx['Product_SKU']] = prodSku;
   row[idx['Product_Name']] = prodName;
   row[idx['Initial_Price']] = initialPrice;

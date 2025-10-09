@@ -170,6 +170,7 @@ function normalizeLeadBody_(b) {
     customerFirstName: b.customerFirstName,
     customerLastName: b.customerLastName,
     customerPhone: b.customerPhone,
+    customerEmail: b.customerEmail || '',
     address: {
       street: b.addressStreet || (b.address && b.address.street),
       city: b.addressCity || (b.address && b.address.city),
@@ -178,6 +179,7 @@ function normalizeLeadBody_(b) {
     },
     reasonForCall: b.reasonForCall,
     reasonCustom: b.reasonCustom,
+    schedulingTold: b.schedulingTold || '',
     productSku: b.productSku,
     productName: b.productName,
     initialPrice: b.initialPrice,

@@ -293,49 +293,6 @@
     }
   }
 
-  // Card Number Formatting
-  function formatCardNumber(value) {
-    const digits = value.replace(/\D/g, '');
-    const groups = digits.match(/.{1,4}/g) || [];
-    return groups.join(' ');
-  }
-
-  function onCardNumberInput(e) {
-    const input = e.target;
-    const cursorPos = input.selectionStart;
-    const oldValue = input.value;
-    const formatted = formatCardNumber(oldValue);
-    
-    if (formatted !== oldValue) {
-      input.value = formatted;
-      const diff = formatted.length - oldValue.length;
-      input.setSelectionRange(cursorPos + diff, cursorPos + diff);
-    }
-  }
-
-  // Card Expiration Formatting (MM/YY)
-  function formatCardExpiration(value) {
-    const digits = value.replace(/\D/g, '');
-    
-    if (digits.length >= 2) {
-      return digits.slice(0, 2) + '/' + digits.slice(2, 4);
-    } else {
-      return digits;
-    }
-  }
-
-  function onCardExpirationInput(e) {
-    const input = e.target;
-    const formatted = formatCardExpiration(input.value);
-    input.value = formatted;
-  }
-
-  // CVV and Zip Formatting (digits only)
-  function onDigitsOnlyInput(e) {
-    const input = e.target;
-    input.value = input.value.replace(/\D/g, '');
-  }
-
   // Google Places
   function initPlaces() {
     if (!window.google || !window.google.maps || !window.google.maps.places) {
@@ -414,23 +371,6 @@
     const areaValue = Number($('#areaInput').value) || 0;
     if (areaValue <= 0) {
       errors.squareFootage = 'Required';
-    }
-    
-    // Validate payment fields if "New Sale" is selected
-    const isNewSale = $('#reason').value === 'New Sale';
-    if (isNewSale) {
-      if (!$('#cardholderName').value.trim()) errors.cardholderName = 'Required';
-      
-      const cardNumber = $('#cardNumber').value.replace(/\D/g, '');
-      if (!cardNumber || cardNumber.length < 13) errors.cardNumber = 'Invalid card number';
-      
-      const expiration = $('#cardExpiration').value;
-      if (!/^\d{2}\/\d{2}$/.test(expiration)) errors.cardExpiration = 'Invalid format (MM/YY)';
-      
-      const cvv = $('#cardCVV').value;
-      if (!cvv || cvv.length < 3) errors.cardCVV = 'Required (3-4 digits)';
-      
-      if (!$('#cardZip').value.trim()) errors.cardZip = 'Required';
     }
     
     $$('.error').forEach(el => el.textContent = '');
@@ -574,7 +514,6 @@
     $('#intakeForm').reset();
     addressParts = { street: '', city: '', state: '', postal: '' };
     $('#reasonOtherWrap').style.display = 'none';
-    $('#paymentSection').style.display = 'none';
     selectedService = null;
     clearServiceGrid();
     currentAreaUnit = 'sqft';
@@ -607,32 +546,10 @@
     $('#areaInput').addEventListener('input', onAreaInputChange);
     $('#customerPhone').addEventListener('input', onPhoneInput);
     
-    // Reason for call - show "Other" field and payment section
+    // Reason for call - show "Other" field
     $('#reason').addEventListener('change', function(){ 
       $('#reasonOtherWrap').style.display = (this.value === 'Other…') ? 'block' : 'none'; 
-      
-      // Show payment section if "New Sale" is selected
-      const isNewSale = this.value === 'New Sale';
-      $('#paymentSection').style.display = isNewSale ? 'block' : 'none';
-      
-      if (isNewSale) {
-        showToast('💳 Payment information required for New Sale');
-      }
     });
-    
-    // Payment field formatting
-    if ($('#cardNumber')) {
-      $('#cardNumber').addEventListener('input', onCardNumberInput);
-    }
-    if ($('#cardExpiration')) {
-      $('#cardExpiration').addEventListener('input', onCardExpirationInput);
-    }
-    if ($('#cardCVV')) {
-      $('#cardCVV').addEventListener('input', onDigitsOnlyInput);
-    }
-    if ($('#cardZip')) {
-      $('#cardZip').addEventListener('input', onDigitsOnlyInput);
-    }
     
     $('#intakeForm').addEventListener('submit', async function(e){
       e.preventDefault();
@@ -644,7 +561,6 @@
       }
       
       const companyName = window.SELECTED_COMPANY;
-      const isNewSale = $('#reason').value === 'New Sale';
       
       const payload = {
         companyName: companyName,
@@ -669,17 +585,6 @@
         leadValue: selectedService.initialPrice,
         notes: $('#notes').value.trim()
       };
-      
-      // Add payment info if New Sale
-      if (isNewSale) {
-        payload.paymentInfo = {
-          cardholderName: $('#cardholderName').value.trim(),
-          cardNumber: $('#cardNumber').value.replace(/\D/g, ''), // Strip formatting
-          cardExpiration: $('#cardExpiration').value.trim(),
-          cardCVV: $('#cardCVV').value.trim(),
-          cardZip: $('#cardZip').value.trim()
-        };
-      }
       
       $('#submitBtn').disabled = true;
       $('#submitBtn').querySelector('.btn-text').textContent = 'Saving...';

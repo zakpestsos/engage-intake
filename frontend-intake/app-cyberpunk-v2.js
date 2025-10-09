@@ -6,6 +6,7 @@
   let allServices = [];
   let filteredServices = [];
   let selectedService = null;
+  let selectedCustomerNeed = null;
   let addressParts = { street: '', city: '', state: '', postal: '' };
   let placesAutocomplete = null;
   let currentAreaUnit = 'sqft';
@@ -54,23 +55,31 @@
     $('#serviceBtn').classList.toggle('active', type === 'service');
     
     if (type === 'new-sale') {
-      // New Sale mode: Show service selection, show new sale reason
-      $('#serviceGrid').closest('.service-card').style.display = 'block';
+      // New Sale mode: Show service selection
+      $('#serviceCardTitle').innerHTML = 'Select Service <span class="required" id="serviceRequired">*</span><span class="service-count" id="serviceCount">' + 
+        (allServices.length > 0 ? allServices.length + ' services available' : 'Enter property area first') + '</span>';
+      $('#serviceSearch').style.display = 'block';
+      $('#newSaleServiceContent').style.display = 'block';
+      $('#serviceCallNeedsContent').style.display = 'none';
       $('#newSaleReasonWrap').style.display = 'block';
       $('#serviceIssueWrap').style.display = 'none';
       $('#serviceOtherWrap').style.display = 'none';
       $('#notesLabel').textContent = 'Call Notes & Details';
       showToast('New Sale mode - Service selection required');
     } else {
-      // Service mode: Hide service selection, show service issue reason
-      $('#serviceGrid').closest('.service-card').style.display = 'none';
+      // Service mode: Show customer needs
+      $('#serviceCardTitle').innerHTML = 'What Does Customer Need? <span class="required">*</span>';
+      $('#serviceSearch').style.display = 'none';
+      $('#newSaleServiceContent').style.display = 'none';
+      $('#serviceCallNeedsContent').style.display = 'block';
       $('#newSaleReasonWrap').style.display = 'none';
       $('#serviceIssueWrap').style.display = 'block';
       $('#notesLabel').textContent = 'Service Issue Details';
-      showToast('Service Call mode - Describe the issue');
+      showToast('Service Call mode - Select customer need');
       
       // Clear selected service when switching to service mode
       selectedService = null;
+      selectedCustomerNeed = null;
       hideSelectedService();
     }
   }
@@ -83,6 +92,30 @@
     $('#serviceIssue').addEventListener('change', function() {
       $('#serviceOtherWrap').style.display = (this.value === 'Service - Other') ? 'block' : 'none';
     });
+  }
+
+  // Customer Needs Selection
+  function initCustomerNeeds() {
+    $$('.need-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const needValue = card.getAttribute('data-need');
+        selectCustomerNeed(needValue);
+      });
+    });
+  }
+
+  function selectCustomerNeed(need) {
+    selectedCustomerNeed = need;
+    
+    // Update card states
+    $$('.need-card').forEach(card => {
+      card.classList.toggle('selected', card.getAttribute('data-need') === need);
+    });
+    
+    // Clear error
+    clearFieldError('customerNeed');
+    
+    showToast('Customer need selected: ' + need);
   }
 
   // Area Converter
@@ -418,8 +451,9 @@
         errors.squareFootage = 'Required for new sales';
       }
     } else {
-      // Service Call: Require service issue type
+      // Service Call: Require service issue type and customer need
       if (!$('#serviceIssue').value.trim()) errors.serviceIssue = 'Required';
+      if (!selectedCustomerNeed) errors.customerNeed = 'Please select what customer needs';
     }
     
     $$('.error').forEach(el => el.textContent = '');
@@ -564,9 +598,13 @@
     addressParts = { street: '', city: '', state: '', postal: '' };
     $('#serviceOtherWrap').style.display = 'none';
     selectedService = null;
+    selectedCustomerNeed = null;
     clearServiceGrid();
     currentAreaUnit = 'sqft';
     setAreaUnit('sqft');
+    
+    // Clear customer need selections
+    $$('.need-card').forEach(card => card.classList.remove('selected'));
     
     // Reset to New Sale mode
     setCallType('new-sale');
@@ -579,6 +617,7 @@
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     initCallTypeButtons();
+    initCustomerNeeds();
     initAreaConverter();
     initServiceSearch();
     
@@ -618,6 +657,11 @@
       } else {
         reasonForCall = $('#serviceIssue').value.trim();
         reasonCustom = reasonForCall === 'Service - Other' ? $('#serviceOther').value.trim() : '';
+        
+        // Add customer need to custom field if not "Other"
+        if (reasonCustom === '' && selectedCustomerNeed) {
+          reasonCustom = 'Customer Need: ' + selectedCustomerNeed;
+        }
       }
       
       const payload = {
@@ -647,9 +691,9 @@
         payload.recurringPrice = selectedService.recurringPrice;
         payload.leadValue = selectedService.initialPrice;
       } else {
-        // Service calls - no product selected
+        // Service calls - no product selected but include customer need in productName for reference
         payload.productSku = '';
-        payload.productName = '';
+        payload.productName = selectedCustomerNeed || '';
         payload.initialPrice = 0;
         payload.recurringPrice = 0;
         payload.leadValue = 0;

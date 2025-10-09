@@ -465,6 +465,66 @@ body {
   padding: 0.5rem;
 }
 
+/* Customer Needs Grid */
+.customer-needs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.need-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.need-card:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.need-card.selected {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-color: var(--accent-blue-light);
+}
+
+.need-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.need-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.need-card.selected .need-label {
+  color: white;
+}
+
+.need-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+  text-align: center;
+}
+
+.need-card.selected .need-desc {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .service-grid::-webkit-scrollbar {
   width: 6px;
 }

@@ -133,23 +133,83 @@
         </div>
       </div>
 
-      <!-- Middle Row: Service Selection (Full Width) -->
+      <!-- Middle Row: Service Selection OR Customer Needs (Full Width) -->
       <div class="form-card service-card">
         <div class="card-header">
-          <div class="card-title">
-            Select Service <span class="required">*</span>
+          <div class="card-title" id="serviceCardTitle">
+            Select Service <span class="required" id="serviceRequired">*</span>
             <span class="service-count" id="serviceCount">Enter property area first</span>
           </div>
           <input type="text" id="serviceSearch" class="service-search" placeholder="🔍 Search services...">
         </div>
         <div class="card-body">
-          <div class="service-grid" id="serviceGrid">
-            <div class="no-services">
-              <div class="no-services-icon">📏</div>
-              <div class="no-services-text">Enter property area above to view available services</div>
+          <!-- New Sale: Service Grid -->
+          <div id="newSaleServiceContent">
+            <div class="service-grid" id="serviceGrid">
+              <div class="no-services">
+                <div class="no-services-icon">📏</div>
+                <div class="no-services-text">Enter property area above to view available services</div>
+              </div>
             </div>
+            <div class="error" data-for="product"></div>
           </div>
-          <div class="error" data-for="product"></div>
+          
+          <!-- Service Call: Customer Needs -->
+          <div id="serviceCallNeedsContent" style="display:none;">
+            <div class="customer-needs-grid" id="customerNeedsGrid">
+              <div class="need-card" data-need="Re-service Needed">
+                <div class="need-icon">🔄</div>
+                <div class="need-label">Re-service Needed</div>
+                <div class="need-desc">Treatment didn't work, pests still present</div>
+              </div>
+              <div class="need-card" data-need="New Pest Problem">
+                <div class="need-icon">🐛</div>
+                <div class="need-label">New Pest Problem</div>
+                <div class="need-desc">Different pests than original service</div>
+              </div>
+              <div class="need-card" data-need="Schedule Service Visit">
+                <div class="need-icon">📅</div>
+                <div class="need-label">Schedule Service Visit</div>
+                <div class="need-desc">Need to book appointment</div>
+              </div>
+              <div class="need-card" data-need="Reschedule Appointment">
+                <div class="need-icon">🔀</div>
+                <div class="need-label">Reschedule Appointment</div>
+                <div class="need-desc">Change existing appointment time</div>
+              </div>
+              <div class="need-card" data-need="Cancel/Pause Service">
+                <div class="need-icon">⏸️</div>
+                <div class="need-label">Cancel/Pause Service</div>
+                <div class="need-desc">Temporarily stop or cancel service</div>
+              </div>
+              <div class="need-card" data-need="Billing/Invoice Question">
+                <div class="need-icon">💳</div>
+                <div class="need-label">Billing/Invoice Question</div>
+                <div class="need-desc">Payment or charge inquiry</div>
+              </div>
+              <div class="need-card" data-need="Add or Upgrade Service">
+                <div class="need-icon">⬆️</div>
+                <div class="need-label">Add or Upgrade Service</div>
+                <div class="need-desc">Interested in additional coverage</div>
+              </div>
+              <div class="need-card" data-need="Service Quality Concern">
+                <div class="need-icon">⚠️</div>
+                <div class="need-label">Service Quality Concern</div>
+                <div class="need-desc">Issue with how service was performed</div>
+              </div>
+              <div class="need-card" data-need="Technician Issue">
+                <div class="need-icon">👷</div>
+                <div class="need-label">Technician Issue</div>
+                <div class="need-desc">Late arrival, no-show, or behavior concern</div>
+              </div>
+              <div class="need-card" data-need="Request Documentation">
+                <div class="need-icon">📄</div>
+                <div class="need-label">Request Documentation</div>
+                <div class="need-desc">Need receipt, report, or service records</div>
+              </div>
+            </div>
+            <div class="error" data-for="customerNeed"></div>
+          </div>
         </div>
       </div>
 

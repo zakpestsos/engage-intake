@@ -302,6 +302,8 @@
   function updateServiceCount() {
     const count = filteredServices.length;
     const countEl = $('#serviceCount');
+    if (!countEl) return; // Element not visible in service call mode
+    
     if (count === 0 && allServices.length === 0) {
       countEl.textContent = 'Enter property area first';
       countEl.style.color = '#94a3b8';

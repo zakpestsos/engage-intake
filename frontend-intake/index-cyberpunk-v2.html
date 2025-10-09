@@ -162,6 +162,21 @@
                 <label>Specify Other</label>
                 <input type="text" id="reasonOther" placeholder="Please specify...">
               </div>
+              
+              <!-- Scheduling Information -->
+              <div class="form-field">
+                <label>Scheduling Told to Customer <span class="required">*</span></label>
+                <select id="schedulingTold" required>
+                  <option value="">Select timeframe told...</option>
+                  <option value="Today Afternoon (12-4 PM)">Today Afternoon (12-4 PM)</option>
+                  <option value="Tomorrow Morning (8-12 PM)">Tomorrow Morning (8-12 PM)</option>
+                  <option value="Tomorrow Afternoon (12-4 PM)">Tomorrow Afternoon (12-4 PM)</option>
+                  <option value="Tomorrow (Anytime)">Tomorrow (Anytime)</option>
+                  <option value="Other - See Notes">Other - See Notes</option>
+                </select>
+                <div class="error" data-for="schedulingTold"></div>
+              </div>
+              
               <div class="form-field">
                 <label>What the Customer Needed</label>
                 <textarea id="notes" rows="3" placeholder="Call notes and details..."></textarea>
@@ -188,6 +203,51 @@
               <span class="btn-arrow">→</span>
             </button>
             <div class="submit-hint">Press Ctrl+Enter to quick submit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Information (Only for New Sale) -->
+      <div id="paymentSection" class="form-row-container" style="display:none;">
+        <div class="form-card payment-card">
+          <div class="card-header">
+            <div class="card-title">💳 Payment Information <span class="badge-sale">New Sale</span></div>
+          </div>
+          <div class="card-body">
+            <div class="field-group">
+              <div class="form-field">
+                <label>Cardholder Name <span class="required">*</span></label>
+                <input type="text" id="cardholderName" placeholder="John Smith">
+                <div class="error" data-for="cardholderName"></div>
+              </div>
+              <div class="field-row">
+                <div class="form-field">
+                  <label>Card Number <span class="required">*</span></label>
+                  <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                  <div class="error" data-for="cardNumber"></div>
+                </div>
+                <div class="form-field">
+                  <label>Expiration <span class="required">*</span></label>
+                  <input type="text" id="cardExpiration" placeholder="MM/YY" maxlength="5">
+                  <div class="error" data-for="cardExpiration"></div>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="form-field">
+                  <label>CVV <span class="required">*</span></label>
+                  <input type="text" id="cardCVV" placeholder="123" maxlength="4">
+                  <div class="error" data-for="cardCVV"></div>
+                </div>
+                <div class="form-field">
+                  <label>Zip Code <span class="required">*</span></label>
+                  <input type="text" id="cardZip" placeholder="19901" maxlength="10">
+                  <div class="error" data-for="cardZip"></div>
+                </div>
+              </div>
+              <div class="payment-note">
+                🔒 Payment information is encrypted and securely stored. Only displayed for New Sale transactions.
+              </div>
+            </div>
           </div>
         </div>
       </div>

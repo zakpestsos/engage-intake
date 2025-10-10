@@ -122,6 +122,43 @@
     });
   }
 
+  // Calculate conversion metrics for Joel's key metrics
+  function calculateConversionMetrics(leads) {
+    const totalCalls = leads.length;
+    const appointments = leads.filter(l => l.status === 'ACCEPTED' || l.status === 'COMPLETED').length;
+    const sales = leads.filter(l => l.status === 'COMPLETED').length;
+    
+    const callToAppt = totalCalls > 0 ? (appointments / totalCalls * 100) : 0;
+    const apptToSale = appointments > 0 ? (sales / appointments * 100) : 0;
+    const convertedRevenue = leads
+      .filter(l => l.status === 'COMPLETED')
+      .reduce((sum, l) => sum + (Number(l.leadValue) || 0), 0);
+    
+    const avgDealSize = sales > 0 ? (convertedRevenue / sales) : 0;
+    
+    return { 
+      callToAppt, 
+      apptToSale, 
+      convertedRevenue, 
+      totalCalls, 
+      appointments, 
+      sales,
+      avgDealSize
+    };
+  }
+
+  // Update conversion metrics display
+  function updateConversionMetrics(metrics) {
+    $('#callToAppt').textContent = metrics.callToAppt.toFixed(1) + '%';
+    $('#apptToSale').textContent = metrics.apptToSale.toFixed(1) + '%';
+    $('#convertedRevenue').textContent = fmtMoney(metrics.convertedRevenue);
+    
+    // Update detail text
+    $('#callToApptDetail').textContent = `${metrics.appointments} of ${metrics.totalCalls} calls accepted`;
+    $('#apptToSaleDetail').textContent = `${metrics.sales} of ${metrics.appointments} appointments closed`;
+    $('#convertedRevenueDetail').textContent = `From ${metrics.sales} completed ${metrics.sales === 1 ? 'sale' : 'sales'}`;
+  }
+
   function renderKPIs(stats) {
     const counts = stats.counts || {};
     $('#kpiNew').textContent = counts.NEW || 0;
@@ -198,6 +235,64 @@
           '</div>' +
         '</td>';
       tbody.appendChild(tr);
+    });
+  }
+
+  // Render leads as cards for card view
+  function renderLeadsCards(leads) {
+    const grid = $('#leadsCardGrid');
+    grid.innerHTML = '';
+    
+    // Sort leads based on current sort settings
+    const sortedLeads = sortLeads(leads, currentSort.field, currentSort.direction);
+    
+    sortedLeads.forEach(lead => {
+      const card = document.createElement('div');
+      card.className = 'lead-card';
+      card.setAttribute('data-lead-id', lead.id);
+      
+      const createdDate = new Date(lead.createdAt).toLocaleDateString();
+      
+      card.innerHTML = `
+        <div class="lead-card-header">
+          <div class="lead-customer">${sanitize(lead.customerName)}</div>
+          <span class="badge status-${sanitize((lead.status || '').toLowerCase())}">${sanitize(lead.status)}</span>
+        </div>
+        <div class="lead-card-body">
+          <div class="lead-info">
+            <div class="info-row">
+              <span class="info-label">Product:</span>
+              <span class="info-value">${sanitize(lead.product || lead.productSku || 'Service')}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Location:</span>
+              <span class="info-value">${sanitize(lead.city)}, ${sanitize(lead.state)}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Created:</span>
+              <span class="info-value">${createdDate}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Value:</span>
+              <span class="info-value lead-value">${fmtMoney(lead.leadValue)}</span>
+            </div>
+          </div>
+        </div>
+        <div class="lead-card-actions">
+          <button class="card-action-btn accept" data-action="ACCEPTED" data-id="${sanitize(lead.id)}">Accept</button>
+          <button class="card-action-btn complete" data-action="COMPLETED" data-id="${sanitize(lead.id)}">Complete</button>
+          <button class="card-action-btn cancel" data-action="CANCELLED" data-id="${sanitize(lead.id)}">Cancel</button>
+        </div>
+      `;
+      
+      // Add click handler to open modal when clicking card (but not buttons)
+      card.addEventListener('click', function(e) {
+        if (!e.target.closest('button')) {
+          openLeadModal(lead.id);
+        }
+      });
+      
+      grid.appendChild(card);
     });
   }
   
@@ -325,6 +420,46 @@
     $('#velocityChange').textContent = '+22.1%';
   }
   
+  // Draw conversion funnel chart (Joel's key metric visualization)
+  function drawConversionFunnel(metrics) {
+    console.log('📊 Drawing conversion funnel...');
+    
+    if (!window.google || !google.visualization) {
+      console.error('Google Charts not loaded');
+      return;
+    }
+    
+    const data = google.visualization.arrayToDataTable([
+      ['Stage', 'Count', { role: 'style' }],
+      ['Total Calls', metrics.totalCalls, '#3b82f6'],
+      ['Appointments\n(Accepted)', metrics.appointments, '#10b981'],
+      ['Sales\n(Completed)', metrics.sales, '#f59e0b']
+    ]);
+    
+    const options = {
+      title: 'Lead Conversion Funnel',
+      backgroundColor: 'transparent',
+      titleTextStyle: { color: '#f1f5f9', fontSize: 18, bold: true },
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' }
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0
+      },
+      chartArea: { width: '80%', height: '70%' },
+      height: 400,
+      bar: { groupWidth: '60%' }
+    };
+    
+    const chart = new google.visualization.ColumnChart(document.getElementById('conversionFunnelChart'));
+    chart.draw(data, options);
+    console.log('✅ Conversion funnel drawn');
+  }
+
   function drawMasterpieceCharts(leads, stats) {
     console.log('🎨 Drawing masterpiece charts with', leads.length, 'leads');
     
@@ -336,6 +471,10 @@
     const metrics = calculateAdvancedMetrics(leads, stats);
     updateExecutiveSummary(metrics);
     
+    // Calculate and draw conversion metrics
+    const conversionMetrics = calculateConversionMetrics(leads);
+    updateConversionMetrics(conversionMetrics);
+    
     google.charts.load('current', { 
       packages: ['corechart'] 
     });
@@ -343,6 +482,7 @@
     google.charts.setOnLoadCallback(function(){
       console.log('📊 Google Charts loaded, drawing charts...');
       try {
+        drawConversionFunnel(conversionMetrics);
         drawRevenueFunnel(leads);
         drawLeadSources(leads);
         drawGeographicDistribution(metrics.byState);
@@ -677,6 +817,52 @@
     $('#performanceView').addEventListener('click', () => showAnalyticsView('performanceAnalytics'));
     $('#trendsView').addEventListener('click', () => showAnalyticsView('trendsAnalytics'));
     
+    // View toggle (Table vs Card)
+    let currentView = 'table';
+    $('#tableViewBtn').addEventListener('click', function() {
+      currentView = 'table';
+      $('#tableViewContainer').style.display = 'block';
+      $('#cardViewContainer').style.display = 'none';
+      $('#tableViewBtn').classList.add('active');
+      $('#cardViewBtn').classList.remove('active');
+    });
+    
+    $('#cardViewBtn').addEventListener('click', function() {
+      currentView = 'card';
+      $('#tableViewContainer').style.display = 'none';
+      $('#cardViewContainer').style.display = 'block';
+      $('#cardViewBtn').classList.add('active');
+      $('#tableViewBtn').classList.remove('active');
+      
+      // Render cards if we have leads
+      if (window.CURRENT_LEADS_ORIGINAL) {
+        renderLeadsCards(window.CURRENT_LEADS_ORIGINAL);
+      }
+    });
+    
+    // Export functionality
+    $('#exportCSV').addEventListener('click', function() {
+      if (!window.CURRENT_LEADS_ORIGINAL || window.CURRENT_LEADS_ORIGINAL.length === 0) {
+        showToast('No data to export');
+        return;
+      }
+      
+      const companyName = $('#companyName').textContent.replace(' Dashboard', '');
+      exportToCSV(window.CURRENT_LEADS_ORIGINAL, companyName);
+      showToast('Exported ' + window.CURRENT_LEADS_ORIGINAL.length + ' leads to CSV');
+    });
+    
+    $('#exportXLSX').addEventListener('click', function() {
+      if (!window.CURRENT_LEADS_ORIGINAL || window.CURRENT_LEADS_ORIGINAL.length === 0) {
+        showToast('No data to export');
+        return;
+      }
+      
+      const companyName = $('#companyName').textContent.replace(' Dashboard', '');
+      exportToXLSX(window.CURRENT_LEADS_ORIGINAL, companyName);
+      showToast('Exported ' + window.CURRENT_LEADS_ORIGINAL.length + ' leads to Excel');
+    });
+    
     // Set up column sorting
     document.querySelectorAll('.leads-table th.sortable').forEach(th => {
       th.addEventListener('click', () => {
@@ -713,8 +899,17 @@
         window.CURRENT_LEADS_ORIGINAL = leads;
         window.CURRENT_STATS = stats;
         
+        // Update conversion metrics in leads section
+        const conversionMetrics = calculateConversionMetrics(leads);
+        updateConversionMetrics(conversionMetrics);
+        
         renderLeads(leads); 
-        renderKPIs(stats); 
+        renderKPIs(stats);
+        
+        // Re-render current view if card view is active
+        if ($('#cardViewContainer').style.display !== 'none') {
+          renderLeadsCards(leads);
+        }
         
         // Update analytics if on analytics tab
         if ($('#analyticsSection').style.display !== 'none') {
@@ -733,6 +928,7 @@
       }
     });
     
+    // Handle action buttons in table view
     $('#leadsBody').addEventListener('click', async function(e){
       // Check if it's an action button
       const btn = e.target.closest('button[data-action]'); 
@@ -763,6 +959,31 @@
       if (row) {
         const leadId = row.getAttribute('data-lead-id');
         openLeadModal(leadId);
+      }
+    });
+    
+    // Handle action buttons in card view (event delegation)
+    $('#leadsCardGrid').addEventListener('click', async function(e){
+      const btn = e.target.closest('button[data-action]');
+      if (btn) {
+        e.stopPropagation(); // Prevent card click
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        
+        // Visual feedback
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = '⏳';
+        
+        try {
+          await updateLead(token, id, action);
+          showToast('Status updated to: ' + action);
+          $('#applyFilters').click();
+        } catch (e) {
+          showError('Update failed: ' + e.message);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
       }
     });
     
@@ -843,6 +1064,10 @@
       
       // Store data globally for analytics
       window.CURRENT_STATS = stats;
+      
+      // Calculate and display conversion metrics (Joel's key metrics)
+      const conversionMetrics = calculateConversionMetrics(leads);
+      updateConversionMetrics(conversionMetrics);
       
       renderLeads(leads); 
       renderKPIs(stats); 

@@ -5,9 +5,11 @@
   <title>Client Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store">
-  <link rel="stylesheet" href="../frontend-shared/styles.css">
+  <link rel="stylesheet" href="styles-dashboard.css">
   <script src="../frontend-shared/config.js"></script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="export-utils.js"></script>
 </head>
 <body>
   <!-- Loading Spinner -->
@@ -35,6 +37,25 @@
 
       <!-- Leads Section -->
       <section id="leadsSection" class="dashboard-section">
+        <!-- Analytics Hero - Key Conversion Metrics -->
+        <div class="analytics-hero">
+          <div class="hero-card primary">
+            <div class="hero-label">Call → Appointment</div>
+            <div class="hero-value" id="callToAppt">0%</div>
+            <div class="hero-detail" id="callToApptDetail">0 of 0 calls accepted</div>
+          </div>
+          <div class="hero-card secondary">
+            <div class="hero-label">Appointment → Sale</div>
+            <div class="hero-value" id="apptToSale">0%</div>
+            <div class="hero-detail" id="apptToSaleDetail">0 of 0 appointments closed</div>
+          </div>
+          <div class="hero-card revenue">
+            <div class="hero-label">Revenue from Converted Calls</div>
+            <div class="hero-value" id="convertedRevenue">$0</div>
+            <div class="hero-detail" id="convertedRevenueDetail">From completed sales</div>
+          </div>
+        </div>
+
         <!-- KPI Cards -->
         <div class="kpi-grid">
           <div class="kpi-card">
@@ -92,8 +113,25 @@
 
         <!-- Leads Table -->
         <div class="leads-section">
-          <h3>Lead Management</h3>
-          <div class="table-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3>Lead Management</h3>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+              <!-- Export Controls -->
+              <div class="export-controls" style="margin: 0;">
+                <button id="exportCSV" class="export-btn">Export CSV</button>
+                <button id="exportXLSX" class="export-btn">Export XLSX</button>
+              </div>
+              <!-- View Toggle -->
+              <div class="view-toggle" style="margin: 0;">
+                <button id="tableViewBtn" class="view-btn active">Table View</button>
+                <button id="cardViewBtn" class="view-btn">Card View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table View Container -->
+          <div id="tableViewContainer">
+            <div class="table-container">
             <table id="leadsTable" class="leads-table">
               <thead>
                 <tr>
@@ -109,6 +147,14 @@
               </thead>
               <tbody id="leadsBody"></tbody>
             </table>
+            </div>
+          </div>
+
+          <!-- Card View Container -->
+          <div id="cardViewContainer" style="display:none;">
+            <div id="leadsCardGrid" class="leads-card-grid">
+              <!-- Cards rendered by JavaScript -->
+            </div>
           </div>
         </div>
       </section>
@@ -170,6 +216,12 @@
 
         <!-- Analytics Views -->
         <div id="overviewAnalytics" class="analytics-view">
+          <!-- Conversion Funnel Chart (Featured) -->
+          <div class="chart-card-featured">
+            <h3>Conversion Funnel Analysis</h3>
+            <div id="conversionFunnelChart" class="chart-container"></div>
+          </div>
+
           <div class="analytics-grid">
             <!-- Revenue Funnel -->
             <div class="chart-card featured">

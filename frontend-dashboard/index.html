@@ -241,10 +241,10 @@
           </div>
 
           <div class="analytics-grid">
-            <!-- Revenue Funnel -->
+            <!-- Lead Pipeline Status -->
             <div class="chart-card featured">
               <div class="chart-header">
-                <h4>Revenue Funnel</h4>
+                <h4>Lead Pipeline Status</h4>
                 <div class="chart-controls">
                   <select id="funnelPeriod" class="chart-select">
                     <option value="30">Last 30 Days</option>
@@ -257,7 +257,7 @@
               <div class="chart-info">
                 <div class="chart-info-icon">ℹ️</div>
                 <div class="chart-info-text">
-                  <strong>Data Source:</strong> Aggregates leads by status (NEW, ACCEPTED, COMPLETED) from the Leads sheet. Shows the breakdown of lead statuses to identify pipeline bottlenecks.
+                  <strong>Data Source:</strong> Counts leads by status (NEW, ACCEPTED, COMPLETED) from the Leads sheet. Shows how many leads are at each stage of your pipeline to identify bottlenecks.
                 </div>
               </div>
             </div>
@@ -307,11 +307,11 @@
             </div>
             </div>
 
-            <!-- Time Analysis -->
+            <!-- Call Reason Distribution -->
             <div class="chart-card">
               <div class="chart-header">
-                <h4>Peak Hours Analysis</h4>
-                <div class="metric-highlight" id="peakHour">Peak: Unknown</div>
+                <h4>Call Reason Distribution</h4>
+                <div class="metric-highlight" id="peakHour">Most Common: Unknown</div>
               </div>
               <div id="chartTimeAnalysis" class="chart-container"></div>
               <div class="chart-info">
@@ -322,17 +322,17 @@
               </div>
             </div>
 
-            <!-- Conversion Timeline -->
+            <!-- Lead Status Distribution -->
             <div class="chart-card">
               <div class="chart-header">
-                <h4>Lead Conversion Timeline</h4>
-                <div class="metric-highlight" id="avgConversionTime">Avg: 0 days</div>
+                <h4>Lead Status Distribution</h4>
+                <div class="metric-highlight" id="avgConversionTime">Completion Rate: 0%</div>
               </div>
               <div id="chartConversionTimeline" class="chart-container"></div>
               <div class="chart-info">
                 <div class="chart-info-icon">ℹ️</div>
                 <div class="chart-info-text">
-                  <strong>Data Source:</strong> Aggregates leads by Status field (NEW, ACCEPTED, COMPLETED, CANCELLED). Shows current pipeline distribution and calculates completion rate percentage for performance tracking.
+                  <strong>Data Source:</strong> Counts leads by Status field (NEW, ACCEPTED, COMPLETED, CANCELLED). Shows current pipeline distribution and calculates completion rate percentage for performance tracking.
                 </div>
               </div>
             </div>

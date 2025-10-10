@@ -707,7 +707,7 @@
     // Find top reason
     if (reasonData.length > 0 && reasonData[0][0] !== 'No Data') {
       const topReason = reasonData.reduce((a, b) => a[1] > b[1] ? a : b);
-      $('#peakHour').textContent = `Top: ${topReason[0]} (${topReason[1]} leads)`;
+      $('#peakHour').textContent = `Most Common: ${topReason[0]} (${topReason[1]} leads)`;
     }
     console.log('✅ Time analysis drawn');
   }

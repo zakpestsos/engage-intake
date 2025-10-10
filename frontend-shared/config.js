@@ -9,10 +9,10 @@ window.APP_CONFIG = {
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM',
   
   // Debug flag for cache busting - NUCLEAR DATA PROTECTION
-  VERSION: '2025.01.15-nuclear-fix-' + Math.random().toString(36).substr(2, 9),
+  VERSION: '2025.01.15-API-FIX-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
   
-  // Force cache refresh timestamp - NUCLEAR CACHE BUST
-  CACHE_BUSTER: Date.now() + Math.random() + performance.now()
+  // Force cache refresh timestamp - NUCLEAR CACHE BUST - UPDATED 2025-01-15
+  CACHE_BUSTER: 'API_FIX_' + Date.now() + '_' + Math.random() + '_' + performance.now()
 };
 
 /* 

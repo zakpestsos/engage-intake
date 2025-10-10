@@ -499,28 +499,35 @@
   
   function drawRevenueFunnel(leads) {
     console.log('📊 Drawing revenue funnel...');
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Stage');
-    data.addColumn('number', 'Count');
-    
-    const newCount = leads.filter(l => l.status === 'NEW').length;
-    const acceptedCount = leads.filter(l => l.status === 'ACCEPTED').length;
-    const completedCount = leads.filter(l => l.status === 'COMPLETED').length;
-    
-    data.addRows([
-      ['New Leads', newCount],
-      ['Accepted', acceptedCount],
-      ['Completed', completedCount]
+    const data = google.visualization.arrayToDataTable([
+      ['Stage', 'Count', { role: 'style' }, { role: 'annotation' }],
+      ['New Leads', leads.filter(l => l.status === 'NEW').length, '#3b82f6', ''],
+      ['Accepted', leads.filter(l => l.status === 'ACCEPTED').length, '#10b981', ''],
+      ['Completed', leads.filter(l => l.status === 'COMPLETED').length, '#f59e0b', '']
     ]);
     
     const options = {
-      title: 'Lead Conversion Funnel',
       backgroundColor: 'transparent',
-      titleTextStyle: { color: '#f1f5f9', fontSize: 16 },
-      hAxis: { textStyle: { color: '#94a3b8' } },
-      vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#3b82f6'],
-      height: 400
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 13 },
+        gridlines: { color: 'transparent' }
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 13 },
+        gridlines: { color: '#334155' },
+        minValue: 0
+      },
+      chartArea: { width: '85%', height: '75%' },
+      height: 350,
+      bar: { groupWidth: '65%' },
+      annotations: {
+        textStyle: {
+          fontSize: 14,
+          color: '#e2e8f0',
+          bold: true
+        }
+      }
     };
     
     const chart = new google.visualization.ColumnChart(document.getElementById('chartRevenueFunnel'));
@@ -536,17 +543,29 @@
     
     // For now, all are call center, but this can be expanded
     data.addRows([
-      ['Call Center', leads.length],
-      ['Web Form', 0],
-      ['Referral', 0]
+      ['Call Center', leads.length]
     ]);
     
     const options = {
       backgroundColor: 'transparent',
-      titleTextStyle: { color: '#f1f5f9' },
-      legend: { textStyle: { color: '#94a3b8' } },
+      legend: { 
+        position: 'bottom',
+        textStyle: { color: '#94a3b8', fontSize: 12 }
+      },
+      pieHole: 0.4,
       colors: ['#3b82f6', '#10b981', '#f59e0b'],
-      height: 300
+      chartArea: { width: '90%', height: '80%' },
+      height: 280,
+      pieSliceText: 'percentage',
+      pieSliceTextStyle: {
+        color: '#e2e8f0',
+        fontSize: 14,
+        bold: true
+      },
+      tooltip: {
+        textStyle: { color: '#1e293b', fontSize: 13 },
+        showColorCode: true
+      }
     };
     
     const chart = new google.visualization.PieChart(document.getElementById('chartLeadSources'));
@@ -556,23 +575,39 @@
   
   function drawGeographicDistribution(byState) {
     console.log('📊 Drawing geographic distribution...', byState);
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'State');
-    data.addColumn('number', 'Leads');
     
     const stateData = Object.entries(byState).map(([state, count]) => [state, count]);
     if (stateData.length === 0) {
       stateData.push(['No Data', 0]);
     }
-    data.addRows(stateData);
+    
+    // Sort by count descending
+    stateData.sort((a, b) => b[1] - a[1]);
+    
+    const data = google.visualization.arrayToDataTable([
+      ['State', 'Leads', { role: 'style' }],
+      ...stateData.map((row, i) => [
+        row[0], 
+        row[1], 
+        i === 0 ? '#10b981' : '#3b82f6' // Top state in green
+      ])
+    ]);
     
     const options = {
       backgroundColor: 'transparent',
-      titleTextStyle: { color: '#f1f5f9' },
-      hAxis: { textStyle: { color: '#94a3b8' } },
-      vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#3b82f6'],
-      height: 300
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: 'transparent' }
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0
+      },
+      chartArea: { width: '85%', height: '70%' },
+      height: 280,
+      bar: { groupWidth: '70%' }
     };
     
     const chart = new google.visualization.ColumnChart(document.getElementById('chartGeographic'));
@@ -580,7 +615,7 @@
     
     // Update top region
     if (stateData.length > 0 && stateData[0][0] !== 'No Data') {
-      const topState = stateData.reduce((a, b) => a[1] > b[1] ? a : b);
+      const topState = stateData[0];
       $('#topRegion').textContent = `Top: ${topState[0]} (${topState[1]} leads)`;
     }
     console.log('✅ Geographic distribution drawn');
@@ -588,31 +623,51 @@
   
   function drawServicePerformance(byService) {
     console.log('📊 Drawing service performance...', byService);
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Service');
-    data.addColumn('number', 'Revenue');
     
     const serviceData = Object.entries(byService).map(([service, revenue]) => [service, revenue]);
     if (serviceData.length === 0) {
       serviceData.push(['No Data', 0]);
     }
-    data.addRows(serviceData);
+    
+    // Sort by revenue descending and take top 10
+    serviceData.sort((a, b) => b[1] - a[1]);
+    const topServices = serviceData.slice(0, 10);
+    
+    const data = google.visualization.arrayToDataTable([
+      ['Service', 'Revenue', { role: 'style' }],
+      ...topServices.map((row, i) => [
+        row[0].length > 25 ? row[0].substring(0, 25) + '...' : row[0], 
+        row[1],
+        i === 0 ? '#10b981' : '#3b82f6' // Top service in green
+      ])
+    ]);
     
     const options = {
       backgroundColor: 'transparent',
-      titleTextStyle: { color: '#f1f5f9' },
-      hAxis: { textStyle: { color: '#94a3b8' } },
-      vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#10b981'],
-      height: 300
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        slantedText: true,
+        slantedTextAngle: 45,
+        gridlines: { color: 'transparent' }
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0,
+        format: 'currency'
+      },
+      chartArea: { width: '85%', height: '60%' },
+      height: 280,
+      bar: { groupWidth: '70%' }
     };
     
     const chart = new google.visualization.ColumnChart(document.getElementById('chartServicePerformance'));
     chart.draw(data, options);
     
     // Update top service
-    if (serviceData.length > 0 && serviceData[0][0] !== 'No Data') {
-      const topService = serviceData.reduce((a, b) => a[1] > b[1] ? a : b);
+    if (topServices.length > 0 && topServices[0][0] !== 'No Data') {
+      const topService = topServices[0];
       $('#topService').textContent = `Best: ${topService[0]} (${fmtMoney(topService[1])})`;
     }
     console.log('✅ Service performance drawn');
@@ -694,9 +749,6 @@
   
   function drawRevenueTrends(leads) {
     console.log('📊 Drawing revenue trends...');
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Date');
-    data.addColumn('number', 'Daily Revenue');
     
     // Group by day for more granular view
     const dailyRevenue = {};
@@ -706,23 +758,47 @@
     });
     
     const sortedDates = Object.keys(dailyRevenue).sort();
-    sortedDates.forEach(date => {
-      data.addRow([date, dailyRevenue[date]]);
-    });
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Daily Revenue');
     
     if (sortedDates.length === 0) {
       data.addRow(['No Data', 0]);
+    } else {
+      sortedDates.forEach(date => {
+        // Format date for better display (MM/DD)
+        const dateObj = new Date(date);
+        const formatted = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+        data.addRow([formatted, dailyRevenue[date]]);
+      });
     }
     
     const options = {
       backgroundColor: 'transparent',
-      titleTextStyle: { color: '#f1f5f9' },
-      hAxis: { textStyle: { color: '#94a3b8' } },
-      vAxis: { textStyle: { color: '#94a3b8' } },
-      colors: ['#10b981'],
-      height: 500,
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        gridlines: { color: '#334155' },
+        slantedText: true,
+        slantedTextAngle: 45
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0,
+        format: 'currency'
+      },
+      chartArea: { width: '85%', height: '70%' },
+      height: 450,
       lineWidth: 3,
-      pointSize: 5
+      pointSize: 6,
+      colors: ['#10b981'],
+      curveType: 'function',
+      tooltip: {
+        textStyle: { color: '#1e293b', fontSize: 13 },
+        showColorCode: false
+      }
     };
     
     const chart = new google.visualization.LineChart(document.getElementById('chartRevenueTrends'));
@@ -1032,11 +1108,39 @@
       }
     });
     
-    // Set default date range to last 7 days
+    // Set default date range to last 30 days
     const today = new Date();
-    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    $('#analyticsFrom').value = sevenDaysAgo.toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+    $('#analyticsFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
     $('#analyticsTo').value = today.toISOString().split('T')[0];
+    
+    // Update Charts button handler
+    $('#updateCharts').addEventListener('click', async function() {
+      const originalText = this.textContent;
+      this.disabled = true;
+      this.textContent = 'Analyzing...';
+      
+      try {
+        const fromDate = $('#analyticsFrom').value;
+        const toDate = $('#analyticsTo').value;
+        
+        // Fetch filtered leads
+        const filteredLeads = await listLeads({ token, from: fromDate, to: toDate });
+        const filteredStats = await getStats({ token, from: fromDate, to: toDate });
+        
+        // Update analytics with filtered data
+        const metrics = calculateAdvancedMetrics(filteredLeads, filteredStats);
+        updatePerformanceMetrics(metrics);
+        drawMasterpieceCharts(filteredLeads, filteredStats);
+        
+        showToast(`Analytics updated for ${fromDate} to ${toDate}`);
+      } catch (e) {
+        showError('Failed to update analytics: ' + e.message);
+      } finally {
+        this.disabled = false;
+        this.textContent = originalText;
+      }
+    });
     
     try {
       const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);

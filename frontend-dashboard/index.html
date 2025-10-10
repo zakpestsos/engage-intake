@@ -55,6 +55,12 @@
             <div class="hero-detail" id="convertedRevenueDetail">From completed sales</div>
           </div>
         </div>
+        <div class="chart-info" style="margin-bottom: 2rem;">
+          <div class="chart-info-icon">ℹ️</div>
+          <div class="chart-info-text">
+            <strong>Key Performance Indicators:</strong> Call→Appointment = (ACCEPTED + COMPLETED) / Total Leads. Appointment→Sale = COMPLETED / (ACCEPTED + COMPLETED). Revenue = Sum of Lead_Value where Status = COMPLETED. These metrics track Joel's critical conversion funnel.
+          </div>
+        </div>
 
         <!-- KPI Cards -->
         <div class="kpi-grid">
@@ -213,6 +219,12 @@
             </div>
           </div>
         </div>
+        <div class="chart-info" style="margin-bottom: 2rem;">
+          <div class="chart-info-icon">ℹ️</div>
+          <div class="chart-info-text">
+            <strong>Executive Summary:</strong> Total Revenue = Sum of all Lead_Value. Conversion Rate = COMPLETED / Total Leads. Avg Deal Size = Total Revenue / COMPLETED Leads. Sales Velocity = Leads created in last 30 days. Trend percentages show period-over-period growth.
+          </div>
+        </div>
 
         <!-- Analytics Views -->
         <div id="overviewAnalytics" class="analytics-view">
@@ -220,6 +232,12 @@
           <div class="chart-card-featured">
             <h3>Conversion Funnel Analysis</h3>
             <div id="conversionFunnelChart" class="chart-container"></div>
+            <div class="chart-info">
+              <div class="chart-info-icon">ℹ️</div>
+              <div class="chart-info-text">
+                <strong>Data Source:</strong> Total Calls = all leads in system, Appointments = leads with status ACCEPTED or COMPLETED, Sales = leads with status COMPLETED. Calculates conversion rates at each stage of the sales funnel.
+              </div>
+            </div>
           </div>
 
           <div class="analytics-grid">
@@ -236,6 +254,12 @@
                 </div>
               </div>
               <div id="chartRevenueFunnel" class="chart-container large"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Aggregates leads by status (NEW, ACCEPTED, COMPLETED) from the Leads sheet. Shows the breakdown of lead statuses to identify pipeline bottlenecks.
+                </div>
+              </div>
             </div>
 
             <!-- Lead Sources -->
@@ -245,6 +269,12 @@
                 <div class="metric-highlight" id="topSource">Call Center: 100%</div>
               </div>
               <div id="chartLeadSources" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Currently tracks all leads as "Call Center" origin. Future enhancement will track multiple sources (web forms, referrals) for multi-channel attribution.
+                </div>
+              </div>
             </div>
 
             <!-- Geographic Distribution -->
@@ -254,6 +284,12 @@
                 <div class="metric-highlight" id="topRegion">Top: Unknown</div>
               </div>
               <div id="chartGeographic" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Aggregates leads by state (Address_State field) from customer addresses. Top performing state highlighted in green. Useful for territory planning and resource allocation.
+                </div>
+              </div>
             </div>
 
             <!-- Service Performance -->
@@ -263,6 +299,12 @@
                 <div class="metric-highlight" id="topService">Best: Unknown</div>
               </div>
               <div id="chartServicePerformance" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Calculates total revenue by Product_Name, summing Lead_Value for each service. Shows top 10 services only. Best performing service highlighted in green to identify most profitable offerings.
+                </div>
+              </div>
             </div>
 
             <!-- Time Analysis -->
@@ -272,6 +314,12 @@
                 <div class="metric-highlight" id="peakHour">Peak: Unknown</div>
               </div>
               <div id="chartTimeAnalysis" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Groups leads by Reason_For_Call field (e.g., "New Sale - Initial Purchase", "Service Call"). Shows call volume by reason to identify most common customer needs and staffing requirements.
+                </div>
+              </div>
             </div>
 
             <!-- Conversion Timeline -->
@@ -281,6 +329,12 @@
                 <div class="metric-highlight" id="avgConversionTime">Avg: 0 days</div>
               </div>
               <div id="chartConversionTimeline" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Aggregates leads by Status field (NEW, ACCEPTED, COMPLETED, CANCELLED). Shows current pipeline distribution and calculates completion rate percentage for performance tracking.
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -338,6 +392,12 @@
                 </div>
               </div>
               <div id="chartRevenueTrends" class="chart-container xl"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily), then displays as time series. Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -382,22 +382,124 @@
         </div>
 
         <div id="trendsAnalytics" class="analytics-view" style="display: none;">
+          <!-- Trend Metrics Hero Cards -->
+          <div class="trend-metrics-hero">
+            <div class="trend-metric-card growth">
+              <div class="metric-icon">📈</div>
+              <div class="metric-content">
+                <div class="metric-label">Week-over-Week Growth</div>
+                <div class="metric-value" id="weekOverWeekGrowth">+0%</div>
+                <div class="metric-detail" id="weekOverWeekDetail">Compared to last week</div>
+              </div>
+            </div>
+            <div class="trend-metric-card momentum">
+              <div class="metric-icon">⚡</div>
+              <div class="metric-content">
+                <div class="metric-label">Lead Velocity</div>
+                <div class="metric-value" id="leadVelocity">0</div>
+                <div class="metric-detail" id="leadVelocityDetail">Leads per day (7-day avg)</div>
+              </div>
+            </div>
+            <div class="trend-metric-card forecast">
+              <div class="metric-icon">🎯</div>
+              <div class="metric-content">
+                <div class="metric-label">30-Day Projection</div>
+                <div class="metric-value" id="monthProjection">$0</div>
+                <div class="metric-detail" id="monthProjectionDetail">Based on current trend</div>
+              </div>
+            </div>
+            <div class="trend-metric-card conversion">
+              <div class="metric-icon">🔄</div>
+              <div class="metric-content">
+                <div class="metric-label">Conversion Trend</div>
+                <div class="metric-value" id="conversionTrend">+0%</div>
+                <div class="metric-detail" id="conversionTrendDetail">vs previous period</div>
+              </div>
+            </div>
+          </div>
+
           <div class="trends-grid">
-            <!-- Trend Analysis -->
-            <div class="chart-card full-width">
+            <!-- Revenue Trends - Enhanced -->
+            <div class="chart-card-featured full-width">
               <div class="chart-header">
-                <h4>Revenue Trends & Forecasting</h4>
-                <div class="trend-indicators">
-                  <span class="trend-indicator positive" id="trendIndicator">↗ +15.3%</span>
+                <h3>Revenue Trends & Forecasting</h3>
+                <div class="chart-controls">
+                  <select id="revenueTrendPeriod" class="chart-select">
+                    <option value="7">Last 7 Days</option>
+                    <option value="14">Last 14 Days</option>
+                    <option value="30" selected>Last 30 Days</option>
+                    <option value="60">Last 60 Days</option>
+                    <option value="90">Last 90 Days</option>
+                  </select>
                 </div>
               </div>
               <div id="chartRevenueTrends" class="chart-container xl"></div>
-            <div class="chart-info">
-              <div class="chart-info-icon">ℹ️</div>
-              <div class="chart-info-text">
-                <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily) for <strong>COMPLETED</strong> leads only (actual daily revenue). Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily) for <strong>COMPLETED</strong> leads only (actual daily revenue). Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
+                </div>
               </div>
             </div>
+
+            <!-- Lead Volume Trends -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Lead Volume Over Time</h4>
+                <div class="metric-highlight" id="avgDailyLeads">Avg: 0/day</div>
+              </div>
+              <div id="chartLeadVolumeTrend" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Counts all leads by Created_At date (daily). Shows call volume trends to identify peak periods, seasonal patterns, and growth trajectories.
+                </div>
+              </div>
+            </div>
+
+            <!-- Conversion Rate Trends -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Conversion Rate Trends</h4>
+                <div class="metric-highlight" id="trendConversionAvg">Avg: 0%</div>
+              </div>
+              <div id="chartConversionRateTrend" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Calculates daily conversion rate (COMPLETED / Total Leads) over time. Helps identify if sales effectiveness is improving or declining.
+                </div>
+              </div>
+            </div>
+
+            <!-- Average Deal Size Trends -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Average Deal Size Trends</h4>
+                <div class="metric-highlight" id="trendDealSizeAvg">Avg: $0</div>
+              </div>
+              <div id="chartDealSizeTrend" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Calculates average Lead_Value for COMPLETED leads by date. Shows if you're selling higher or lower-value services over time.
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Distribution Over Time -->
+            <div class="chart-card">
+              <div class="chart-header">
+                <h4>Lead Status Flow</h4>
+                <div class="metric-highlight" id="statusFlowInsight">Weekly snapshot</div>
+              </div>
+              <div id="chartStatusFlow" class="chart-container"></div>
+              <div class="chart-info">
+                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-text">
+                  <strong>Data Source:</strong> Shows how lead statuses (NEW, ACCEPTED, COMPLETED, CANCELLED) change over time. Helps track pipeline health and identify conversion bottlenecks.
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1362,9 +1362,104 @@ select option {
 }
 
 /* Trends Grid */
+/* Trend Metrics Hero Cards */
+.trend-metrics-hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.trend-metric-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 2px solid;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.trend-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: currentColor;
+}
+
+.trend-metric-card.growth {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.trend-metric-card.momentum {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.trend-metric-card.forecast {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.trend-metric-card.conversion {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.trend-metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.trend-metric-card .metric-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.trend-metric-card .metric-content {
+  flex: 1;
+}
+
+.trend-metric-card .metric-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.trend-metric-card .metric-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: currentColor;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.trend-metric-card .metric-detail {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
 .trends-grid {
   display: grid;
   gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+}
+
+.trends-grid .full-width {
+  grid-column: 1 / -1;
 }
 
 .trend-indicators {

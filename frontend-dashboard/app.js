@@ -806,6 +806,344 @@
     console.log('✅ Revenue trends drawn');
   }
   
+  // Comprehensive Trend Analysis Functions
+  function calculateTrendMetrics(leads) {
+    console.log('📊 Calculating trend metrics...');
+    
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Current week leads
+    const currentWeekLeads = leads.filter(l => new Date(l.createdAt) >= sevenDaysAgo);
+    const lastWeekLeads = leads.filter(l => {
+      const date = new Date(l.createdAt);
+      return date >= fourteenDaysAgo && date < sevenDaysAgo;
+    });
+    
+    // Week-over-week growth
+    const currentWeekRevenue = currentWeekLeads.filter(l => l.status === 'COMPLETED')
+      .reduce((sum, l) => sum + (Number(l.leadValue) || 0), 0);
+    const lastWeekRevenue = lastWeekLeads.filter(l => l.status === 'COMPLETED')
+      .reduce((sum, l) => sum + (Number(l.leadValue) || 0), 0);
+    const weekOverWeekGrowth = lastWeekRevenue > 0 
+      ? ((currentWeekRevenue - lastWeekRevenue) / lastWeekRevenue * 100) 
+      : 0;
+    
+    // Lead velocity (7-day average)
+    const leadVelocity = currentWeekLeads.length / 7;
+    
+    // 30-day projection (simple linear extrapolation)
+    const last30DaysRevenue = leads.filter(l => {
+      const date = new Date(l.createdAt);
+      return date >= thirtyDaysAgo && l.status === 'COMPLETED';
+    }).reduce((sum, l) => sum + (Number(l.leadValue) || 0), 0);
+    const dailyAvgRevenue = last30DaysRevenue / 30;
+    const monthProjection = dailyAvgRevenue * 30;
+    
+    // Conversion trend
+    const currentWeekConversion = currentWeekLeads.length > 0
+      ? (currentWeekLeads.filter(l => l.status === 'COMPLETED').length / currentWeekLeads.length * 100)
+      : 0;
+    const lastWeekConversion = lastWeekLeads.length > 0
+      ? (lastWeekLeads.filter(l => l.status === 'COMPLETED').length / lastWeekLeads.length * 100)
+      : 0;
+    const conversionTrend = lastWeekConversion > 0
+      ? ((currentWeekConversion - lastWeekConversion) / lastWeekConversion * 100)
+      : 0;
+    
+    return {
+      weekOverWeekGrowth,
+      weekOverWeekRevenue: { current: currentWeekRevenue, last: lastWeekRevenue },
+      leadVelocity,
+      monthProjection,
+      conversionTrend,
+      currentWeekConversion,
+      lastWeekConversion
+    };
+  }
+  
+  function updateTrendMetrics(metrics) {
+    $('#weekOverWeekGrowth').textContent = (metrics.weekOverWeekGrowth >= 0 ? '+' : '') + metrics.weekOverWeekGrowth.toFixed(1) + '%';
+    $('#weekOverWeekDetail').textContent = `$${metrics.weekOverWeekRevenue.current.toFixed(0)} vs $${metrics.weekOverWeekRevenue.last.toFixed(0)}`;
+    
+    $('#leadVelocity').textContent = metrics.leadVelocity.toFixed(1);
+    $('#leadVelocityDetail').textContent = 'Leads per day (7-day avg)';
+    
+    $('#monthProjection').textContent = fmtMoney(metrics.monthProjection);
+    $('#monthProjectionDetail').textContent = 'Based on current trend';
+    
+    $('#conversionTrend').textContent = (metrics.conversionTrend >= 0 ? '+' : '') + metrics.conversionTrend.toFixed(1) + '%';
+    $('#conversionTrendDetail').textContent = `${metrics.currentWeekConversion.toFixed(1)}% vs ${metrics.lastWeekConversion.toFixed(1)}%`;
+  }
+  
+  function drawLeadVolumeTrend(leads) {
+    console.log('📊 Drawing lead volume trend...');
+    
+    // Group by day
+    const dailyVolume = {};
+    leads.forEach(l => {
+      const date = l.createdAt.substring(0, 10);
+      dailyVolume[date] = (dailyVolume[date] || 0) + 1;
+    });
+    
+    const sortedDates = Object.keys(dailyVolume).sort();
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Leads');
+    
+    if (sortedDates.length === 0) {
+      data.addRow(['No Data', 0]);
+    } else {
+      sortedDates.forEach(date => {
+        const dateObj = new Date(date);
+        const formatted = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+        data.addRow([formatted, dailyVolume[date]]);
+      });
+    }
+    
+    const options = {
+      backgroundColor: 'transparent',
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        slantedText: true,
+        slantedTextAngle: 45
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0
+      },
+      chartArea: { width: '85%', height: '70%' },
+      height: 300,
+      colors: ['#3b82f6'],
+      lineWidth: 2,
+      pointSize: 5,
+      curveType: 'function'
+    };
+    
+    const chart = new google.visualization.LineChart(document.getElementById('chartLeadVolumeTrend'));
+    chart.draw(data, options);
+    
+    // Update average
+    const avgDaily = leads.length / sortedDates.length;
+    $('#avgDailyLeads').textContent = `Avg: ${avgDaily.toFixed(1)}/day`;
+  }
+  
+  function drawConversionRateTrend(leads) {
+    console.log('📊 Drawing conversion rate trend...');
+    
+    // Group by day and calculate conversion rate
+    const dailyData = {};
+    leads.forEach(l => {
+      const date = l.createdAt.substring(0, 10);
+      if (!dailyData[date]) {
+        dailyData[date] = { total: 0, completed: 0 };
+      }
+      dailyData[date].total++;
+      if (l.status === 'COMPLETED') {
+        dailyData[date].completed++;
+      }
+    });
+    
+    const sortedDates = Object.keys(dailyData).sort();
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Conversion %');
+    
+    let totalConversion = 0;
+    sortedDates.forEach(date => {
+      const dateObj = new Date(date);
+      const formatted = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+      const conversionRate = dailyData[date].total > 0 
+        ? (dailyData[date].completed / dailyData[date].total * 100) 
+        : 0;
+      data.addRow([formatted, conversionRate]);
+      totalConversion += conversionRate;
+    });
+    
+    const options = {
+      backgroundColor: 'transparent',
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        slantedText: true,
+        slantedTextAngle: 45
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0,
+        format: '#\'%\''
+      },
+      chartArea: { width: '85%', height: '70%' },
+      height: 300,
+      colors: ['#10b981'],
+      lineWidth: 2,
+      pointSize: 5,
+      curveType: 'function'
+    };
+    
+    const chart = new google.visualization.LineChart(document.getElementById('chartConversionRateTrend'));
+    chart.draw(data, options);
+    
+    // Update average
+    const avgConversion = sortedDates.length > 0 ? totalConversion / sortedDates.length : 0;
+    $('#trendConversionAvg').textContent = `Avg: ${avgConversion.toFixed(1)}%`;
+  }
+  
+  function drawDealSizeTrend(leads) {
+    console.log('📊 Drawing deal size trend...');
+    
+    // Group completed leads by day and calculate average deal size
+    const dailyDeals = {};
+    leads.filter(l => l.status === 'COMPLETED').forEach(l => {
+      const date = l.createdAt.substring(0, 10);
+      if (!dailyDeals[date]) {
+        dailyDeals[date] = { total: 0, count: 0 };
+      }
+      dailyDeals[date].total += (Number(l.leadValue) || 0);
+      dailyDeals[date].count++;
+    });
+    
+    const sortedDates = Object.keys(dailyDeals).sort();
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Date');
+    data.addColumn('number', 'Avg Deal Size');
+    
+    let totalAvg = 0;
+    sortedDates.forEach(date => {
+      const dateObj = new Date(date);
+      const formatted = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+      const avgSize = dailyDeals[date].count > 0 
+        ? (dailyDeals[date].total / dailyDeals[date].count) 
+        : 0;
+      data.addRow([formatted, avgSize]);
+      totalAvg += avgSize;
+    });
+    
+    if (sortedDates.length === 0) {
+      data.addRow(['No Data', 0]);
+    }
+    
+    const options = {
+      backgroundColor: 'transparent',
+      legend: 'none',
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 },
+        slantedText: true,
+        slantedTextAngle: 45
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0,
+        format: 'currency'
+      },
+      chartArea: { width: '85%', height: '70%' },
+      height: 300,
+      colors: ['#8b5cf6'],
+      lineWidth: 2,
+      pointSize: 5,
+      curveType: 'function'
+    };
+    
+    const chart = new google.visualization.LineChart(document.getElementById('chartDealSizeTrend'));
+    chart.draw(data, options);
+    
+    // Update average
+    const overallAvg = sortedDates.length > 0 ? totalAvg / sortedDates.length : 0;
+    $('#trendDealSizeAvg').textContent = `Avg: ${fmtMoney(overallAvg)}`;
+  }
+  
+  function drawStatusFlow(leads) {
+    console.log('📊 Drawing status flow...');
+    
+    // Group by week and status
+    const weeklyStatus = {};
+    leads.forEach(l => {
+      const date = new Date(l.createdAt);
+      const weekStart = new Date(date);
+      weekStart.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+      const weekKey = weekStart.toISOString().substring(0, 10);
+      
+      if (!weeklyStatus[weekKey]) {
+        weeklyStatus[weekKey] = { NEW: 0, ACCEPTED: 0, COMPLETED: 0, CANCELLED: 0 };
+      }
+      weeklyStatus[weekKey][l.status] = (weeklyStatus[weekKey][l.status] || 0) + 1;
+    });
+    
+    const sortedWeeks = Object.keys(weeklyStatus).sort().slice(-8); // Last 8 weeks
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Week');
+    data.addColumn('number', 'NEW');
+    data.addColumn('number', 'ACCEPTED');
+    data.addColumn('number', 'COMPLETED');
+    data.addColumn('number', 'CANCELLED');
+    
+    sortedWeeks.forEach(week => {
+      const weekDate = new Date(week);
+      const formatted = `${weekDate.getMonth() + 1}/${weekDate.getDate()}`;
+      data.addRow([
+        formatted,
+        weeklyStatus[week].NEW || 0,
+        weeklyStatus[week].ACCEPTED || 0,
+        weeklyStatus[week].COMPLETED || 0,
+        weeklyStatus[week].CANCELLED || 0
+      ]);
+    });
+    
+    if (sortedWeeks.length === 0) {
+      data.addRow(['No Data', 0, 0, 0, 0]);
+    }
+    
+    const options = {
+      backgroundColor: 'transparent',
+      isStacked: true,
+      legend: { position: 'top', textStyle: { color: '#94a3b8', fontSize: 12 } },
+      hAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 11 }
+      },
+      vAxis: { 
+        textStyle: { color: '#94a3b8', fontSize: 12 },
+        gridlines: { color: '#334155' },
+        minValue: 0
+      },
+      chartArea: { width: '85%', height: '65%' },
+      height: 300,
+      colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+    };
+    
+    const chart = new google.visualization.ColumnChart(document.getElementById('chartStatusFlow'));
+    chart.draw(data, options);
+  }
+  
+  function drawAllTrendCharts(leads) {
+    console.log('📊 Drawing all trend charts...');
+    
+    const trendMetrics = calculateTrendMetrics(leads);
+    updateTrendMetrics(trendMetrics);
+    
+    google.charts.setOnLoadCallback(function() {
+      try {
+        drawRevenueTrends(leads);
+        drawLeadVolumeTrend(leads);
+        drawConversionRateTrend(leads);
+        drawDealSizeTrend(leads);
+        drawStatusFlow(leads);
+        console.log('✅ All trend charts drawn');
+      } catch (error) {
+        console.error('❌ Error drawing trend charts:', error);
+      }
+    });
+  }
+  
   function updatePerformanceMetrics(metrics) {
     $('#highValueLeads').textContent = metrics.highValueLeads;
     $('#quickConversions').textContent = metrics.quickConversions;
@@ -861,7 +1199,13 @@
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
     if (viewId === 'overviewAnalytics') $('#overviewView').classList.add('active');
     else if (viewId === 'performanceAnalytics') $('#performanceView').classList.add('active');
-    else if (viewId === 'trendsAnalytics') $('#trendsView').classList.add('active');
+    else if (viewId === 'trendsAnalytics') {
+      $('#trendsView').classList.add('active');
+      // Draw trend charts when trends view is shown
+      if (window.CURRENT_LEADS_ORIGINAL && window.CURRENT_LEADS_ORIGINAL.length > 0) {
+        drawAllTrendCharts(window.CURRENT_LEADS_ORIGINAL);
+      }
+    }
   }
 
   document.addEventListener('DOMContentLoaded', async function(){

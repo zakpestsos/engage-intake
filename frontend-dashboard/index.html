@@ -222,7 +222,7 @@
         <div class="chart-info" style="margin-bottom: 2rem;">
           <div class="chart-info-icon">ℹ️</div>
           <div class="chart-info-text">
-            <strong>Executive Summary:</strong> Total Revenue = Sum of all Lead_Value. Conversion Rate = COMPLETED / Total Leads. Avg Deal Size = Total Revenue / COMPLETED Leads. Sales Velocity = Leads created in last 30 days. Trend percentages show period-over-period growth.
+            <strong>Executive Summary:</strong> Total Revenue = Sum of Lead_Value for <strong>COMPLETED</strong> leads only (actual money earned). Conversion Rate = COMPLETED / Total Leads. Avg Deal Size = Total Revenue / COMPLETED Leads. Sales Velocity = Leads created in last 30 days. Trend percentages show period-over-period growth.
           </div>
         </div>
 
@@ -299,12 +299,12 @@
                 <div class="metric-highlight" id="topService">Best: Unknown</div>
               </div>
               <div id="chartServicePerformance" class="chart-container"></div>
-              <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
-                <div class="chart-info-text">
-                  <strong>Data Source:</strong> Calculates total revenue by Product_Name, summing Lead_Value for each service. Shows top 10 services only. Best performing service highlighted in green to identify most profitable offerings.
-                </div>
+            <div class="chart-info">
+              <div class="chart-info-icon">ℹ️</div>
+              <div class="chart-info-text">
+                <strong>Data Source:</strong> Calculates total revenue by Product_Name, summing Lead_Value for <strong>COMPLETED</strong> leads only (actual revenue earned per service). Shows top 10 services only. Best performing service highlighted in green to identify most profitable offerings.
               </div>
+            </div>
             </div>
 
             <!-- Time Analysis -->
@@ -392,12 +392,12 @@
                 </div>
               </div>
               <div id="chartRevenueTrends" class="chart-container xl"></div>
-              <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
-                <div class="chart-info-text">
-                  <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily), then displays as time series. Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
-                </div>
+            <div class="chart-info">
+              <div class="chart-info-icon">ℹ️</div>
+              <div class="chart-info-text">
+                <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily) for <strong>COMPLETED</strong> leads only (actual daily revenue). Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
               </div>
+            </div>
             </div>
           </div>
         </div>

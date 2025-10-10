@@ -16,6 +16,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Global select styling for legibility */
+select {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid #475569;
+  color: #e2e8f0;
+}
+
+select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0.5rem;
+}
+
 /* Loading Spinner */
 .loading-container {
   display: flex;
@@ -309,6 +322,19 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
   transition: all 0.3s ease;
+}
+
+.filter-group select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0.75rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.filter-group select option:hover,
+.filter-group select option:checked {
+  background-color: #3b82f6;
+  color: white;
 }
 
 .filter-group select:focus,
@@ -946,6 +972,12 @@ body {
   font-size: 0.95rem;
 }
 
+.status-update select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0.5rem 1rem;
+}
+
 .status-update select:focus {
   outline: none;
   border-color: #3b82f6;
@@ -1224,6 +1256,12 @@ body {
   border-radius: 0.375rem;
   font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
+}
+
+.chart-controls select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
 }
 
 .chart-container {

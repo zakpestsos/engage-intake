@@ -362,9 +362,9 @@
     const completedLeads = leads.filter(l => l.status === 'COMPLETED').length;
     const cancelledLeads = leads.filter(l => l.status === 'CANCELLED').length;
     
-    // Revenue calculations
-    const totalRevenue = leads.reduce((sum, l) => sum + (l.leadValue || 0), 0);
-    const completedRevenue = leads.filter(l => l.status === 'COMPLETED').reduce((sum, l) => sum + (l.leadValue || 0), 0);
+    // Revenue calculations - ONLY count COMPLETED leads for actual revenue
+    const completedRevenue = leads.filter(l => l.status === 'COMPLETED').reduce((sum, l) => sum + (Number(l.leadValue) || 0), 0);
+    const totalRevenue = completedRevenue; // Total Revenue = Completed Revenue (actual money earned)
     
     // Conversion metrics
     const conversionRate = totalLeads > 0 ? (completedLeads / totalLeads * 100) : 0;
@@ -383,11 +383,11 @@
       byState[state] = (byState[state] || 0) + 1;
     });
     
-    // Service analysis
+    // Service analysis - ONLY count COMPLETED leads for revenue
     const byService = {};
-    leads.forEach(l => {
+    leads.filter(l => l.status === 'COMPLETED').forEach(l => {
       const service = l.product || 'Unknown';
-      byService[service] = (byService[service] || 0) + (l.leadValue || 0);
+      byService[service] = (byService[service] || 0) + (Number(l.leadValue) || 0);
     });
     
     return {
@@ -750,11 +750,11 @@
   function drawRevenueTrends(leads) {
     console.log('📊 Drawing revenue trends...');
     
-    // Group by day for more granular view
+    // Group by day for more granular view - ONLY count COMPLETED leads for actual revenue
     const dailyRevenue = {};
-    leads.forEach(l => {
+    leads.filter(l => l.status === 'COMPLETED').forEach(l => {
       const date = l.createdAt.substring(0, 10); // YYYY-MM-DD
-      dailyRevenue[date] = (dailyRevenue[date] || 0) + (l.leadValue || 0);
+      dailyRevenue[date] = (dailyRevenue[date] || 0) + (Number(l.leadValue) || 0);
     });
     
     const sortedDates = Object.keys(dailyRevenue).sort();

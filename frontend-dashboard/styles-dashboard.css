@@ -1557,5 +1557,78 @@ select option {
   .lead-summary {
     text-align: left;
   }
+  
+  .polling-indicator {
+    top: 80px;
+    right: 10px;
+  }
+}
+
+/* =================================
+   Real-Time Polling Indicator
+   ================================= */
+
+.polling-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(76, 175, 80, 0.15);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4CAF50;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.polling-indicator:hover {
+  background: rgba(76, 175, 80, 0.25);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+}
+
+.polling-dot {
+  width: 10px;
+  height: 10px;
+  background: #4CAF50;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+}
+
+.polling-indicator.offline {
+  background: rgba(244, 67, 54, 0.15);
+  border-color: rgba(244, 67, 54, 0.4);
+  color: #f44336;
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.2);
+}
+
+.polling-indicator.offline:hover {
+  background: rgba(244, 67, 54, 0.25);
+  box-shadow: 0 6px 16px rgba(244, 67, 54, 0.3);
+}
+
+.polling-indicator.offline .polling-dot {
+  background: #f44336;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+  animation: none;
 }
 

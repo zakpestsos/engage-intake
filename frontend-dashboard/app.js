@@ -4,6 +4,26 @@
   
   let currentSort = { field: 'createdAt', direction: 'desc' };
   
+  // Polling state for real-time updates
+  let pollingInterval = null;
+  let lastPollTimestamp = null;
+  let knownLeadIds = new Set();
+  let leadStatusMap = new Map(); // leadId -> status
+  let isPollingInProgress = false;
+  let consecutiveErrors = 0;
+  const POLL_INTERVAL_MS = 10000; // 10 seconds
+  const MAX_CONSECUTIVE_ERRORS = 3;
+  
+  // Track if tab is visible (pause polling when hidden)
+  let isTabVisible = true;
+  document.addEventListener('visibilitychange', function() {
+    isTabVisible = !document.hidden;
+    if (isTabVisible) {
+      console.log('Tab visible - resuming polling');
+      pollForUpdates(); // Immediate check when tab becomes visible
+    }
+  });
+  
   function showError(msg) { 
     const b = $('#errorBanner'); 
     b.textContent = msg; 
@@ -1208,6 +1228,163 @@
     }
   }
 
+  // ====================
+  // REAL-TIME POLLING FUNCTIONS
+  // ====================
+  
+  async function pollForUpdates() {
+    // Don't poll if tab is hidden or already polling
+    if (!isTabVisible || isPollingInProgress) {
+      return;
+    }
+    
+    isPollingInProgress = true;
+    
+    try {
+      const token = getToken();
+      if (!token) return;
+      
+      // Fetch latest leads with current filters
+      const statusFilter = $('#statusFilter') ? $('#statusFilter').value : '';
+      const fromDate = $('#fromDate') ? $('#fromDate').value : '';
+      const toDate = $('#toDate') ? $('#toDate').value : '';
+      
+      const query = { token };
+      if (statusFilter) query.status = statusFilter;
+      if (fromDate) query.from = fromDate;
+      if (toDate) query.to = toDate;
+      
+      const freshLeads = await listLeads(query);
+      
+      if (!freshLeads || !Array.isArray(freshLeads)) return;
+      
+      // Detect new leads
+      const newLeads = [];
+      const updatedLeads = [];
+      
+      freshLeads.forEach(lead => {
+        const isNew = !knownLeadIds.has(lead.id);
+        const oldStatus = leadStatusMap.get(lead.id);
+        const statusChanged = oldStatus && oldStatus !== lead.status;
+        
+        if (isNew) {
+          newLeads.push(lead);
+          knownLeadIds.add(lead.id);
+          leadStatusMap.set(lead.id, lead.status);
+        } else if (statusChanged) {
+          updatedLeads.push({ lead, oldStatus });
+          leadStatusMap.set(lead.id, lead.status);
+        }
+      });
+      
+      // Show notifications and update UI
+      if (newLeads.length > 0) {
+        showNewLeadNotification(newLeads);
+        // Refresh the leads table
+        $('#applyFilters').click();
+      } else if (updatedLeads.length > 0) {
+        showUpdateNotification(updatedLeads);
+        // Refresh the leads table
+        $('#applyFilters').click();
+      }
+      
+      // Reset error count on success
+      consecutiveErrors = 0;
+      updatePollingIndicator('online');
+      
+    } catch (error) {
+      consecutiveErrors++;
+      console.error('Polling error:', error);
+      
+      if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+        updatePollingIndicator('offline');
+        showError('Lost connection to server. Retrying...');
+      }
+    } finally {
+      isPollingInProgress = false;
+    }
+  }
+  
+  function showNewLeadNotification(newLeads) {
+    const count = newLeads.length;
+    const message = count === 1 
+      ? `🔔 New Lead: ${newLeads[0].customerFirstName} ${newLeads[0].customerLastName}`
+      : `🔔 ${count} New Leads Received`;
+    
+    showToast(message);
+    
+    // Optional: Browser desktop notification (requires permission)
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('New Lead', {
+        body: message
+      });
+    }
+  }
+  
+  function showUpdateNotification(updatedLeads) {
+    const count = updatedLeads.length;
+    const message = count === 1
+      ? `✏️ Lead Updated: ${updatedLeads[0].lead.customerFirstName} ${updatedLeads[0].lead.customerLastName} → ${updatedLeads[0].lead.status}`
+      : `✏️ ${count} Leads Updated`;
+    
+    showToast(message);
+  }
+  
+  function startPolling() {
+    // Clear any existing interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
+    
+    // Start new polling interval
+    pollingInterval = setInterval(pollForUpdates, POLL_INTERVAL_MS);
+    console.log('✅ Real-time updates started - checking every', POLL_INTERVAL_MS / 1000, 'seconds');
+  }
+  
+  function stopPolling() {
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+      console.log('⏸️ Real-time updates stopped');
+    }
+  }
+  
+  function resetPollingState() {
+    // Reset tracking when filters change
+    knownLeadIds.clear();
+    leadStatusMap.clear();
+    lastPollTimestamp = null;
+  }
+  
+  function updatePollingIndicator(status) {
+    const indicator = $('#pollingIndicator');
+    if (!indicator) return;
+    
+    if (status === 'online') {
+      indicator.classList.remove('offline');
+      const textEl = indicator.querySelector('.polling-text');
+      if (textEl) textEl.textContent = 'Live';
+    } else {
+      indicator.classList.add('offline');
+      const textEl = indicator.querySelector('.polling-text');
+      if (textEl) textEl.textContent = 'Offline';
+    }
+  }
+  
+  // Request notification permission (optional)
+  function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log('Notification permission:', permission);
+      });
+    }
+  }
+  
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', function() {
+    stopPolling();
+  });
+
   document.addEventListener('DOMContentLoaded', async function(){
     clearError();
     showLoading();
@@ -1336,6 +1513,15 @@
           const metrics = calculateAdvancedMetrics(leads, stats);
           updatePerformanceMetrics(metrics);
           drawMasterpieceCharts(leads, stats);
+        }
+        
+        // Reset polling state to track new baseline after filter change
+        resetPollingState();
+        if (leads && Array.isArray(leads)) {
+          leads.forEach(lead => {
+            knownLeadIds.add(lead.id);
+            leadStatusMap.set(lead.id, lead.status);
+          });
         }
         
       } catch (e) { 
@@ -1523,6 +1709,17 @@
       // Initialize analytics masterpiece
       const metrics = calculateAdvancedMetrics(leads, stats);
       updatePerformanceMetrics(metrics);
+      
+      // Initialize known leads for polling
+      if (leads && Array.isArray(leads)) {
+        leads.forEach(lead => {
+          knownLeadIds.add(lead.id);
+          leadStatusMap.set(lead.id, lead.status);
+        });
+      }
+      
+      // Start real-time polling for updates
+      startPolling();
       
       hideLoading();
       showSection('leadsSection'); // Start with leads tab

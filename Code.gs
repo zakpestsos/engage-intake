@@ -55,7 +55,8 @@ const COMPANIES_HEADERS = [
   'Company_Name',
   'Company_Access_Token',
   'Contact_Email',
-  'Notes'
+  'Notes',
+  'SMS_Notification_Numbers'
 ];
 
 const USERS_HEADERS = [

@@ -206,6 +206,29 @@ function createLead_(payload, actor) {
     summary: 'Lead created for ' + companyName + ' (' + reason + ')'
   });
 
+  // Send SMS notification
+  try {
+    sendLeadSMS_(companyName, {
+      leadId: id,
+      customerFirstName: String(payload.customerFirstName || ''),
+      customerLastName: String(payload.customerLastName || ''),
+      phoneNumber: String(payload.customerPhone || ''),
+      customerEmail: String(payload.customerEmail || ''),
+      addressStreet: String(addr.street || ''),
+      addressCity: String(addr.city || ''),
+      addressState: String(addr.state || ''),
+      addressPostal: String(addr.postal || ''),
+      sqFt: squareFootage,
+      productName: prodName,
+      initialPrice: initialPrice,
+      reasonForCall: reason,
+      schedulingTold: String(payload.schedulingTold || ''),
+      notes: String(payload.notes || '')
+    });
+  } catch (smsError) {
+    console.error('SMS notification failed (non-fatal): ' + smsError.message);
+  }
+
   return { ok: true, id, createdAt: created, status };
 }
 
@@ -370,4 +393,126 @@ function addAuditLog_(entry) {
   row[idx['Lead_ID']] = String(entry.leadId || '');
   row[idx['Summary']] = String(entry.summary || '');
   sheet.getRange(sheet.getLastRow() + 1, 1, 1, row.length).setValues([row]);
+}
+
+/**
+ * Send SMS notification via email-to-SMS gateway
+ * @param {string} companyName - Company receiving the lead
+ * @param {object} leadData - Lead details
+ */
+function sendLeadSMS_(companyName, leadData) {
+  try {
+    // Get company's SMS numbers
+    const ss = getSpreadsheet_();
+    const companiesSheet = ss.getSheetByName(SHEET_COMPANIES);
+    const data = companiesSheet.getDataRange().getValues();
+    const headers = data[0];
+    
+    const nameIdx = headers.indexOf('Company_Name');
+    const smsIdx = headers.indexOf('SMS_Notification_Numbers');
+    
+    let smsNumbers = '';
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][nameIdx] === companyName) {
+        smsNumbers = data[i][smsIdx] || '';
+        break;
+      }
+    }
+    
+    // If no SMS numbers configured, skip
+    if (!smsNumbers || smsNumbers.trim() === '') {
+      console.log('No SMS numbers configured for: ' + companyName);
+      return;
+    }
+    
+    // Parse multiple numbers (comma-separated)
+    const recipients = smsNumbers.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+    
+    if (recipients.length === 0) {
+      console.log('No valid SMS recipients for: ' + companyName);
+      return;
+    }
+    
+    // Format SMS message
+    const message = formatLeadSMS_(leadData);
+    
+    // Send to each recipient
+    recipients.forEach(function(recipient) {
+      try {
+        MailApp.sendEmail({
+          to: recipient,
+          subject: '', // SMS gateways ignore subject
+          body: message
+        });
+        console.log('SMS sent to: ' + recipient);
+      } catch (e) {
+        console.error('Failed to send SMS to ' + recipient + ': ' + e.message);
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error sending lead SMS: ' + error.message);
+    // Don't throw - SMS failure shouldn't break lead creation
+  }
+}
+
+/**
+ * Format lead data into professional SMS message
+ * @param {object} lead - Lead details
+ * @return {string} Formatted message
+ */
+function formatLeadSMS_(lead) {
+  const lines = [];
+  
+  lines.push('🔔 NEW LEAD');
+  lines.push('');
+  lines.push('Customer: ' + lead.customerFirstName + ' ' + lead.customerLastName);
+  lines.push('Phone: ' + lead.phoneNumber);
+  
+  if (lead.customerEmail) {
+    lines.push('Email: ' + lead.customerEmail);
+  }
+  
+  lines.push('');
+  lines.push('Address:');
+  lines.push(lead.addressStreet);
+  lines.push(lead.addressCity + ', ' + lead.addressState + ' ' + lead.addressPostal);
+  
+  if (lead.sqFt) {
+    lines.push('Property: ' + lead.sqFt + ' sq ft');
+  }
+  
+  lines.push('');
+  
+  if (lead.productName) {
+    lines.push('Service: ' + lead.productName);
+    if (lead.initialPrice) {
+      lines.push('Price: $' + lead.initialPrice);
+    }
+  }
+  
+  if (lead.reasonForCall && lead.reasonForCall !== 'Other…') {
+    lines.push('');
+    lines.push('Reason: ' + lead.reasonForCall);
+  }
+  
+  if (lead.schedulingTold) {
+    lines.push('Scheduling: ' + lead.schedulingTold);
+  }
+  
+  if (lead.notes) {
+    lines.push('');
+    lines.push('Notes: ' + lead.notes);
+  }
+  
+  lines.push('');
+  lines.push('Lead ID: ' + lead.leadId);
+  lines.push('Submitted: ' + new Date().toLocaleString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    hour: 'numeric', 
+    minute: '2-digit'
+  }));
+  
+  return lines.join('\n');
 }

@@ -4,6 +4,10 @@
   
   let currentSort = { field: 'createdAt', direction: 'desc' };
   
+  // User session state
+  let currentUser = null;
+  let allUsers = [];
+  
   // Polling state for real-time updates
   let pollingInterval = null;
   let lastPollTimestamp = null;
@@ -23,6 +27,172 @@
       pollForUpdates(); // Immediate check when tab becomes visible
     }
   });
+
+  // ====================
+  // SESSION MANAGEMENT
+  // ====================
+  
+  function checkSession() {
+    try {
+      const sessionData = localStorage.getItem('engage_user_session');
+      if (sessionData) {
+        currentUser = JSON.parse(sessionData);
+        console.log('✅ Session restored:', currentUser.email);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking session:', error);
+      return false;
+    }
+  }
+  
+  function saveSession(user) {
+    try {
+      localStorage.setItem('engage_user_session', JSON.stringify(user));
+      currentUser = user;
+      console.log('✅ Session saved:', user.email);
+    } catch (error) {
+      console.error('Error saving session:', error);
+    }
+  }
+  
+  function clearSession() {
+    try {
+      localStorage.removeItem('engage_user_session');
+      currentUser = null;
+      console.log('✅ Session cleared');
+    } catch (error) {
+      console.error('Error clearing session:', error);
+    }
+  }
+  
+  function showLoginModal() {
+    $('#loginModal').style.display = 'flex';
+    $('#loginEmail').focus();
+  }
+  
+  function hideLoginModal() {
+    $('#loginModal').style.display = 'none';
+    $('#loginEmail').value = '';
+    $('#loginPassword').value = '';
+    $('#loginError').style.display = 'none';
+  }
+  
+  async function handleLogin(email, password) {
+    const loginButton = $('#loginButton');
+    const btnText = loginButton.querySelector('.btn-text');
+    const btnSpinner = loginButton.querySelector('.btn-spinner');
+    const loginError = $('#loginError');
+    
+    try {
+      // Show loading state
+      loginButton.disabled = true;
+      btnText.style.display = 'none';
+      btnSpinner.style.display = 'inline-block';
+      loginError.style.display = 'none';
+      
+      const token = getToken();
+      if (!token) {
+        throw new Error('No token found in URL');
+      }
+      
+      // Call login API
+      const response = await fetch(API() + '?api=login&token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          token: token
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result.success && result.user) {
+        // Save session
+        saveSession(result.user);
+        
+        // Update UI
+        updateUserMenu();
+        
+        // Hide login modal
+        hideLoginModal();
+        
+        // Initialize dashboard
+        showToast('Welcome back, ' + result.user.firstName + '!');
+        
+        return true;
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      loginError.textContent = error.message || 'Login failed. Please try again.';
+      loginError.style.display = 'block';
+      return false;
+    } finally {
+      // Reset button state
+      loginButton.disabled = false;
+      btnText.style.display = 'inline';
+      btnSpinner.style.display = 'none';
+    }
+  }
+  
+  function handleLogout() {
+    clearSession();
+    stopPolling();
+    showLoginModal();
+    $('#mainDashboard').style.display = 'none';
+    showToast('You have been logged out');
+  }
+  
+  function updateUserMenu() {
+    if (!currentUser) return;
+    
+    // Get initials
+    const firstInitial = (currentUser.firstName || '').charAt(0).toUpperCase();
+    const lastInitial = (currentUser.lastName || '').charAt(0).toUpperCase();
+    const initials = firstInitial + lastInitial;
+    
+    // Update user badge
+    $('#userBadge').textContent = initials;
+    $('#userBadge').style.backgroundColor = getColorForInitials(initials);
+    
+    // Update user name
+    $('#userName').textContent = currentUser.fullName || currentUser.email;
+    
+    // Show Users tab if admin
+    if (currentUser.role === 'Admin') {
+      $('#usersTab').style.display = 'inline-block';
+    }
+  }
+  
+  function getColorForInitials(initials) {
+    // Generate a consistent color based on initials
+    const colors = [
+      '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', 
+      '#10b981', '#06b6d4', '#6366f1', '#ef4444'
+    ];
+    const hash = initials.charCodeAt(0) + (initials.charCodeAt(1) || 0);
+    return colors[hash % colors.length];
+  }
+  
+  function getUserInitials(email) {
+    if (!email) return '??';
+    const parts = email.split('@')[0].split('.');
+    if (parts.length >= 2) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return email.substring(0, 2).toUpperCase();
+  }
   
   function showError(msg) { 
     const b = $('#errorBanner'); 
@@ -135,10 +305,10 @@
     return fetchJSON(API() + '?api=stats&' + p.toString());
   }
   
-  async function updateLead(token, id, status) {
+  async function updateLead(token, id, status, userEmail) {
     return fetchJSON(API() + '?api=leads&id=' + encodeURIComponent(id), {
       method: 'POST',
-      body: JSON.stringify({ _method: 'PATCH', token, status })
+      body: JSON.stringify({ _method: 'PATCH', token, status, userEmail: userEmail || '' })
     });
   }
 
@@ -1396,6 +1566,38 @@
       return; 
     }
     
+    // Check for existing session
+    const hasSession = checkSession();
+    if (!hasSession) {
+      hideLoading();
+      showLoginModal();
+      // Wait for login before proceeding
+      return;
+    }
+    
+    // Update user menu with session data
+    updateUserMenu();
+    
+    // Login form handler
+    $('#loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = $('#loginEmail').value.trim();
+      const password = $('#loginPassword').value;
+      
+      const success = await handleLogin(email, password);
+      if (success) {
+        // Reload the page to reinitialize with logged in user
+        window.location.reload();
+      }
+    });
+    
+    // Logout button handler
+    $('#logoutBtn').addEventListener('click', function() {
+      if (confirm('Are you sure you want to log out?')) {
+        handleLogout();
+      }
+    });
+    
     function currentFilters() {
       return { 
         token, 
@@ -1408,6 +1610,7 @@
     // Set up navigation
     $('#leadsTab').addEventListener('click', () => showSection('leadsSection'));
     $('#analyticsTab').addEventListener('click', () => showSection('analyticsSection'));
+    $('#usersTab').addEventListener('click', () => showSection('usersSection'));
     
     // Analytics view switching
     $('#overviewView').addEventListener('click', () => showAnalyticsView('overviewAnalytics'));
@@ -1549,7 +1752,7 @@
         btn.textContent = '⏳';
         
         try { 
-          await updateLead(token, id, action); 
+          await updateLead(token, id, action, currentUser ? currentUser.email : ''); 
           showToast('Status updated to: ' + action); 
           $('#applyFilters').click(); 
         } catch (e) { 
@@ -1582,7 +1785,7 @@
         btn.textContent = '⏳';
         
         try {
-          await updateLead(token, id, action);
+          await updateLead(token, id, action, currentUser ? currentUser.email : '');
           showToast('Status updated to: ' + action);
           $('#applyFilters').click();
         } catch (e) {
@@ -1615,7 +1818,7 @@
       this.textContent = 'Updating...';
       
       try {
-        await updateLead(token, leadId, newStatus);
+        await updateLead(token, leadId, newStatus, currentUser ? currentUser.email : '');
         
         // Update the status badge in the modal header
         const statusBadge = $('#modalStatusBadge');

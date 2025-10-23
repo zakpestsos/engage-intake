@@ -761,9 +761,7 @@ select option {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.75);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -775,22 +773,16 @@ select option {
   background: linear-gradient(135deg, #1e293b, #334155);
   border: 2px solid #3b82f6;
   border-radius: 1rem;
-  max-width: 700px;
+  max-width: 650px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
   position: fixed;
-  left: 50%;
+  left: 23%;
   top: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
-}
-
-/* When comments modal is open, shift lead modal left */
-.modal-content.with-comments {
-  left: 25%;
-  transform: translate(-50%, -50%);
 }
 
 .modal-header {
@@ -867,30 +859,51 @@ select option {
 }
 
 .modal-body {
-  padding: 1.5rem 2rem;
+  padding: 2rem;
+}
+
+.modal-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .modal-section {
-  margin-bottom: 1.5rem;
-}
-
-.modal-section:last-child {
-  margin-bottom: 0;
+  background: rgba(15, 23, 42, 0.3);
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(71, 85, 105, 0.3);
 }
 
 .modal-section h4 {
-  margin-bottom: 0.75rem;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  color: #60a5fa;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .modal-field {
   margin-bottom: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
-.modal-sections {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+.modal-field:last-child {
+  margin-bottom: 0;
+}
+
+.modal-field label {
+  font-weight: 600;
+  color: #94a3b8;
+  min-width: 140px;
+}
+
+.modal-field span {
+  color: #e2e8f0;
+  flex: 1;
 }
 
 .modal-section {
@@ -2367,10 +2380,20 @@ select option {
   display: flex;
   flex-direction: column;
   position: fixed;
-  right: 5%;
+  right: 3%;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 1001;
   animation: slideInRight 0.3s ease;
+}
+
+#commentsModal {
+  pointer-events: none;
+  background: transparent !important;
+}
+
+#commentsModal .comments-modal-content {
+  pointer-events: all;
 }
 
 @keyframes slideInRight {

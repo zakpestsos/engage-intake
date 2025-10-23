@@ -214,24 +214,33 @@
       // Use fetchJSON for JSONP support (same as other API calls)
       const users = await fetchJSON(API() + '?api=users&token=' + encodeURIComponent(token));
       
-      if (!users.error) {
-        allUsers = users;
-        console.log('✅ Loaded', users.length, 'users for dropdown');
+      if (!users.error && Array.isArray(users)) {
+        // Map users to have consistent property names
+        allUsers = users.map(u => ({
+          Email: u.email || u.Email,
+          email: u.email || u.Email,
+          firstName: u.firstName || u.First_Name || '',
+          lastName: u.lastName || u.Last_Name || '',
+          First_Name: u.firstName || u.First_Name || '',
+          Last_Name: u.lastName || u.Last_Name || '',
+          role: u.role || u.Role || 'User',
+          Role: u.role || u.Role || 'User',
+          active: u.active !== false && u.Active !== false,
+          Active: u.active !== false && u.Active !== false,
+          Icon_Color: u.iconColor || u.Icon_Color || '#3b82f6',
+          iconColor: u.iconColor || u.Icon_Color || '#3b82f6',
+          companyName: u.companyName || u.Company_Name || '',
+          Company_Name: u.companyName || u.Company_Name || ''
+        }));
+        console.log('✅ Loaded', allUsers.length, 'users for dropdown:', allUsers);
         
-        // Only render table if we're on the users section
-        const usersTableBody = $('#usersTableBody');
-        if (usersTableBody) {
-          renderUsersTable(users);
-        }
+        renderUsersTable(allUsers);
       } else {
-        throw new Error(users.error);
+        throw new Error(users.error || 'Failed to load users');
       }
     } catch (error) {
       console.error('Error loading users:', error);
-      // Don't show error toast during initialization, just log it
-      if ($('#usersSection').classList.contains('active')) {
-        showError('Failed to load users: ' + error.message);
-      }
+      showError('Failed to load users: ' + error.message);
     }
   }
   
@@ -997,8 +1006,9 @@
     // Load comments for this lead
     loadCommentsForLead(leadId);
     
-    // Show modal
+    // Show modals
     $('#leadModal').style.display = 'flex';
+    $('#commentsModal').style.display = 'flex';
   }
   
   function closeLeadModal() {
@@ -2097,23 +2107,10 @@
     $('#cancelUserBtn').addEventListener('click', closeUserModal);
     $('#userForm').addEventListener('submit', handleUserFormSubmit);
     
-    // Comments modal event listeners
-    $('#openCommentsBtn').addEventListener('click', function() {
-      $('#commentsModal').style.display = 'flex';
-      // Shift lead modal to the left
-      const leadModal = document.querySelector('#leadModal .modal-content');
-      if (leadModal) {
-        leadModal.classList.add('with-comments');
-      }
-    });
-    
+    // Comments modal close handler
     $('#closeCommentsModal').addEventListener('click', function() {
-      $('#commentsModal').style.display = 'none';
-      // Restore lead modal position
-      const leadModal = document.querySelector('#leadModal .modal-content');
-      if (leadModal) {
-        leadModal.classList.remove('with-comments');
-      }
+      // Close both modals
+      closeLeadModal();
     });
     
     $('#addCommentBtn').addEventListener('click', addCommentToLead);

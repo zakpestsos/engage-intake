@@ -1847,12 +1847,31 @@
   }
 
   function showSection(sectionId) {
-    // Hide all sections
+    console.log('🔄 Switching to section:', sectionId);
+    
+    // Hide all sections (both display and active class)
     $('#leadsSection').style.display = 'none';
     $('#analyticsSection').style.display = 'none';
+    const usersSection = $('#usersSection');
+    if (usersSection) {
+      usersSection.classList.remove('active');
+      console.log('🔄 Removed active class from usersSection');
+    }
     
     // Show selected section
-    $('#' + sectionId).style.display = 'block';
+    const targetSection = $('#' + sectionId);
+    if (targetSection) {
+      if (sectionId === 'usersSection') {
+        // Users section needs 'active' class due to !important in CSS
+        targetSection.classList.add('active');
+        console.log('✅ Added active class to usersSection');
+      } else {
+        targetSection.style.display = 'block';
+      }
+      console.log('✅ Section displayed:', sectionId);
+    } else {
+      console.error('❌ Section not found:', sectionId);
+    }
     
     // Update nav buttons
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -1865,6 +1884,12 @@
         const metrics = calculateAdvancedMetrics(window.CURRENT_LEADS_ORIGINAL, window.CURRENT_STATS || {});
         updatePerformanceMetrics(metrics);
         drawMasterpieceCharts(window.CURRENT_LEADS_ORIGINAL, window.CURRENT_STATS || {});
+      }
+    } else if (sectionId === 'usersSection') {
+      const usersTab = $('#usersTab');
+      if (usersTab) {
+        usersTab.classList.add('active');
+        console.log('✅ Users tab activated');
       }
     }
   }

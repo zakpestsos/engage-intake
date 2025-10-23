@@ -34,10 +34,10 @@ Your staging environment is fully configured and ready to use!
 
 ### Test Intake Form
 ```bash
-# Open in browser (automatically uses staging config on localhost)
+# Open in browser with Dev Company token (automatically uses staging config on localhost)
 # File → Open → frontend-intake/index-cyberpunk-v2.html
+# Add to URL: ?token=7dd922454737d41335cddfc89cd43138
 
-# Select: Dev Company
 # Fill out form and submit
 # Check Google Sheets for new lead
 ```
@@ -91,7 +91,7 @@ git push origin main
 - GitHub Pages defaults to production config
 
 ### Testing Checklist
-- [ ] Intake form loads with Dev Company in dropdown
+- [ ] Intake form loads with Dev Company token in URL
 - [ ] Form submission creates lead in spreadsheet
 - [ ] Lead appears with "Dev Company" in Company_Name column
 - [ ] Dashboard loads with Dev Company token

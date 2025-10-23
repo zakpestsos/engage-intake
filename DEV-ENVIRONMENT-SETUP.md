@@ -145,13 +145,12 @@ GitHub Pages currently deploys only the `main` branch. For staging, you have two
    # Switch to development branch
    git checkout development
    
-   # Open intake form in browser (uses staging config on localhost)
-   # File → Open → frontend-intake/index-cyberpunk-v2.html
+   # Open intake form in browser with Dev Company token (uses staging config on localhost)
+   # File → Open → frontend-intake/index-cyberpunk-v2.html?token=YOUR_DEV_TOKEN
    ```
 
 3. **Test Form Submission**:
-   - Fill out the intake form
-   - Use "Dev Company" from dropdown
+   - Fill out the intake form (token is in URL parameter)
    - Submit the form
    - Check your Google Sheet - should see new lead with "Dev Company"
 

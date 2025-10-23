@@ -53,10 +53,11 @@ Edit any files you want. When testing locally:
 
 ### Step 3: Test Your Changes
 ```bash
-# Open intake form
+# Open intake form with Dev Company token
 # File → Open → frontend-intake/index-cyberpunk-v2.html
+# Add to URL: ?token=7dd922454737d41335cddfc89cd43138
 
-# Select "Dev Company" and submit a test lead
+# Submit a test lead
 # Check Google Sheets to verify it worked
 ```
 
@@ -143,8 +144,8 @@ Expected: `{"status":"success","message":"Apps Script is working!"}`
 
 ### Test 3: Local Development
 1. Switch to development branch: `git checkout development`
-2. Open `frontend-intake/index-cyberpunk-v2.html` in browser
-3. Verify "Dev Company" appears in dropdown
+2. Open `frontend-intake/index-cyberpunk-v2.html?token=7dd922454737d41335cddfc89cd43138` in browser
+3. Verify form loads with Dev Company token
 4. Submit a test lead
 5. Check Google Sheets - lead should appear with "Dev Company"
 

@@ -1973,6 +1973,27 @@
       return; 
     }
     
+    // Set up login form handler (needs to be attached before checking session)
+    $('#loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = $('#loginEmail').value.trim();
+      const password = $('#loginPassword').value;
+      
+      const success = await handleLogin(email, password);
+      if (success) {
+        // After successful login, initialize the dashboard
+        updateUserMenu();
+        await initializeDashboard();
+      }
+    });
+    
+    // Logout button handler
+    $('#logoutBtn').addEventListener('click', function() {
+      if (confirm('Are you sure you want to log out?')) {
+        handleLogout();
+      }
+    });
+    
     // Check for existing session
     const hasSession = checkSession();
     if (!hasSession) {
@@ -1985,25 +2006,14 @@
     // Update user menu with session data
     updateUserMenu();
     
-    // Login form handler
-    $('#loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = $('#loginEmail').value.trim();
-      const password = $('#loginPassword').value;
-      
-      const success = await handleLogin(email, password);
-      if (success) {
-        // Reload the page to reinitialize with logged in user
-        window.location.reload();
-      }
-    });
-    
-    // Logout button handler
-    $('#logoutBtn').addEventListener('click', function() {
-      if (confirm('Are you sure you want to log out?')) {
-        handleLogout();
-      }
-    });
+    // Initialize dashboard if already logged in
+    await initializeDashboard();
+  });
+
+  // Dashboard initialization function (called after login or if already logged in)
+  async function initializeDashboard() {
+    const token = getToken();
+    if (!token) return;
     
     function currentFilters() {
       return { 
@@ -2355,5 +2365,5 @@
       hideLoading();
       showError('Failed to load data. Check API_BASE in config.js'); 
     }
-  });
+  }
 })();

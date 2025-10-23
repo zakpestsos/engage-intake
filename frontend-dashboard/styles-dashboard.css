@@ -2324,3 +2324,198 @@ select option {
   }
 }
 
+/* =================================
+   Separate Comments Modal
+   ================================= */
+
+.comments-modal-content {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.comments-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comments-modal-body .comments-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #94a3b8;
+}
+
+.comments-modal-body .comments-count {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.comments-modal-body .comments-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.comments-modal-body .comment-input-area {
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding-top: 1rem;
+}
+
+.comments-modal-body .comment-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.comments-modal-body .comment-input-wrapper textarea {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #e2e8f0;
+  resize: vertical;
+  min-height: 80px;
+  font-family: 'Inter', sans-serif;
+}
+
+.comments-modal-body .comment-input-wrapper textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.comments-modal-body .comment-input-wrapper button {
+  align-self: flex-end;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.comments-modal-body .comment-input-wrapper button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+/* =================================
+   Button to Open Comments
+   ================================= */
+
+.btn-open-comments {
+  margin-top: 1.5rem;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  width: 100%;
+}
+
+.btn-open-comments:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.3);
+}
+
+.btn-open-comments:active {
+  transform: translateY(0);
+}
+
+/* =================================
+   Assign Dropdown
+   ================================= */
+
+.assign-dropdown {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border: 1px solid #475569;
+  color: #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 130px;
+}
+
+.assign-dropdown:hover {
+  border-color: #3b82f6;
+}
+
+.assign-dropdown:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.assigned-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Fix for User Management showing on wrong page */
+#usersSection {
+  display: none;
+}
+
+#usersSection.active {
+  display: block;
+}
+
+/* Responsive for assign dropdown */
+@media (max-width: 768px) {
+  .assign-dropdown {
+    font-size: 0.75rem;
+    min-width: 100px;
+    padding: 0.4rem 0.5rem;
+  }
+  
+  .comments-modal-content {
+    width: 95%;
+    max-height: 90vh;
+  }
+}
+

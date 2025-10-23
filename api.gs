@@ -130,6 +130,16 @@ function handleApiPost_(e) {
         const companyName = companyFromToken_(token);
         const status = (e.parameter && e.parameter.status) || (body && body.status);
         const userEmail = (e.parameter && e.parameter.userEmail) || (body && body.userEmail);
+        const assignedTo = (e.parameter && e.parameter.assignedTo) || (body && body.assignedTo);
+        
+        // Handle assignment update (if assignedTo is provided without status)
+        if (assignedTo !== undefined && !status) {
+          console.log('🔄 Assignment update:', { leadId, assignedTo });
+          const result = updateLeadAssignment_(companyName, leadId, assignedTo, userEmail || 'client ui');
+          return jsonResponse_(result, origin || '', 200);
+        }
+        
+        // Handle status update
         console.log('🔄 PATCH details:', { leadId, companyName, status, userEmail });
         const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui', userEmail);
         return jsonResponse_(result, origin || '', 200);

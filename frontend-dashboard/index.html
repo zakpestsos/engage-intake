@@ -200,6 +200,7 @@
                   <th class="sortable" data-sort="product" style="width: 160px;">Product</th>
                   <th class="sortable" data-sort="leadValue" style="width: 100px;">Value</th>
                   <th class="sortable" data-sort="status" style="width: 100px;">Status</th>
+                  <th style="width: 150px;">Assigned To</th>
                   <th style="width: 200px;">Actions</th>
                 </tr>
               </thead>
@@ -595,7 +596,7 @@
         </div>
       </div>
       
-      <div class="modal-body modal-body-with-comments">
+      <div class="modal-body">
         <div class="modal-sections">
           <!-- Customer Information -->
           <div class="modal-section">
@@ -669,25 +670,11 @@
               <span id="modalNotes"></span>
             </div>
           </div>
-        </div>
-
-        <!-- Comments Sidebar -->
-        <div class="comments-sidebar">
-          <div class="comments-header">
-            <h4>Internal Notes</h4>
-            <span class="comments-count" id="commentsCount">0</span>
-          </div>
           
-          <div class="comments-list" id="commentsList">
-            <div class="comments-empty">No comments yet. Be the first to add one!</div>
-          </div>
-          
-          <div class="comment-input-area">
-            <div class="comment-input-wrapper">
-              <textarea id="commentInput" placeholder="Add a comment..."></textarea>
-              <button id="addCommentBtn">Post</button>
-            </div>
-          </div>
+          <!-- Button to open comments modal -->
+          <button id="openCommentsBtn" class="btn-open-comments">
+            💬 View Internal Notes (<span id="commentsCountBadge">0</span>)
+          </button>
         </div>
       </div>
 
@@ -766,6 +753,34 @@
           <button type="submit" id="saveUserBtn" class="btn-primary">Save User</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Comments Modal (separate, appears to right of lead modal) -->
+  <div id="commentsModal" class="modal-overlay" style="display: none;">
+    <div class="comments-modal-content">
+      <div class="modal-header">
+        <h3>💬 Internal Notes</h3>
+        <button id="closeCommentsModal" class="modal-close">&times;</button>
+      </div>
+      
+      <div class="comments-modal-body">
+        <div class="comments-header">
+          <span class="comments-count" id="commentsCount">0</span>
+          <span>Comments</span>
+        </div>
+        
+        <div class="comments-list" id="commentsList">
+          <div class="comments-empty">No comments yet. Be the first to add one!</div>
+        </div>
+        
+        <div class="comment-input-area">
+          <div class="comment-input-wrapper">
+            <textarea id="commentInput" placeholder="Add a comment..." rows="3"></textarea>
+            <button id="addCommentBtn" class="btn-primary">Post Comment</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

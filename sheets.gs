@@ -348,6 +348,38 @@ function updateLeadStatusForCompany_(companyName, id, status, actor, userEmail) 
   return { ok: true, id, status, updatedAt: ts };
 }
 
+/**
+ * Update lead assignment
+ */
+function updateLeadAssignment_(companyName, id, assignedTo, actor) {
+  const { sheet, header } = getSheetWithHeader_(SHEET_LEADS, LEADS_HEADERS);
+  const rowIndex = findLeadRowIndexById_(id);
+  if (rowIndex < 0) throw new Error('Lead not found');
+
+  const row = sheet.getRange(rowIndex, 1, 1, header.length).getValues()[0];
+  const idx = {};
+  header.forEach((h, i) => idx[h] = i);
+
+  if (String(row[idx['Company_Name']]) !== companyName) {
+    throw new Error('Lead does not belong to company');
+  }
+
+  const ts = nowIso_();
+  row[idx['Assigned_To']] = assignedTo || '';
+  row[idx['Updated_At']] = ts;
+
+  sheet.getRange(rowIndex, 1, 1, header.length).setValues([row]);
+
+  addAuditLog_({
+    actor: actor || 'client ui',
+    action: 'ASSIGN_LEAD',
+    leadId: id,
+    summary: 'Lead ' + id + ' assigned to ' + (assignedTo || 'Unassigned')
+  });
+
+  return { ok: true, id, assignedTo, updatedAt: ts };
+}
+
 function getStatsForCompany_(companyName, query) {
   const leads = listLeadsForCompany_(companyName, query || {});
   // Aggregations

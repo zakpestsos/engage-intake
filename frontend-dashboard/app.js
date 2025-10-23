@@ -203,8 +203,8 @@
       const token = getToken();
       if (!token) return;
       
-      const response = await fetch(API() + '?api=users&token=' + encodeURIComponent(token));
-      const users = await response.json();
+      // Use fetchJSON for JSONP support (same as other API calls)
+      const users = await fetchJSON(API() + '?api=users&token=' + encodeURIComponent(token));
       
       if (!users.error) {
         allUsers = users;
@@ -424,8 +424,8 @@
       
       currentLeadId = leadId;
       
-      const response = await fetch(API() + '?api=comments&leadId=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token));
-      const comments = await response.json();
+      // Use fetchJSON for JSONP support
+      const comments = await fetchJSON(API() + '?api=comments&leadId=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token));
       
       if (!comments.error) {
         currentComments = comments;
@@ -443,11 +443,15 @@
   function renderComments(comments) {
     const commentsList = $('#commentsList');
     const commentsCount = $('#commentsCount');
+    const commentsCountBadge = $('#commentsCountBadge');
     
     if (!commentsList) return;
     
     // Update count
     commentsCount.textContent = comments.length;
+    if (commentsCountBadge) {
+      commentsCountBadge.textContent = comments.length;
+    }
     
     if (comments.length === 0) {
       commentsList.innerHTML = '<div class="comments-empty">No comments yet. Be the first to add one!</div>';
@@ -757,6 +761,32 @@
         ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
       }
       
+      // Generate assigned to dropdown
+      const assignedTo = ld.Assigned_To || ld.assignedTo || '';
+      let assignedToHtml = '<select class="assign-dropdown" data-lead-id="' + sanitize(ld.id) + '">';
+      assignedToHtml += '<option value="">Unassigned</option>';
+      
+      // Add all users to dropdown
+      if (allUsers && Array.isArray(allUsers)) {
+        allUsers.forEach(user => {
+          const selected = user.Email === assignedTo ? ' selected' : '';
+          const userName = (user.First_Name || '') + ' ' + (user.Last_Name || '');
+          assignedToHtml += '<option value="' + sanitize(user.Email) + '"' + selected + '>' + sanitize(userName.trim() || user.Email) + '</option>';
+        });
+      }
+      assignedToHtml += '</select>';
+      
+      // Show assigned user badge if assigned
+      let assignedBadge = '';
+      if (assignedTo && allUsers) {
+        const assignedUser = allUsers.find(u => u.Email === assignedTo);
+        if (assignedUser) {
+          const initials = getUserInitials(assignedTo);
+          const color = getColorForInitials(initials);
+          assignedBadge = '<div class="ownership-initials" style="background-color: ' + color + '; margin-left: 8px; display: inline-block;">' + initials + '</div>';
+        }
+      }
+      
       tr.innerHTML =
         '<td>' + sanitize(createdDate) + '</td>' +
         '<td>' + sanitize(ld.customerName) + '</td>' +
@@ -765,6 +795,7 @@
         '<td>' + sanitize(ld.product || ld.productSku || '') + '</td>' +
         '<td>' + fmtMoney(ld.leadValue) + '</td>' +
         '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span>' + ownershipBadge + '</td>' +
+        '<td class="assigned-cell">' + assignedToHtml + assignedBadge + '</td>' +
         '<td class="actions-cell">' +
           '<div class="action-buttons">' +
             '<button class="action-btn accept" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button>' +
@@ -2038,12 +2069,49 @@
     $('#cancelUserBtn').addEventListener('click', closeUserModal);
     $('#userForm').addEventListener('submit', handleUserFormSubmit);
     
-    // Comments event listeners
+    // Comments modal event listeners
+    $('#openCommentsBtn').addEventListener('click', function() {
+      $('#commentsModal').style.display = 'flex';
+    });
+    
+    $('#closeCommentsModal').addEventListener('click', function() {
+      $('#commentsModal').style.display = 'none';
+    });
+    
     $('#addCommentBtn').addEventListener('click', addCommentToLead);
     $('#commentInput').addEventListener('keydown', function(e) {
       // Allow Ctrl+Enter or Cmd+Enter to submit
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         addCommentToLead();
+      }
+    });
+    
+    // Assign dropdown handler (using event delegation)
+    document.addEventListener('change', async function(e) {
+      if (e.target && e.target.classList.contains('assign-dropdown')) {
+        const leadId = e.target.getAttribute('data-lead-id');
+        const assignedEmail = e.target.value;
+        
+        try {
+          const token = getToken();
+          if (!token) return;
+          
+          // Update lead assignment
+          const response = await fetchJSON(API() + '?api=leads&id=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token) + '&_method=PATCH&assignedTo=' + encodeURIComponent(assignedEmail));
+          
+          if (response && !response.error) {
+            showToast('Lead assignment updated');
+            
+            // Refresh leads to show updated assignment
+            const leads = await listLeads({ token });
+            renderLeads(leads);
+          } else {
+            throw new Error(response.error || 'Failed to update assignment');
+          }
+        } catch (error) {
+          console.error('Error updating assignment:', error);
+          showError('Failed to update assignment: ' + error.message);
+        }
       }
     });
     
@@ -2312,6 +2380,9 @@
     
     try {
       const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);
+      
+      // Load users for assignment dropdown
+      await loadAllUsers();
       
       // Update company name in header - get from token first, then from leads
       let companyName = 'Client';

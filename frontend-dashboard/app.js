@@ -216,13 +216,22 @@
       
       if (!users.error) {
         allUsers = users;
-        renderUsersTable(users);
+        console.log('✅ Loaded', users.length, 'users for dropdown');
+        
+        // Only render table if we're on the users section
+        const usersTableBody = $('#usersTableBody');
+        if (usersTableBody) {
+          renderUsersTable(users);
+        }
       } else {
         throw new Error(users.error);
       }
     } catch (error) {
       console.error('Error loading users:', error);
-      showError('Failed to load users: ' + error.message);
+      // Don't show error toast during initialization, just log it
+      if ($('#usersSection').classList.contains('active')) {
+        showError('Failed to load users: ' + error.message);
+      }
     }
   }
   
@@ -994,6 +1003,13 @@
   
   function closeLeadModal() {
     $('#leadModal').style.display = 'none';
+    // Also close comments modal if open
+    $('#commentsModal').style.display = 'none';
+    // Remove the shift class
+    const leadModal = document.querySelector('#leadModal .modal-content');
+    if (leadModal) {
+      leadModal.classList.remove('with-comments');
+    }
   }
 
   // Advanced Analytics Engine
@@ -2084,10 +2100,20 @@
     // Comments modal event listeners
     $('#openCommentsBtn').addEventListener('click', function() {
       $('#commentsModal').style.display = 'flex';
+      // Shift lead modal to the left
+      const leadModal = document.querySelector('#leadModal .modal-content');
+      if (leadModal) {
+        leadModal.classList.add('with-comments');
+      }
     });
     
     $('#closeCommentsModal').addEventListener('click', function() {
       $('#commentsModal').style.display = 'none';
+      // Restore lead modal position
+      const leadModal = document.querySelector('#leadModal .modal-content');
+      if (leadModal) {
+        leadModal.classList.remove('with-comments');
+      }
     });
     
     $('#addCommentBtn').addEventListener('click', addCommentToLead);
@@ -2098,9 +2124,18 @@
       }
     });
     
+    // Prevent dropdown from triggering row click (stop propagation)
+    document.addEventListener('click', function(e) {
+      if (e.target && (e.target.classList.contains('assign-dropdown') || e.target.closest('.assigned-cell'))) {
+        e.stopPropagation();
+      }
+    }, true);
+    
     // Assign dropdown handler (using event delegation)
     document.addEventListener('change', async function(e) {
       if (e.target && e.target.classList.contains('assign-dropdown')) {
+        e.stopPropagation(); // Prevent triggering row click
+        
         const leadId = e.target.getAttribute('data-lead-id');
         const assignedEmail = e.target.value;
         

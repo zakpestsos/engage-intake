@@ -775,11 +775,22 @@ select option {
   background: linear-gradient(135deg, #1e293b, #334155);
   border: 2px solid #3b82f6;
   border-radius: 1rem;
-  max-width: 900px;
-  width: 100%;
+  max-width: 700px;
+  width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+/* When comments modal is open, shift lead modal left */
+.modal-content.with-comments {
+  left: 25%;
+  transform: translate(-50%, -50%);
 }
 
 .modal-header {
@@ -856,7 +867,23 @@ select option {
 }
 
 .modal-body {
-  padding: 2rem;
+  padding: 1.5rem 2rem;
+}
+
+.modal-section {
+  margin-bottom: 1.5rem;
+}
+
+.modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.modal-section h4 {
+  margin-bottom: 0.75rem;
+}
+
+.modal-field {
+  margin-bottom: 0.75rem;
 }
 
 .modal-sections {
@@ -2333,22 +2360,26 @@ select option {
   border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 16px;
   width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
+  max-width: 450px;
+  max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
+  position: fixed;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
   animation: slideInRight 0.3s ease;
 }
 
 @keyframes slideInRight {
   from {
-    transform: translateX(100%);
+    right: -100%;
     opacity: 0;
   }
   to {
-    transform: translateX(0);
+    right: 5%;
     opacity: 1;
   }
 }
@@ -2498,11 +2529,56 @@ select option {
 
 /* Fix for User Management showing on wrong page */
 #usersSection {
-  display: none;
+  display: none !important;
 }
 
 #usersSection.active {
-  display: block;
+  display: block !important;
+}
+
+/* Section Header Styling */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.section-header h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+  color: #60a5fa;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Add User Button */
+#addUserBtn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: 2px solid #10b981;
+  color: white;
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+#addUserBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+#addUserBtn:active {
+  transform: translateY(0);
 }
 
 /* Responsive for assign dropdown */

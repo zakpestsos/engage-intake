@@ -164,7 +164,7 @@
     
     // Update user badge
     $('#userBadge').textContent = initials;
-    $('#userBadge').style.backgroundColor = getColorForInitials(initials);
+    $('#userBadge').style.backgroundColor = getColorForInitials(initials, currentUser.email);
     
     // Update user name
     $('#userName').textContent = currentUser.fullName || currentUser.email;
@@ -175,8 +175,16 @@
     }
   }
   
-  function getColorForInitials(initials) {
-    // Generate a consistent color based on initials
+  function getColorForInitials(initials, email = null) {
+    // Check if user has custom color
+    if (email && allUsers && Array.isArray(allUsers)) {
+      const user = allUsers.find(u => u.Email === email);
+      if (user && user.Icon_Color) {
+        return user.Icon_Color;
+      }
+    }
+    
+    // Generate a consistent color based on initials (fallback)
     const colors = [
       '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', 
       '#10b981', '#06b6d4', '#6366f1', '#ef4444'
@@ -229,7 +237,7 @@
     
     tbody.innerHTML = users.map(user => {
       const initials = (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '');
-      const color = getColorForInitials(initials);
+      const color = getColorForInitials(initials, user.Email);
       const roleClass = (user.role || 'user').toLowerCase();
       
       return `
@@ -278,10 +286,12 @@
       $('#userPassword').placeholder = 'Leave blank to keep current password';
       $('#userRole').value = userData.role || 'User';
       $('#userActive').checked = userData.active !== false;
+      $('#userIconColor').value = userData.iconColor || '#3b82f6';
     } else {
       $('#userEmail').disabled = false;
       $('#userPassword').required = true;
       $('#userPassword').placeholder = '';
+      $('#userIconColor').value = '#3b82f6';
     }
     
     // Show modal
@@ -303,6 +313,7 @@
     const password = $('#userPassword').value;
     const role = $('#userRole').value;
     const active = $('#userActive').checked;
+    const iconColor = $('#userIconColor').value;
     
     const isEditing = $('#userEmail').disabled;
     const saveBtn = $('#saveUserBtn');
@@ -321,6 +332,7 @@
         lastName: lastName,
         role: role,
         active: active,
+        iconColor: iconColor,
         token: token
       };
       
@@ -460,7 +472,7 @@
     
     commentsList.innerHTML = comments.map(comment => {
       const initials = getUserInitials(comment.userEmail);
-      const color = getColorForInitials(initials);
+      const color = getColorForInitials(initials, comment.userEmail);
       const timestamp = new Date(comment.createdAt).toLocaleString();
       
       return `
@@ -757,7 +769,7 @@
       
       if (ownerEmail) {
         const initials = getUserInitials(ownerEmail);
-        const color = getColorForInitials(initials);
+        const color = getColorForInitials(initials, ownerEmail);
         ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
       }
       
@@ -782,7 +794,7 @@
         const assignedUser = allUsers.find(u => u.Email === assignedTo);
         if (assignedUser) {
           const initials = getUserInitials(assignedTo);
-          const color = getColorForInitials(initials);
+          const color = getColorForInitials(initials, assignedTo);
           assignedBadge = '<div class="ownership-initials" style="background-color: ' + color + '; margin-left: 8px; display: inline-block;">' + initials + '</div>';
         }
       }
@@ -835,7 +847,7 @@
       
       if (ownerEmail) {
         const initials = getUserInitials(ownerEmail);
-        const color = getColorForInitials(initials);
+        const color = getColorForInitials(initials, ownerEmail);
         ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
       }
       
@@ -912,21 +924,21 @@
       
       if (lead.Accepted_By) {
         const initials = getUserInitials(lead.Accepted_By);
-        const color = getColorForInitials(initials);
+        const color = getColorForInitials(initials, lead.Accepted_By);
         const timestamp = lead.Accepted_At ? new Date(lead.Accepted_At).toLocaleString() : '';
         ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Accepted by ${lead.Accepted_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
       }
       
       if (lead.Completed_By) {
         const initials = getUserInitials(lead.Completed_By);
-        const color = getColorForInitials(initials);
+        const color = getColorForInitials(initials, lead.Completed_By);
         const timestamp = lead.Completed_At ? new Date(lead.Completed_At).toLocaleString() : '';
         ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Completed by ${lead.Completed_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
       }
       
       if (lead.Cancelled_By) {
         const initials = getUserInitials(lead.Cancelled_By);
-        const color = getColorForInitials(initials);
+        const color = getColorForInitials(initials, lead.Cancelled_By);
         const timestamp = lead.Cancelled_At ? new Date(lead.Cancelled_At).toLocaleString() : '';
         ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Cancelled by ${lead.Cancelled_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
       }

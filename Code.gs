@@ -70,7 +70,8 @@ const USERS_HEADERS = [
   'Last_Name',
   'Role',
   'Company_Name',
-  'Active'
+  'Active',
+  'Icon_Color'
 ];
 
 const AUDIT_HEADERS = [
@@ -496,6 +497,7 @@ function authenticateUser_(email, password, companyName) {
     const roleIdx = header.indexOf('Role');
     const companyIdx = header.indexOf('Company_Name');
     const activeIdx = header.indexOf('Active');
+    const iconColorIdx = header.indexOf('Icon_Color');
     
     // Hash the provided password
     const hashedPassword = hashPassword_(password);
@@ -522,7 +524,8 @@ function authenticateUser_(email, password, companyName) {
             fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
             role: row[roleIdx] || 'User',
             companyName: row[companyIdx],
-            active: row[activeIdx]
+            active: row[activeIdx],
+            iconColor: row[iconColorIdx] || '#3b82f6'
           };
         }
       }
@@ -552,6 +555,7 @@ function getUsersByCompany_(companyName) {
     const roleIdx = header.indexOf('Role');
     const companyIdx = header.indexOf('Company_Name');
     const activeIdx = header.indexOf('Active');
+    const iconColorIdx = header.indexOf('Icon_Color');
     
     const users = [];
     for (let i = 1; i < values.length; i++) {
@@ -566,7 +570,8 @@ function getUsersByCompany_(companyName) {
           fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
           role: row[roleIdx] || 'User',
           companyName: row[companyIdx],
-          active: row[activeIdx] === true
+          active: row[activeIdx] === true,
+          iconColor: row[iconColorIdx] || '#3b82f6'
         });
       }
     }
@@ -617,6 +622,7 @@ function createUser_(userData) {
     newRow[header.indexOf('Role')] = userData.role || 'User';
     newRow[companyIdx] = userData.companyName;
     newRow[header.indexOf('Active')] = userData.active !== false; // Default to true
+    newRow[header.indexOf('Icon_Color')] = userData.iconColor || '#3b82f6'; // Default to blue
     
     // Append to sheet
     sheet.appendRow(newRow);
@@ -629,7 +635,8 @@ function createUser_(userData) {
       fullName: (userData.firstName || '') + ' ' + (userData.lastName || ''),
       role: userData.role || 'User',
       companyName: userData.companyName,
-      active: userData.active !== false
+      active: userData.active !== false,
+      iconColor: userData.iconColor || '#3b82f6'
     };
   } catch (error) {
     console.error('Error creating user:', error);
@@ -656,6 +663,7 @@ function updateUser_(email, companyName, updates) {
     const roleIdx = header.indexOf('Role');
     const companyIdx = header.indexOf('Company_Name');
     const activeIdx = header.indexOf('Active');
+    const iconColorIdx = header.indexOf('Icon_Color');
     
     // Find user row
     for (let i = 1; i < values.length; i++) {
@@ -679,6 +687,9 @@ function updateUser_(email, companyName, updates) {
         if (updates.active !== undefined) {
           row[activeIdx] = updates.active;
         }
+        if (updates.iconColor !== undefined) {
+          row[iconColorIdx] = updates.iconColor;
+        }
         
         // Write updated row back
         sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
@@ -691,7 +702,8 @@ function updateUser_(email, companyName, updates) {
           fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
           role: row[roleIdx] || 'User',
           companyName: row[companyIdx],
-          active: row[activeIdx] === true
+          active: row[activeIdx] === true,
+          iconColor: row[iconColorIdx] || '#3b82f6'
         };
       }
     }

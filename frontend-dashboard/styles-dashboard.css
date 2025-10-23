@@ -2519,3 +2519,37 @@ select option {
   }
 }
 
+/* =================================
+   Color Picker
+   ================================= */
+
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.color-picker-wrapper input[type="color"] {
+  width: 60px;
+  height: 40px;
+  border: 2px solid #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.color-picker-wrapper input[type="color"]:hover {
+  border-color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-picker-wrapper input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+

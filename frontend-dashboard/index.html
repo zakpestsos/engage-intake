@@ -6,7 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store">
   <link rel="stylesheet" href="styles-dashboard.css">
-  <script src="../frontend-shared/config.js"></script>
+  <!-- Environment-aware config loader -->
+  <script>
+    // Auto-detect environment based on current branch/hostname
+    // For local development, you can set ?env=staging in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const forceEnv = urlParams.get('env');
+    
+    // Check if we're on the development branch or local
+    const isDevelopment = forceEnv === 'staging' || 
+                          window.location.hostname === 'localhost' ||
+                          window.location.hostname === '127.0.0.1' ||
+                          window.location.pathname.includes('/development/');
+    
+    const configFile = isDevelopment ? 'config.staging.js' : 'config.production.js';
+    document.write('<script src="../frontend-shared/' + configFile + '"><\/script>');
+  </script>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
   <script src="export-utils.js"></script>

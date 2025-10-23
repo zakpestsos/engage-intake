@@ -12,5 +12,9 @@
     ".json"
   ],
   "filePushOrder": [],
-  "skipSubdirectories": false
+  "skipSubdirectories": false,
+  "deployments": {
+    "production": "AKfycby_lsZuGVzK2kvpMiEtzWzjvjqcCCP4DGzX4u31bWUXfErBzxFnGXqM1mygAZ-I-MZ3",
+    "staging": "UPDATE_AFTER_CREATING_STAGING_DEPLOYMENT"
+  }
 }

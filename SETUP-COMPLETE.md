@@ -25,11 +25,11 @@ Everything has been set up and tested. You can now safely develop features witho
 - **Deployment ID**: `AKfycbw66EhNAtOfYGKEDD2PNxgleaEciUMfU7HJq45v57-VC6P-XwXDzs1ixHfeVLd3SLge`
 - **Version**: 69 (Oct 23, 2025)
 - **Status**: ✅ Tested and Working
-- **Users**: Dev Company only (token: `c22a7cae47a4add65c0a9b29730bc8bf`)
+- **Users**: Dev Company only (token: `615e0a2323760bf9995c10b7c7ec44f8`)
 
 ## 🔐 Staging Credentials
 
-**Dev Company Token**: `c22a7cae47a4add65c0a9b29730bc8bf`
+**Dev Company Token**: `615e0a2323760bf9995c10b7c7ec44f8`
 
 **Test Products Available**:
 - DEV-TST1 - Test Service 1

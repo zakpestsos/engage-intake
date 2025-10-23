@@ -8,7 +8,7 @@ Your staging environment is fully configured and ready to use!
 
 ### Dev Company
 - **Company Name**: Dev Company
-- **Access Token**: `c22a7cae47a4add65c0a9b29730bc8bf`
+- **Access Token**: `615e0a2323760bf9995c10b7c7ec44f8`
 - **Contact Email**: zak@pest-sos.com
 - **Purpose**: Development and testing only
 
@@ -36,7 +36,7 @@ Your staging environment is fully configured and ready to use!
 ```bash
 # Open in browser with Dev Company token (automatically uses staging config on localhost)
 # File → Open → frontend-intake/index-cyberpunk-v2.html
-# Add to URL: ?token=c22a7cae47a4add65c0a9b29730bc8bf
+# Add to URL: ?token=615e0a2323760bf9995c10b7c7ec44f8
 
 # Fill out form and submit
 # Check Google Sheets for new lead
@@ -46,7 +46,7 @@ Your staging environment is fully configured and ready to use!
 ```bash
 # Open in browser with Dev Company token
 # File → Open → frontend-dashboard/index.html
-# Add to URL: ?token=c22a7cae47a4add65c0a9b29730bc8bf
+# Add to URL: ?token=615e0a2323760bf9995c10b7c7ec44f8
 ```
 
 ### Test API Directly

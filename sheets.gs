@@ -302,7 +302,7 @@ function findLeadRowIndexById_(id) {
   return -1;
 }
 
-function updateLeadStatusForCompany_(companyName, id, status, actor) {
+function updateLeadStatusForCompany_(companyName, id, status, actor, userEmail) {
   status = String(status || '').toUpperCase();
   if (!['NEW', 'ACCEPTED', 'COMPLETED', 'CANCELLED'].includes(status)) throw new Error('Invalid status');
 
@@ -321,17 +321,28 @@ function updateLeadStatusForCompany_(companyName, id, status, actor) {
   const ts = nowIso_();
   row[idx['Status']] = status;
   row[idx['Updated_At']] = ts;
-  if (status === 'ACCEPTED') row[idx['Accepted_At']] = ts;
-  if (status === 'COMPLETED') row[idx['Completed_At']] = ts;
-  if (status === 'CANCELLED') row[idx['Cancelled_At']] = ts;
+  
+  // Track who performed the status change
+  if (status === 'ACCEPTED') {
+    row[idx['Accepted_At']] = ts;
+    if (userEmail) row[idx['Accepted_By']] = userEmail;
+  }
+  if (status === 'COMPLETED') {
+    row[idx['Completed_At']] = ts;
+    if (userEmail) row[idx['Completed_By']] = userEmail;
+  }
+  if (status === 'CANCELLED') {
+    row[idx['Cancelled_At']] = ts;
+    if (userEmail) row[idx['Cancelled_By']] = userEmail;
+  }
 
   sheet.getRange(rowIndex, 1, 1, header.length).setValues([row]);
 
   addAuditLog_({
-    actor: actor || 'client ui',
+    actor: userEmail || actor || 'client ui',
     action: status === 'ACCEPTED' ? 'ACCEPT_LEAD' : status === 'COMPLETED' ? 'COMPLETE_LEAD' : status === 'CANCELLED' ? 'CANCEL_LEAD' : 'UPDATE_STATUS',
     leadId: id,
-    summary: 'Lead ' + id + ' set to ' + status
+    summary: 'Lead ' + id + ' set to ' + status + (userEmail ? ' by ' + userEmail : '')
   });
 
   return { ok: true, id, status, updatedAt: ts };
@@ -515,4 +526,106 @@ function formatLeadSMS_(lead) {
   }));
   
   return lines.join('\n');
+}
+
+/* ================================
+   COMMENTS SYSTEM FUNCTIONS
+   ================================ */
+
+/**
+ * Get all comments for a specific lead
+ * @param {string} leadId - Lead ID
+ * @returns {Array} Array of comment objects sorted by Created_At DESC
+ */
+function getCommentsForLead_(leadId) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_COMMENTS, COMMENTS_HEADERS);
+    const values = sheet.getDataRange().getValues();
+    
+    if (values.length <= 1) {
+      return []; // No comments yet
+    }
+    
+    const commentIdIdx = header.indexOf('Comment_ID');
+    const leadIdIdx = header.indexOf('Lead_ID');
+    const userEmailIdx = header.indexOf('User_Email');
+    const userNameIdx = header.indexOf('User_Name');
+    const createdAtIdx = header.indexOf('Created_At');
+    const commentTextIdx = header.indexOf('Comment_Text');
+    
+    const comments = [];
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (String(row[leadIdIdx] || '').trim() === String(leadId).trim()) {
+        comments.push({
+          commentId: row[commentIdIdx],
+          leadId: row[leadIdIdx],
+          userEmail: row[userEmailIdx] || '',
+          userName: row[userNameIdx] || '',
+          createdAt: row[createdAtIdx],
+          commentText: row[commentTextIdx] || ''
+        });
+      }
+    }
+    
+    // Sort by createdAt DESC (newest first)
+    comments.sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return dateB - dateA;
+    });
+    
+    return comments;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    return [];
+  }
+}
+
+/**
+ * Add a new comment to a lead
+ * @param {string} leadId - Lead ID
+ * @param {string} userEmail - User's email
+ * @param {string} userName - User's full name
+ * @param {string} commentText - Comment text
+ * @returns {Object} Created comment object
+ */
+function addComment_(leadId, userEmail, userName, commentText) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_COMMENTS, COMMENTS_HEADERS);
+    
+    // Validate required fields
+    if (!leadId || !userEmail || !commentText) {
+      throw new Error('Lead ID, user email, and comment text are required');
+    }
+    
+    // Generate unique Comment_ID (timestamp-based)
+    const now = new Date();
+    const commentId = 'CMT-' + now.getTime();
+    
+    // Prepare new comment row
+    const newRow = new Array(header.length).fill('');
+    newRow[header.indexOf('Comment_ID')] = commentId;
+    newRow[header.indexOf('Lead_ID')] = leadId;
+    newRow[header.indexOf('User_Email')] = userEmail;
+    newRow[header.indexOf('User_Name')] = userName || userEmail;
+    newRow[header.indexOf('Created_At')] = now;
+    newRow[header.indexOf('Comment_Text')] = commentText;
+    
+    // Append to sheet
+    sheet.appendRow(newRow);
+    
+    // Return created comment
+    return {
+      commentId: commentId,
+      leadId: leadId,
+      userEmail: userEmail,
+      userName: userName || userEmail,
+      createdAt: now,
+      commentText: commentText
+    };
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
 }

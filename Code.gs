@@ -7,6 +7,7 @@ const SHEET_PRODUCTS = 'Products';
 const SHEET_COMPANIES = 'Companies';
 const SHEET_USERS = 'Users';
 const SHEET_AUDIT = 'Audit_Log';
+const SHEET_COMMENTS = 'Comments';
 
 const LEADS_HEADERS = [
   'Lead_ID',
@@ -36,7 +37,10 @@ const LEADS_HEADERS = [
   'Cancelled_At',
   'Assigned_To',
   'Notes',
-  'Company_Access_Token'
+  'Company_Access_Token',
+  'Accepted_By',
+  'Completed_By',
+  'Cancelled_By'
 ];
 
 const PRODUCTS_HEADERS = [
@@ -61,6 +65,9 @@ const COMPANIES_HEADERS = [
 
 const USERS_HEADERS = [
   'Email',
+  'Password',
+  'First_Name',
+  'Last_Name',
   'Role',
   'Company_Name',
   'Active'
@@ -73,6 +80,15 @@ const AUDIT_HEADERS = [
   'Action',
   'Lead_ID',
   'Summary'
+];
+
+const COMMENTS_HEADERS = [
+  'Comment_ID',
+  'Lead_ID',
+  'User_Email',
+  'User_Name',
+  'Created_At',
+  'Comment_Text'
 ];
 
 // Allowed origins for CORS checks (update for your GitHub Pages domain)
@@ -440,4 +456,249 @@ function test() {
   });
 
   return 'Seeded 10 leads and logged stats for each company.';
+}
+
+/* ================================
+   USER AUTHENTICATION FUNCTIONS
+   ================================ */
+
+/**
+ * Hash a password using SHA-256
+ * @param {string} password - Plain text password
+ * @returns {string} Hexadecimal hash string
+ */
+function hashPassword_(password) {
+  const digest = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    password
+  );
+  return digest.map(byte => {
+    return ('0' + (byte & 0xFF).toString(16)).slice(-2);
+  }).join('');
+}
+
+/**
+ * Authenticate a user with email and password
+ * @param {string} email - User email
+ * @param {string} password - Plain text password
+ * @param {string} companyName - Company name from token
+ * @returns {Object|null} User object if authenticated, null otherwise
+ */
+function authenticateUser_(email, password, companyName) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    const values = sheet.getDataRange().getValues();
+    
+    const emailIdx = header.indexOf('Email');
+    const passwordIdx = header.indexOf('Password');
+    const firstNameIdx = header.indexOf('First_Name');
+    const lastNameIdx = header.indexOf('Last_Name');
+    const roleIdx = header.indexOf('Role');
+    const companyIdx = header.indexOf('Company_Name');
+    const activeIdx = header.indexOf('Active');
+    
+    // Hash the provided password
+    const hashedPassword = hashPassword_(password);
+    
+    // Find user matching email, company, and active=true
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const rowEmail = String(row[emailIdx] || '').trim().toLowerCase();
+      const rowCompany = String(row[companyIdx] || '').trim();
+      const rowActive = row[activeIdx];
+      
+      if (rowEmail === email.toLowerCase() && 
+          rowCompany === companyName && 
+          rowActive === true) {
+        
+        // Check if password matches
+        const storedPassword = String(row[passwordIdx] || '').trim();
+        if (storedPassword === hashedPassword) {
+          // Authentication successful
+          return {
+            email: row[emailIdx],
+            firstName: row[firstNameIdx] || '',
+            lastName: row[lastNameIdx] || '',
+            fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
+            role: row[roleIdx] || 'User',
+            companyName: row[companyIdx],
+            active: row[activeIdx]
+          };
+        }
+      }
+    }
+    
+    // No match found
+    return null;
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get all users for a company
+ * @param {string} companyName - Company name
+ * @returns {Array} Array of user objects (without passwords)
+ */
+function getUsersByCompany_(companyName) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    const values = sheet.getDataRange().getValues();
+    
+    const emailIdx = header.indexOf('Email');
+    const firstNameIdx = header.indexOf('First_Name');
+    const lastNameIdx = header.indexOf('Last_Name');
+    const roleIdx = header.indexOf('Role');
+    const companyIdx = header.indexOf('Company_Name');
+    const activeIdx = header.indexOf('Active');
+    
+    const users = [];
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      const rowCompany = String(row[companyIdx] || '').trim();
+      
+      if (rowCompany === companyName && row[emailIdx]) {
+        users.push({
+          email: row[emailIdx],
+          firstName: row[firstNameIdx] || '',
+          lastName: row[lastNameIdx] || '',
+          fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
+          role: row[roleIdx] || 'User',
+          companyName: row[companyIdx],
+          active: row[activeIdx] === true
+        });
+      }
+    }
+    
+    return users;
+  } catch (error) {
+    console.error('Error getting users:', error);
+    return [];
+  }
+}
+
+/**
+ * Create a new user
+ * @param {Object} userData - User data object
+ * @returns {Object} Created user object or error
+ */
+function createUser_(userData) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    
+    // Validate required fields
+    if (!userData.email || !userData.password || !userData.companyName) {
+      throw new Error('Email, password, and company name are required');
+    }
+    
+    // Check if user already exists
+    const values = sheet.getDataRange().getValues();
+    const emailIdx = header.indexOf('Email');
+    const companyIdx = header.indexOf('Company_Name');
+    
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (String(row[emailIdx] || '').trim().toLowerCase() === userData.email.toLowerCase() &&
+          String(row[companyIdx] || '').trim() === userData.companyName) {
+        throw new Error('User with this email already exists for this company');
+      }
+    }
+    
+    // Hash the password
+    const hashedPassword = hashPassword_(userData.password);
+    
+    // Prepare new user row
+    const newRow = new Array(header.length).fill('');
+    newRow[emailIdx] = userData.email;
+    newRow[header.indexOf('Password')] = hashedPassword;
+    newRow[header.indexOf('First_Name')] = userData.firstName || '';
+    newRow[header.indexOf('Last_Name')] = userData.lastName || '';
+    newRow[header.indexOf('Role')] = userData.role || 'User';
+    newRow[companyIdx] = userData.companyName;
+    newRow[header.indexOf('Active')] = userData.active !== false; // Default to true
+    
+    // Append to sheet
+    sheet.appendRow(newRow);
+    
+    // Return created user (without password)
+    return {
+      email: userData.email,
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      fullName: (userData.firstName || '') + ' ' + (userData.lastName || ''),
+      role: userData.role || 'User',
+      companyName: userData.companyName,
+      active: userData.active !== false
+    };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update an existing user
+ * @param {string} email - User email to update
+ * @param {string} companyName - Company name
+ * @param {Object} updates - Fields to update
+ * @returns {Object} Updated user object or error
+ */
+function updateUser_(email, companyName, updates) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    const values = sheet.getDataRange().getValues();
+    
+    const emailIdx = header.indexOf('Email');
+    const passwordIdx = header.indexOf('Password');
+    const firstNameIdx = header.indexOf('First_Name');
+    const lastNameIdx = header.indexOf('Last_Name');
+    const roleIdx = header.indexOf('Role');
+    const companyIdx = header.indexOf('Company_Name');
+    const activeIdx = header.indexOf('Active');
+    
+    // Find user row
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (String(row[emailIdx] || '').trim().toLowerCase() === email.toLowerCase() &&
+          String(row[companyIdx] || '').trim() === companyName) {
+        
+        // Update fields
+        if (updates.password) {
+          row[passwordIdx] = hashPassword_(updates.password);
+        }
+        if (updates.firstName !== undefined) {
+          row[firstNameIdx] = updates.firstName;
+        }
+        if (updates.lastName !== undefined) {
+          row[lastNameIdx] = updates.lastName;
+        }
+        if (updates.role !== undefined) {
+          row[roleIdx] = updates.role;
+        }
+        if (updates.active !== undefined) {
+          row[activeIdx] = updates.active;
+        }
+        
+        // Write updated row back
+        sheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+        
+        // Return updated user
+        return {
+          email: row[emailIdx],
+          firstName: row[firstNameIdx] || '',
+          lastName: row[lastNameIdx] || '',
+          fullName: (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || ''),
+          role: row[roleIdx] || 'User',
+          companyName: row[companyIdx],
+          active: row[activeIdx] === true
+        };
+      }
+    }
+    
+    throw new Error('User not found');
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
 }

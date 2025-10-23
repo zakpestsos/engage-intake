@@ -63,6 +63,24 @@ function handleApiGet_(e) {
       return jsonResponse_(payload, '', 200);
     }
 
+    // Users endpoint (list)
+    if (endpoint === 'users' || endpoint === 'api/users') {
+      const token = e.parameter && e.parameter.token;
+      const companyName = companyFromToken_(token);
+      const users = getUsersByCompany_(companyName);
+      return jsonResponse_(users, '', 200);
+    }
+
+    // Comments endpoint (get by lead)
+    if (endpoint === 'comments' || endpoint === 'api/comments') {
+      const leadId = e.parameter && e.parameter.leadId;
+      if (!leadId) {
+        return jsonResponse_({ error: 'Lead ID is required' }, '', 400);
+      }
+      const comments = getCommentsForLead_(leadId);
+      return jsonResponse_(comments, '', 200);
+    }
+
     return jsonResponse_({ error: 'Not found' }, '', 404);
   } catch (err) {
     return jsonResponse_({ error: String(err.message || err) }, (e && e.headers && e.headers.origin) || '', 400);
@@ -111,8 +129,9 @@ function handleApiPost_(e) {
         const token = (e.parameter && e.parameter.token) || (body && body.token);
         const companyName = companyFromToken_(token);
         const status = (e.parameter && e.parameter.status) || (body && body.status);
-        console.log('🔄 PATCH details:', { leadId, companyName, status });
-        const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui');
+        const userEmail = (e.parameter && e.parameter.userEmail) || (body && body.userEmail);
+        console.log('🔄 PATCH details:', { leadId, companyName, status, userEmail });
+        const result = updateLeadStatusForCompany_(companyName, leadId, status, 'client ui', userEmail);
         return jsonResponse_(result, origin || '', 200);
       } else {
         console.log('📝 Creating new lead (no PATCH method or leadId)');
@@ -129,6 +148,83 @@ function handleApiPost_(e) {
         const result = createLead_(payload, 'agent ui');
         return jsonResponse_(result, origin || '', 200);
       }
+    }
+
+    // Login endpoint
+    if (endpoint === 'login' || endpoint === 'api/login') {
+      const body = parseBody_(e);
+      const email = body.email;
+      const password = body.password;
+      const token = (e.parameter && e.parameter.token) || body.token;
+      
+      if (!email || !password || !token) {
+        return jsonResponse_({ error: 'Email, password, and token are required' }, origin || '', 400);
+      }
+      
+      const companyName = companyFromToken_(token);
+      const user = authenticateUser_(email, password, companyName);
+      
+      if (user) {
+        return jsonResponse_({ success: true, user: user }, origin || '', 200);
+      } else {
+        return jsonResponse_({ error: 'Invalid credentials' }, origin || '', 401);
+      }
+    }
+
+    // Users endpoint (create)
+    if (endpoint === 'users' || endpoint === 'api/users') {
+      const body = parseBody_(e);
+      const token = (e.parameter && e.parameter.token) || body.token;
+      const companyName = companyFromToken_(token);
+      
+      // Check if this is a PATCH request (update user)
+      const methodOverride = (e.parameter && e.parameter._method) || (body && body._method) || '';
+      
+      if (String(methodOverride).toUpperCase() === 'PATCH') {
+        // Update user
+        const email = body.email;
+        const updates = {
+          password: body.password,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          role: body.role,
+          active: body.active
+        };
+        const result = updateUser_(email, companyName, updates);
+        return jsonResponse_(result, origin || '', 200);
+      } else {
+        // Create new user
+        const userData = {
+          email: body.email,
+          password: body.password,
+          firstName: body.firstName,
+          lastName: body.lastName,
+          role: body.role,
+          companyName: companyName,
+          active: body.active !== false
+        };
+        const result = createUser_(userData);
+        return jsonResponse_(result, origin || '', 200);
+      }
+    }
+
+    // Comments endpoint (create)
+    if (endpoint === 'comments' || endpoint === 'api/comments') {
+      const body = parseBody_(e);
+      const token = (e.parameter && e.parameter.token) || body.token;
+      const companyName = companyFromToken_(token);
+      
+      const leadId = body.leadId;
+      const userEmail = body.userEmail;
+      const userName = body.userName;
+      const commentText = body.commentText;
+      
+      if (!leadId || !userEmail || !commentText) {
+        return jsonResponse_({ error: 'Lead ID, user email, and comment text are required' }, origin || '', 400);
+      }
+      
+      const result = addComment_(leadId, userEmail, userName, commentText);
+      return jsonResponse_(result, origin || '', 200);
     }
 
     return jsonResponse_({ error: 'Not found' }, origin || '', 404);

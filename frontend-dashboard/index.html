@@ -595,7 +595,7 @@
         </div>
       </div>
       
-      <div class="modal-body">
+      <div class="modal-body modal-body-with-comments">
         <div class="modal-sections">
           <!-- Customer Information -->
           <div class="modal-section">
@@ -671,8 +671,28 @@
           </div>
         </div>
 
-        <!-- Status Update -->
-        <div class="modal-actions">
+        <!-- Comments Sidebar -->
+        <div class="comments-sidebar">
+          <div class="comments-header">
+            <h4>Internal Notes</h4>
+            <span class="comments-count" id="commentsCount">0</span>
+          </div>
+          
+          <div class="comments-list" id="commentsList">
+            <div class="comments-empty">No comments yet. Be the first to add one!</div>
+          </div>
+          
+          <div class="comment-input-area">
+            <div class="comment-input-wrapper">
+              <textarea id="commentInput" placeholder="Add a comment..."></textarea>
+              <button id="addCommentBtn">Post</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Update -->
+      <div class="modal-actions">
           <div class="modal-bottom-left">
             <div class="lead-id-debug" id="modalLeadId"></div>
             <div class="status-update">

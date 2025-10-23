@@ -193,6 +193,336 @@
     }
     return email.substring(0, 2).toUpperCase();
   }
+
+  // ====================
+  // USER MANAGEMENT UI
+  // ====================
+  
+  async function loadAllUsers() {
+    try {
+      const token = getToken();
+      if (!token) return;
+      
+      const response = await fetch(API() + '?api=users&token=' + encodeURIComponent(token));
+      const users = await response.json();
+      
+      if (!users.error) {
+        allUsers = users;
+        renderUsersTable(users);
+      } else {
+        throw new Error(users.error);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      showError('Failed to load users: ' + error.message);
+    }
+  }
+  
+  function renderUsersTable(users) {
+    const tbody = $('#usersTableBody');
+    if (!tbody) return;
+    
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #94a3b8;">No users found. Click "Add User" to create one.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = users.map(user => {
+      const initials = (user.firstName?.charAt(0) || '') + (user.lastName?.charAt(0) || '');
+      const color = getColorForInitials(initials);
+      const roleClass = (user.role || 'user').toLowerCase();
+      
+      return `
+        <tr>
+          <td>
+            <div class="user-name-cell">
+              <div class="user-avatar" style="background-color: ${color}">${initials.toUpperCase()}</div>
+              <span>${user.firstName} ${user.lastName}</span>
+            </div>
+          </td>
+          <td>${user.email}</td>
+          <td><span class="user-role-badge ${roleClass}">${user.role || 'User'}</span></td>
+          <td><span class="user-status-badge ${user.active ? 'active' : 'inactive'}">${user.active ? 'Active' : 'Inactive'}</span></td>
+          <td>
+            <div class="user-actions">
+              <button class="btn-icon" onclick="window.editUser('${user.email}')" title="Edit User">✏️</button>
+              <button class="btn-icon" onclick="window.toggleUserStatus('${user.email}', ${user.active})" title="${user.active ? 'Deactivate' : 'Activate'}">
+                ${user.active ? '🚫' : '✅'}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  function openUserModal(mode = 'create', userData = null) {
+    const modal = $('#userModal');
+    const title = $('#userModalTitle');
+    const form = $('#userForm');
+    
+    // Set modal title
+    title.textContent = mode === 'create' ? 'Add User' : 'Edit User';
+    
+    // Reset form
+    form.reset();
+    
+    // If editing, populate fields
+    if (mode === 'edit' && userData) {
+      $('#userEmail').value = userData.email;
+      $('#userEmail').disabled = true; // Can't change email
+      $('#userFirstName').value = userData.firstName || '';
+      $('#userLastName').value = userData.lastName || '';
+      $('#userPassword').value = '';
+      $('#userPassword').required = false; // Not required when editing
+      $('#userPassword').placeholder = 'Leave blank to keep current password';
+      $('#userRole').value = userData.role || 'User';
+      $('#userActive').checked = userData.active !== false;
+    } else {
+      $('#userEmail').disabled = false;
+      $('#userPassword').required = true;
+      $('#userPassword').placeholder = '';
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+  }
+  
+  function closeUserModal() {
+    const modal = $('#userModal');
+    modal.style.display = 'none';
+    $('#userForm').reset();
+  }
+  
+  async function handleUserFormSubmit(e) {
+    e.preventDefault();
+    
+    const email = $('#userEmail').value.trim();
+    const firstName = $('#userFirstName').value.trim();
+    const lastName = $('#userLastName').value.trim();
+    const password = $('#userPassword').value;
+    const role = $('#userRole').value;
+    const active = $('#userActive').checked;
+    
+    const isEditing = $('#userEmail').disabled;
+    const saveBtn = $('#saveUserBtn');
+    
+    try {
+      // Show loading state
+      saveBtn.disabled = true;
+      saveBtn.textContent = isEditing ? 'Updating...' : 'Creating...';
+      
+      const token = getToken();
+      const endpoint = API() + '?api=users&token=' + encodeURIComponent(token);
+      
+      const payload = {
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+        active: active,
+        token: token
+      };
+      
+      // Only include password if provided (or if creating new user)
+      if (password) {
+        payload.password = password;
+      }
+      
+      // Add _method for updates
+      if (isEditing) {
+        payload._method = 'PATCH';
+      }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      // Success!
+      showToast(isEditing ? 'User updated successfully!' : 'User created successfully!');
+      closeUserModal();
+      
+      // Reload users table
+      await loadAllUsers();
+      
+    } catch (error) {
+      console.error('Error saving user:', error);
+      showError('Failed to save user: ' + error.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save User';
+    }
+  }
+  
+  // Make functions available globally for onclick handlers
+  window.editUser = function(email) {
+    const user = allUsers.find(u => u.email === email);
+    if (user) {
+      openUserModal('edit', user);
+    }
+  };
+  
+  window.toggleUserStatus = async function(email, currentStatus) {
+    const action = currentStatus ? 'deactivate' : 'activate';
+    if (!confirm(`Are you sure you want to ${action} this user?`)) {
+      return;
+    }
+    
+    try {
+      const token = getToken();
+      const endpoint = API() + '?api=users&token=' + encodeURIComponent(token);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify({
+          _method: 'PATCH',
+          email: email,
+          active: !currentStatus,
+          token: token
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      showToast(`User ${action}d successfully`);
+      await loadAllUsers();
+      
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      showError('Failed to update user status: ' + error.message);
+    }
+  };
+
+  // ====================
+  // COMMENTS SYSTEM
+  // ====================
+  
+  let currentLeadId = null;
+  let currentComments = [];
+  
+  async function loadCommentsForLead(leadId) {
+    try {
+      const token = getToken();
+      if (!token || !leadId) return;
+      
+      currentLeadId = leadId;
+      
+      const response = await fetch(API() + '?api=comments&leadId=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token));
+      const comments = await response.json();
+      
+      if (!comments.error) {
+        currentComments = comments;
+        renderComments(comments);
+      } else {
+        throw new Error(comments.error);
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
+      currentComments = [];
+      renderComments([]);
+    }
+  }
+  
+  function renderComments(comments) {
+    const commentsList = $('#commentsList');
+    const commentsCount = $('#commentsCount');
+    
+    if (!commentsList) return;
+    
+    // Update count
+    commentsCount.textContent = comments.length;
+    
+    if (comments.length === 0) {
+      commentsList.innerHTML = '<div class="comments-empty">No comments yet. Be the first to add one!</div>';
+      return;
+    }
+    
+    commentsList.innerHTML = comments.map(comment => {
+      const initials = getUserInitials(comment.userEmail);
+      const color = getColorForInitials(initials);
+      const timestamp = new Date(comment.createdAt).toLocaleString();
+      
+      return `
+        <div class="comment-item">
+          <div class="comment-header">
+            <div class="comment-avatar" style="background-color: ${color}">${initials}</div>
+            <div class="comment-meta">
+              <div class="comment-author">${comment.userName || comment.userEmail}</div>
+              <div class="comment-time">${timestamp}</div>
+            </div>
+          </div>
+          <div class="comment-text">${sanitize(comment.commentText)}</div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  async function addCommentToLead() {
+    const commentInput = $('#commentInput');
+    const addBtn = $('#addCommentBtn');
+    const commentText = commentInput.value.trim();
+    
+    if (!commentText || !currentLeadId || !currentUser) {
+      return;
+    }
+    
+    try {
+      // Show loading state
+      addBtn.disabled = true;
+      addBtn.textContent = 'Posting...';
+      
+      const token = getToken();
+      const endpoint = API() + '?api=comments&token=' + encodeURIComponent(token);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify({
+          leadId: currentLeadId,
+          userEmail: currentUser.email,
+          userName: currentUser.fullName || currentUser.email,
+          commentText: commentText,
+          token: token
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      // Success! Clear input and reload comments
+      commentInput.value = '';
+      await loadCommentsForLead(currentLeadId);
+      
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      showError('Failed to add comment: ' + error.message);
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = 'Post';
+    }
+  }
   
   function showError(msg) { 
     const b = $('#errorBanner'); 
@@ -409,6 +739,24 @@
       tr.setAttribute('data-lead-id', ld.id);
       
       const createdDate = new Date(ld.createdAt).toLocaleDateString();
+      
+      // Generate ownership badge if applicable
+      let ownershipBadge = '';
+      let ownerEmail = null;
+      if (ld.status === 'ACCEPTED' && ld.Accepted_By) {
+        ownerEmail = ld.Accepted_By;
+      } else if (ld.status === 'COMPLETED' && ld.Completed_By) {
+        ownerEmail = ld.Completed_By;
+      } else if (ld.status === 'CANCELLED' && ld.Cancelled_By) {
+        ownerEmail = ld.Cancelled_By;
+      }
+      
+      if (ownerEmail) {
+        const initials = getUserInitials(ownerEmail);
+        const color = getColorForInitials(initials);
+        ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
+      }
+      
       tr.innerHTML =
         '<td>' + sanitize(createdDate) + '</td>' +
         '<td>' + sanitize(ld.customerName) + '</td>' +
@@ -416,7 +764,7 @@
         '<td>' + sanitize(ld.reason) + '</td>' +
         '<td>' + sanitize(ld.product || ld.productSku || '') + '</td>' +
         '<td>' + fmtMoney(ld.leadValue) + '</td>' +
-        '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span></td>' +
+        '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span>' + ownershipBadge + '</td>' +
         '<td class="actions-cell">' +
           '<div class="action-buttons">' +
             '<button class="action-btn accept" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button>' +
@@ -443,10 +791,27 @@
       
       const createdDate = new Date(lead.createdAt).toLocaleDateString();
       
+      // Generate ownership badge if applicable
+      let ownershipBadge = '';
+      let ownerEmail = null;
+      if (lead.status === 'ACCEPTED' && lead.Accepted_By) {
+        ownerEmail = lead.Accepted_By;
+      } else if (lead.status === 'COMPLETED' && lead.Completed_By) {
+        ownerEmail = lead.Completed_By;
+      } else if (lead.status === 'CANCELLED' && lead.Cancelled_By) {
+        ownerEmail = lead.Cancelled_By;
+      }
+      
+      if (ownerEmail) {
+        const initials = getUserInitials(ownerEmail);
+        const color = getColorForInitials(initials);
+        ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
+      }
+      
       card.innerHTML = `
         <div class="lead-card-header">
           <div class="lead-customer">${sanitize(lead.customerName)}</div>
-          <span class="badge status-${sanitize((lead.status || '').toLowerCase())}">${sanitize(lead.status)}</span>
+          <div><span class="badge status-${sanitize((lead.status || '').toLowerCase())}">${sanitize(lead.status)}</span>${ownershipBadge}</div>
         </div>
         <div class="lead-card-body">
           <div class="lead-info">
@@ -509,6 +874,45 @@
     statusBadge.textContent = lead.status || 'NEW';
     statusBadge.className = 'status-badge-modal ' + status;
     
+    // Add ownership information if available
+    let ownershipHTML = '';
+    if (lead.Accepted_By || lead.Completed_By || lead.Cancelled_By) {
+      ownershipHTML = '<div class="ownership-info"><h4>Lead History</h4>';
+      
+      if (lead.Accepted_By) {
+        const initials = getUserInitials(lead.Accepted_By);
+        const color = getColorForInitials(initials);
+        const timestamp = lead.Accepted_At ? new Date(lead.Accepted_At).toLocaleString() : '';
+        ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Accepted by ${lead.Accepted_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
+      }
+      
+      if (lead.Completed_By) {
+        const initials = getUserInitials(lead.Completed_By);
+        const color = getColorForInitials(initials);
+        const timestamp = lead.Completed_At ? new Date(lead.Completed_At).toLocaleString() : '';
+        ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Completed by ${lead.Completed_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
+      }
+      
+      if (lead.Cancelled_By) {
+        const initials = getUserInitials(lead.Cancelled_By);
+        const color = getColorForInitials(initials);
+        const timestamp = lead.Cancelled_At ? new Date(lead.Cancelled_At).toLocaleString() : '';
+        ownershipHTML += `<div class="ownership-item"><div class="user-avatar" style="background-color: ${color}">${initials}</div><span>Cancelled by ${lead.Cancelled_By}${timestamp ? ' on ' + timestamp : ''}</span></div>`;
+      }
+      
+      ownershipHTML += '</div>';
+    }
+    
+    // Insert ownership info before the Notes section
+    const notesSection = document.querySelector('#modalNotes').closest('.modal-section');
+    if (notesSection && ownershipHTML) {
+      const existingOwnership = notesSection.previousElementSibling;
+      if (existingOwnership && existingOwnership.classList.contains('ownership-info')) {
+        existingOwnership.remove();
+      }
+      notesSection.insertAdjacentHTML('beforebegin', ownershipHTML);
+    }
+    
     // Format full address with Google Maps link
     const street = lead.addressStreet || lead.street || '';
     const city = lead.addressCity || lead.city || '';
@@ -537,6 +941,9 @@
     
     // Store current lead ID for status updates
     $('#updateStatus').setAttribute('data-lead-id', leadId);
+    
+    // Load comments for this lead
+    loadCommentsForLead(leadId);
     
     // Show modal
     $('#leadModal').style.display = 'flex';
@@ -1610,7 +2017,25 @@
     // Set up navigation
     $('#leadsTab').addEventListener('click', () => showSection('leadsSection'));
     $('#analyticsTab').addEventListener('click', () => showSection('analyticsSection'));
-    $('#usersTab').addEventListener('click', () => showSection('usersSection'));
+    $('#usersTab').addEventListener('click', () => {
+      showSection('usersSection');
+      loadAllUsers(); // Load users when tab is clicked
+    });
+    
+    // User Management event listeners
+    $('#addUserBtn').addEventListener('click', () => openUserModal('create'));
+    $('#closeUserModal').addEventListener('click', closeUserModal);
+    $('#cancelUserBtn').addEventListener('click', closeUserModal);
+    $('#userForm').addEventListener('submit', handleUserFormSubmit);
+    
+    // Comments event listeners
+    $('#addCommentBtn').addEventListener('click', addCommentToLead);
+    $('#commentInput').addEventListener('keydown', function(e) {
+      // Allow Ctrl+Enter or Cmd+Enter to submit
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        addCommentToLead();
+      }
+    });
     
     // Analytics view switching
     $('#overviewView').addEventListener('click', () => showAnalyticsView('overviewAnalytics'));

@@ -782,7 +782,23 @@ select option {
   left: 28%;
   top: 50%;
   transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
+  resize: both;
+  overflow: auto;
+  min-width: 400px;
+  min-height: 500px;
+}
+
+/* Resize handle styling */
+.modal-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(59, 130, 246, 0.5) 50%);
+  border-bottom-right-radius: 1rem;
 }
 
 .modal-header {
@@ -961,8 +977,10 @@ select option {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding-top: 1.5rem;
+  padding: 1.5rem 2rem 2rem 2rem;
   border-top: 1px solid #475569;
+  margin: 0 -2rem -2rem -2rem;
+  background: rgba(15, 23, 42, 0.3);
 }
 
 .modal-bottom-left {
@@ -2366,7 +2384,7 @@ select option {
   width: 90%;
   max-width: 420px;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: auto;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -2376,6 +2394,23 @@ select option {
   transform: translateY(-50%);
   z-index: 1001;
   animation: slideInRight 0.3s ease;
+  resize: both;
+  min-width: 300px;
+  min-height: 400px;
+}
+
+/* Resize handle for comments modal */
+.comments-modal-content::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(59, 130, 246, 0.5) 50%);
+  border-bottom-right-radius: 16px;
+  z-index: 10;
 }
 
 #commentsModal {

@@ -2498,4 +2498,129 @@
       showError('Failed to load data. Check API_BASE in config.js'); 
     }
   }
+
+  // ====================
+  // MODAL RESIZE FUNCTIONALITY
+  // ====================
+  
+  function makeModalResizable(modalSelector, contentSelector) {
+    const modal = $(modalSelector);
+    const content = document.querySelector(contentSelector);
+    if (!modal || !content) return;
+
+    let isResizing = false;
+    let currentEdge = null;
+    let startX, startY, startWidth, startHeight, startLeft, startTop;
+
+    // Detect which edge we're near
+    function getEdge(e) {
+      const rect = content.getBoundingClientRect();
+      const threshold = 10; // pixels from edge
+
+      const nearRight = Math.abs(e.clientX - rect.right) < threshold;
+      const nearLeft = Math.abs(e.clientX - rect.left) < threshold;
+      const nearBottom = Math.abs(e.clientY - rect.bottom) < threshold;
+      const nearTop = Math.abs(e.clientY - rect.top) < threshold;
+
+      if (nearRight && nearBottom) return 'se';
+      if (nearLeft && nearBottom) return 'sw';
+      if (nearRight && nearTop) return 'ne';
+      if (nearLeft && nearTop) return 'nw';
+      if (nearRight) return 'e';
+      if (nearLeft) return 'w';
+      if (nearBottom) return 's';
+      if (nearTop) return 'n';
+      return null;
+    }
+
+    // Update cursor based on edge
+    content.addEventListener('mousemove', (e) => {
+      if (isResizing) return;
+      
+      const edge = getEdge(e);
+      if (edge) {
+        const cursors = {
+          'n': 'ns-resize', 's': 'ns-resize',
+          'e': 'ew-resize', 'w': 'ew-resize',
+          'ne': 'nesw-resize', 'sw': 'nesw-resize',
+          'nw': 'nwse-resize', 'se': 'nwse-resize'
+        };
+        content.style.cursor = cursors[edge];
+      } else {
+        content.style.cursor = '';
+      }
+    });
+
+    // Start resizing
+    content.addEventListener('mousedown', (e) => {
+      currentEdge = getEdge(e);
+      if (!currentEdge) return;
+
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      
+      const rect = content.getBoundingClientRect();
+      startWidth = rect.width;
+      startHeight = rect.height;
+      startLeft = rect.left;
+      startTop = rect.top;
+
+      e.preventDefault();
+    });
+
+    // Handle resizing
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      let newWidth = startWidth;
+      let newHeight = startHeight;
+      let newLeft = startLeft;
+      let newTop = startTop;
+
+      // Horizontal resize
+      if (currentEdge.includes('e')) {
+        newWidth = Math.max(400, startWidth + deltaX);
+      } else if (currentEdge.includes('w')) {
+        newWidth = Math.max(400, startWidth - deltaX);
+        newLeft = startLeft + deltaX;
+      }
+
+      // Vertical resize
+      if (currentEdge.includes('s')) {
+        newHeight = Math.max(500, startHeight + deltaY);
+      } else if (currentEdge.includes('n')) {
+        newHeight = Math.max(500, startHeight - deltaY);
+        newTop = startTop + deltaY;
+      }
+
+      content.style.width = newWidth + 'px';
+      content.style.height = newHeight + 'px';
+      content.style.maxWidth = 'none';
+      content.style.maxHeight = 'none';
+      
+      // Update position for west/north edges
+      if (currentEdge.includes('w') || currentEdge.includes('n')) {
+        content.style.left = newLeft + 'px';
+        content.style.top = newTop + 'px';
+        content.style.transform = 'none';
+      }
+    });
+
+    // Stop resizing
+    document.addEventListener('mouseup', () => {
+      isResizing = false;
+      currentEdge = null;
+    });
+  }
+
+  // Initialize resize functionality when modals are opened
+  setTimeout(() => {
+    makeModalResizable('#leadModal', '#leadModal .modal-content');
+    makeModalResizable('#commentsModal', '.comments-modal-content');
+  }, 100);
+  
 })();

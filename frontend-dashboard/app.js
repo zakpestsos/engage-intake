@@ -209,12 +209,19 @@
   async function loadAllUsers() {
     try {
       const token = getToken();
-      if (!token) return;
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+      
+      console.log('📡 Loading users...');
       
       // Use fetchJSON for JSONP support (same as other API calls)
       const users = await fetchJSON(API() + '?api=users&token=' + encodeURIComponent(token));
       
-      if (!users.error && Array.isArray(users)) {
+      console.log('📦 Raw users data:', users);
+      
+      if (users && Array.isArray(users) && !users.error) {
         // Map users to have consistent property names
         allUsers = users.map(u => ({
           Email: u.email || u.Email,
@@ -232,14 +239,24 @@
           companyName: u.companyName || u.Company_Name || '',
           Company_Name: u.companyName || u.Company_Name || ''
         }));
-        console.log('✅ Loaded', allUsers.length, 'users for dropdown:', allUsers);
+        console.log('✅ Loaded', allUsers.length, 'users:', allUsers);
         
-        renderUsersTable(allUsers);
+        // Always try to render the table
+        const tbody = $('#usersTableBody');
+        console.log('📋 Tbody element:', tbody);
+        
+        if (tbody) {
+          renderUsersTable(allUsers);
+          console.log('✅ Rendered users table');
+        } else {
+          console.error('❌ usersTableBody not found in DOM');
+        }
       } else {
-        throw new Error(users.error || 'Failed to load users');
+        console.error('❌ Invalid users data:', users);
+        throw new Error(users?.error || 'Failed to load users');
       }
     } catch (error) {
-      console.error('Error loading users:', error);
+      console.error('❌ Error loading users:', error);
       showError('Failed to load users: ' + error.message);
     }
   }

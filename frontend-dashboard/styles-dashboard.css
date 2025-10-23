@@ -773,13 +773,13 @@ select option {
   background: linear-gradient(135deg, #1e293b, #334155);
   border: 2px solid #3b82f6;
   border-radius: 1rem;
-  max-width: 650px;
+  max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
   position: fixed;
-  left: 23%;
+  left: 28%;
   top: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
@@ -863,47 +863,10 @@ select option {
 }
 
 .modal-sections {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
-}
-
-.modal-section {
-  background: rgba(15, 23, 42, 0.3);
-  padding: 1.25rem;
-  border-radius: 8px;
-  border: 1px solid rgba(71, 85, 105, 0.3);
-}
-
-.modal-section h4 {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 1.1rem;
-  color: #60a5fa;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.modal-field {
-  margin-bottom: 0.75rem;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.modal-field:last-child {
-  margin-bottom: 0;
-}
-
-.modal-field label {
-  font-weight: 600;
-  color: #94a3b8;
-  min-width: 140px;
-}
-
-.modal-field span {
-  color: #e2e8f0;
-  flex: 1;
+  margin-bottom: 1.5rem;
 }
 
 .modal-section {
@@ -915,11 +878,39 @@ select option {
 
 .modal-section h4 {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 0.85rem;
   color: #60a5fa;
+  font-weight: 600;
+  margin-bottom: 1rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 1px;
+  border-bottom: 2px solid rgba(96, 165, 250, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.modal-field {
+  margin-bottom: 1rem;
+}
+
+.modal-field:last-child {
+  margin-bottom: 0;
+}
+
+.modal-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.modal-field span {
+  color: #e2e8f0;
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.4;
   margin-bottom: 1rem;
   border-bottom: 2px solid #3b82f6;
   padding-bottom: 0.5rem;
@@ -2373,14 +2364,14 @@ select option {
   border: 2px solid rgba(59, 130, 246, 0.3);
   border-radius: 16px;
   width: 90%;
-  max-width: 450px;
+  max-width: 420px;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   position: fixed;
-  right: 3%;
+  right: 8%;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1001;
@@ -2402,7 +2393,7 @@ select option {
     opacity: 0;
   }
   to {
-    right: 5%;
+    right: 8%;
     opacity: 1;
   }
 }

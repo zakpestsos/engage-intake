@@ -1,9 +1,8 @@
 // Staging configuration - SAFE TO MODIFY
 // This file is used by the development branch (staging environment)
 window.APP_CONFIG = {
-  // Staging Apps Script Web App URL - UPDATE THIS AFTER CREATING STAGING DEPLOYMENT
-  // Instructions: Deploy → New Deployment → Web App → Copy URL here
-  API_BASE: 'STAGING_DEPLOYMENT_URL_PLACEHOLDER',
+  // Staging Apps Script Web App URL (Version 69 - Oct 23, 2025)
+  API_BASE: 'https://script.google.com/macros/s/AKfycbw66EhNAtOfYGKEDD2PNxgleaEciUMfU7HJq45v57-VC6P-XwXDzs1ixHfeVLd3SLge/exec',
   
   // Google Maps API key (same as production)
   PLACES_API_KEY: 'AIzaSyC9AzPi4MPa7IJr0wxfFsSSoSCMtYeSrVM',

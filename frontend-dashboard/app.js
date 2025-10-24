@@ -27,6 +27,9 @@
       pollForUpdates(); // Immediate check when tab becomes visible
     }
   });
+  
+  // Track modal resize state
+  let isResizingModal = false;
 
   // ====================
   // SESSION MANAGEMENT
@@ -401,6 +404,17 @@
       
       // Reload users table
       await loadAllUsers();
+      
+      // If we edited the current user, update their session and badge
+      if (isEditing && currentUser && email === currentUser.email) {
+        currentUser.firstName = firstName;
+        currentUser.lastName = lastName;
+        currentUser.fullName = firstName + ' ' + lastName;
+        currentUser.role = role;
+        currentUser.iconColor = iconColor;
+        saveSession(currentUser);
+        updateUserMenu();
+      }
       
     } catch (error) {
       console.error('Error saving user:', error);
@@ -2390,7 +2404,8 @@
     
     $('#leadModal').addEventListener('click', function(e) {
       // Close modal if clicking outside the content
-      if (e.target === this) {
+      // Don't close if currently resizing
+      if (e.target === this && !isResizingModal) {
         closeLeadModal();
       }
     });
@@ -2582,6 +2597,7 @@
       if (!currentEdge) return;
 
       isResizing = true;
+      isResizingModal = true; // Set global flag
       startX = e.clientX;
       startY = e.clientY;
       
@@ -2638,6 +2654,7 @@
     // Stop resizing
     document.addEventListener('mouseup', () => {
       isResizing = false;
+      isResizingModal = false; // Clear global flag
       currentEdge = null;
     });
   }

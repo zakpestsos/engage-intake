@@ -285,6 +285,7 @@ function listLeadsForCompany_(companyName, query) {
       acceptedAt: row[idx['Accepted_At']],
       completedAt: row[idx['Completed_At']],
       cancelledAt: row[idx['Cancelled_At']],
+      assignedTo: row[idx['Assigned_To']] || '',
       notes: row[idx['Notes']]
     });
   }

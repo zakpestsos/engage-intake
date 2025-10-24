@@ -13,6 +13,7 @@
   let lastPollTimestamp = null;
   let knownLeadIds = new Set();
   let leadStatusMap = new Map(); // leadId -> status
+  let leadAssignmentMap = new Map(); // leadId -> assignedTo
   let isPollingInProgress = false;
   let consecutiveErrors = 0;
   const POLL_INTERVAL_MS = 10000; // 10 seconds
@@ -1960,22 +1961,29 @@
       
       if (!freshLeads || !Array.isArray(freshLeads)) return;
       
-      // Detect new leads
+      // Detect new leads and changes
       const newLeads = [];
       const updatedLeads = [];
       
       freshLeads.forEach(lead => {
         const isNew = !knownLeadIds.has(lead.id);
         const oldStatus = leadStatusMap.get(lead.id);
+        const oldAssignment = leadAssignmentMap.get(lead.id);
         const statusChanged = oldStatus && oldStatus !== lead.status;
+        const assignmentChanged = oldAssignment !== undefined && oldAssignment !== (lead.assignedTo || '');
         
         if (isNew) {
           newLeads.push(lead);
           knownLeadIds.add(lead.id);
           leadStatusMap.set(lead.id, lead.status);
+          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
         } else if (statusChanged) {
           updatedLeads.push({ lead, oldStatus });
           leadStatusMap.set(lead.id, lead.status);
+          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+        } else if (assignmentChanged) {
+          // Track assignment change but don't auto-refresh to avoid overwriting dropdown
+          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
         }
       });
       
@@ -2055,6 +2063,7 @@
     // Reset tracking when filters change
     knownLeadIds.clear();
     leadStatusMap.clear();
+    leadAssignmentMap.clear();
     lastPollTimestamp = null;
   }
   
@@ -2327,6 +2336,7 @@
           leads.forEach(lead => {
             knownLeadIds.add(lead.id);
             leadStatusMap.set(lead.id, lead.status);
+            leadAssignmentMap.set(lead.id, lead.assignedTo || '');
           });
         }
         

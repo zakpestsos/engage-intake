@@ -2972,15 +2972,16 @@
             console.log('📧 Opening lead from post-login:', leadIdToOpen);
           } 
           // Then check sessionStorage (for direct access when already logged in)
-          else {
+          else if (!leadIdToOpen) {
             const pendingLeadId = getPendingLeadId();
             if (pendingLeadId) {
               leadIdToOpen = pendingLeadId;
               console.log('📧 Opening lead from session storage:', leadIdToOpen);
             }
           }
+          
           // Finally check hash (fallback for direct hash access)
-          else {
+          if (!leadIdToOpen) {
             const hash = window.location.hash;
             if (hash.startsWith('#lead=')) {
               leadIdToOpen = hash.replace('#lead=', '');

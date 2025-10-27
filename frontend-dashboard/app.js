@@ -17,7 +17,7 @@
   let recentAssignmentChanges = new Map(); // leadId -> timestamp (tracks user-initiated changes)
   let isPollingInProgress = false;
   let consecutiveErrors = 0;
-  const POLL_INTERVAL_MS = 10000; // 10 seconds
+  const POLL_INTERVAL_MS = 4000; // Aggressive polling for faster cross-user refresh
   const MAX_CONSECUTIVE_ERRORS = 3;
   const ASSIGNMENT_PROTECTION_MS = 30000; // 30 seconds protection for manual changes
   
@@ -220,6 +220,20 @@
     return allUsers.find(user => normalizeEmail(user.Email || user.email) === target) || null;
   }
 
+  function hexToRgba(hex, alpha) {
+    if (!hex) return `rgba(148, 163, 184, ${alpha})`;
+    let raw = hex.replace('#', '');
+    if (raw.length === 3) {
+      raw = raw.split('').map(c => c + c).join('');
+    }
+    const intVal = parseInt(raw, 16);
+    if (Number.isNaN(intVal)) return `rgba(148, 163, 184, ${alpha})`;
+    const r = (intVal >> 16) & 255;
+    const g = (intVal >> 8) & 255;
+    const b = intVal & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   function resolveAssignmentDisplay(email) {
     const assignedEmail = (email || '').trim();
     if (!assignedEmail) {
@@ -278,14 +292,30 @@
 
     if (pill) {
       pill.classList.toggle('unassigned', display.isUnassigned);
+      pill.style.borderColor = display.isUnassigned ? 'rgba(148, 163, 184, 0.3)' : hexToRgba(display.color, 0.45);
+      pill.style.background = display.isUnassigned ? 'rgba(15, 23, 42, 0.5)' : hexToRgba(display.color, 0.18);
+      pill.style.boxShadow = display.isUnassigned
+        ? '0 10px 18px rgba(15, 23, 42, 0.25)'
+        : `0 12px 24px ${hexToRgba(display.color, 0.32)}`;
     }
     if (avatar) {
       avatar.classList.toggle('unassigned', display.isUnassigned);
       avatar.textContent = display.isUnassigned ? '--' : display.initials;
-      avatar.style.backgroundColor = display.isUnassigned ? '' : display.color;
+      if (display.isUnassigned) {
+        avatar.style.backgroundColor = 'rgba(148, 163, 184, 0.22)';
+        avatar.style.color = '#94a3b8';
+        avatar.style.boxShadow = 'inset 0 0 0 1px rgba(148, 163, 184, 0.35)';
+        avatar.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+      } else {
+        avatar.style.backgroundColor = display.color;
+        avatar.style.color = '#0f172a';
+        avatar.style.boxShadow = `0 10px 22px ${hexToRgba(display.color, 0.45)}`;
+        avatar.style.border = 'none';
+      }
     }
     if (nameEl) {
       nameEl.textContent = display.label;
+      nameEl.classList.toggle('unassigned', display.isUnassigned);
     }
     if (selectEl) {
       ensureOptionForAssignment(selectEl, display.email, display.label);
@@ -302,13 +332,26 @@
     const nameEl = container.querySelector('.assigned-name');
 
     container.classList.toggle('unassigned', display.isUnassigned);
+    container.style.borderColor = display.isUnassigned ? 'rgba(148, 163, 184, 0.25)' : hexToRgba(display.color, 0.35);
+    container.style.background = display.isUnassigned ? 'rgba(15, 23, 42, 0.45)' : hexToRgba(display.color, 0.14);
     if (avatar) {
       avatar.classList.toggle('unassigned', display.isUnassigned);
       avatar.textContent = display.isUnassigned ? '--' : display.initials;
-      avatar.style.backgroundColor = display.isUnassigned ? '' : display.color;
+      if (display.isUnassigned) {
+        avatar.style.backgroundColor = 'rgba(148, 163, 184, 0.22)';
+        avatar.style.color = '#94a3b8';
+        avatar.style.boxShadow = 'inset 0 0 0 1px rgba(148, 163, 184, 0.35)';
+        avatar.style.border = '1px solid rgba(148, 163, 184, 0.35)';
+      } else {
+        avatar.style.backgroundColor = display.color;
+        avatar.style.color = '#0f172a';
+        avatar.style.boxShadow = `0 10px 22px ${hexToRgba(display.color, 0.45)}`;
+        avatar.style.border = 'none';
+      }
     }
     if (nameEl) {
       nameEl.textContent = display.label;
+      nameEl.classList.toggle('unassigned', display.isUnassigned);
     }
   }
 

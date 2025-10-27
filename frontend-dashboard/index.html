@@ -37,7 +37,7 @@
   <div id="loginModal" class="modal-overlay" style="display: none;">
     <div class="login-modal">
       <div class="login-header">
-        <h2>🔐 Login to Dashboard</h2>
+        <h2>Login to Dashboard</h2>
         <p>Please sign in to continue</p>
       </div>
       <form id="loginForm">
@@ -47,7 +47,7 @@
         </div>
         <div class="form-group">
           <label for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+          <input type="password" id="loginPassword" placeholder="********" required autocomplete="current-password">
         </div>
         <div id="loginError" class="error-text" style="display: none;"></div>
         <button type="submit" id="loginButton" class="btn-login">
@@ -92,12 +92,12 @@
         <!-- Analytics Hero - Key Conversion Metrics -->
         <div class="analytics-hero">
           <div class="hero-card primary">
-            <div class="hero-label">Call → Appointment</div>
+            <div class="hero-label">Call to Appointment</div>
             <div class="hero-value" id="callToAppt">0%</div>
             <div class="hero-detail" id="callToApptDetail">0 of 0 calls accepted</div>
           </div>
           <div class="hero-card secondary">
-            <div class="hero-label">Appointment → Sale</div>
+            <div class="hero-label">Appointment to Sale</div>
             <div class="hero-value" id="apptToSale">0%</div>
             <div class="hero-detail" id="apptToSaleDetail">0 of 0 appointments closed</div>
           </div>
@@ -107,10 +107,10 @@
             <div class="hero-detail" id="convertedRevenueDetail">From completed sales</div>
           </div>
         </div>
-        <div class="chart-info" style="margin-bottom: 2rem;">
-          <div class="chart-info-icon">ℹ️</div>
+        <div class="chart-info">
+          <div class="chart-info-icon" aria-hidden="true"></div>
           <div class="chart-info-text">
-            <strong>Key Performance Indicators:</strong> Call→Appointment = (ACCEPTED + COMPLETED) / Total Leads. Appointment→Sale = COMPLETED / (ACCEPTED + COMPLETED). Revenue = Sum of Lead_Value where Status = COMPLETED. These metrics track Joel's critical conversion funnel.
+            <strong>Key Performance Indicators:</strong> Call-to-Appointment = (ACCEPTED + COMPLETED) / Total Leads. Appointment-to-Sale = COMPLETED / (ACCEPTED + COMPLETED). Revenue = Sum of Lead_Value where Status = COMPLETED. These metrics track Joel's critical conversion funnel.
           </div>
         </div>
 
@@ -171,16 +171,16 @@
 
         <!-- Leads Table -->
         <div class="leads-section">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <h3>Lead Management</h3>
-            <div style="display: flex; gap: 1rem; align-items: center;">
+          <div class="dashboard-section-header">
+            <h3 class="dashboard-section-title">Lead Management</h3>
+            <div class="dashboard-section-actions">
               <!-- Export Controls -->
-              <div class="export-controls" style="margin: 0;">
+              <div class="dashboard-section-group export-controls">
                 <button id="exportCSV" class="export-btn">Export CSV</button>
                 <button id="exportXLSX" class="export-btn">Export XLSX</button>
               </div>
               <!-- View Toggle -->
-              <div class="view-toggle" style="margin: 0;">
+              <div class="dashboard-section-group view-toggle">
                 <button id="tableViewBtn" class="view-btn active">Table View</button>
                 <button id="cardViewBtn" class="view-btn">Card View</button>
               </div>
@@ -240,7 +240,7 @@
         <!-- Executive Summary KPIs -->
         <div class="executive-summary">
           <div class="summary-card revenue">
-            <div class="summary-icon">💰</div>
+            <div class="summary-icon" aria-hidden="true" data-icon="REV"></div>
             <div class="summary-content">
               <div class="summary-value" id="totalRevenue">$0</div>
               <div class="summary-label">Total Revenue</div>
@@ -248,7 +248,7 @@
             </div>
           </div>
           <div class="summary-card conversion">
-            <div class="summary-icon">📈</div>
+            <div class="summary-icon" aria-hidden="true" data-icon="CVR"></div>
             <div class="summary-content">
               <div class="summary-value" id="conversionRate">0%</div>
               <div class="summary-label">Conversion Rate</div>
@@ -256,7 +256,7 @@
             </div>
           </div>
           <div class="summary-card avgdeal">
-            <div class="summary-icon">🎯</div>
+            <div class="summary-icon" aria-hidden="true" data-icon="AVG"></div>
             <div class="summary-content">
               <div class="summary-value" id="avgDealSize">$0</div>
               <div class="summary-label">Avg Deal Size</div>
@@ -264,7 +264,7 @@
             </div>
           </div>
           <div class="summary-card velocity">
-            <div class="summary-icon">⚡</div>
+            <div class="summary-icon" aria-hidden="true" data-icon="SPD"></div>
             <div class="summary-content">
               <div class="summary-value" id="salesVelocity">0</div>
               <div class="summary-label">Sales Velocity</div>
@@ -272,8 +272,8 @@
             </div>
           </div>
         </div>
-        <div class="chart-info" style="margin-bottom: 2rem;">
-          <div class="chart-info-icon">ℹ️</div>
+        <div class="chart-info">
+          <div class="chart-info-icon" aria-hidden="true"></div>
           <div class="chart-info-text">
             <strong>Executive Summary:</strong> Total Revenue = Sum of Lead_Value for <strong>COMPLETED</strong> leads only (actual money earned). Conversion Rate = COMPLETED / Total Leads. Avg Deal Size = Total Revenue / COMPLETED Leads. Sales Velocity = Leads created in last 30 days. Trend percentages show period-over-period growth.
           </div>
@@ -286,7 +286,7 @@
             <h3>Conversion Funnel Analysis</h3>
             <div id="conversionFunnelChart" class="chart-container"></div>
             <div class="chart-info">
-              <div class="chart-info-icon">ℹ️</div>
+              <div class="chart-info-icon" aria-hidden="true"></div>
               <div class="chart-info-text">
                 <strong>Data Source:</strong> Total Calls = all leads in system, Appointments = leads with status ACCEPTED or COMPLETED, Sales = leads with status COMPLETED. Calculates conversion rates at each stage of the sales funnel.
               </div>
@@ -308,7 +308,7 @@
               </div>
               <div id="chartRevenueFunnel" class="chart-container large"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Counts leads by status (NEW, ACCEPTED, COMPLETED) from the Leads sheet. Shows how many leads are at each stage of your pipeline to identify bottlenecks.
                 </div>
@@ -323,7 +323,7 @@
               </div>
               <div id="chartLeadSources" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Currently tracks all leads as "Call Center" origin. Future enhancement will track multiple sources (web forms, referrals) for multi-channel attribution.
                 </div>
@@ -338,7 +338,7 @@
               </div>
               <div id="chartGeographic" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Aggregates leads by state (Address_State field) from customer addresses. Top performing state highlighted in green. Useful for territory planning and resource allocation.
                 </div>
@@ -353,7 +353,7 @@
               </div>
               <div id="chartServicePerformance" class="chart-container"></div>
             <div class="chart-info">
-              <div class="chart-info-icon">ℹ️</div>
+              <div class="chart-info-icon" aria-hidden="true"></div>
               <div class="chart-info-text">
                 <strong>Data Source:</strong> Calculates total revenue by Product_Name, summing Lead_Value for <strong>COMPLETED</strong> leads only (actual revenue earned per service). Shows top 10 services only. Best performing service highlighted in green to identify most profitable offerings.
               </div>
@@ -368,7 +368,7 @@
               </div>
               <div id="chartTimeAnalysis" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Groups leads by Reason_For_Call field (e.g., "New Sale - Initial Purchase", "Service Call"). Shows call volume by reason to identify most common customer needs and staffing requirements.
                 </div>
@@ -383,7 +383,7 @@
               </div>
               <div id="chartConversionTimeline" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Counts leads by Status field (NEW, ACCEPTED, COMPLETED, CANCELLED). Shows current pipeline distribution and calculates completion rate percentage for performance tracking.
                 </div>
@@ -438,7 +438,7 @@
           <!-- Trend Metrics Hero Cards -->
           <div class="trend-metrics-hero">
             <div class="trend-metric-card growth">
-              <div class="metric-icon">📈</div>
+              <div class="metric-icon" aria-hidden="true" data-icon="GRW"></div>
               <div class="metric-content">
                 <div class="metric-label">Week-over-Week Growth</div>
                 <div class="metric-value" id="weekOverWeekGrowth">+0%</div>
@@ -446,7 +446,7 @@
               </div>
             </div>
             <div class="trend-metric-card momentum">
-              <div class="metric-icon">⚡</div>
+              <div class="metric-icon" aria-hidden="true" data-icon="VEL"></div>
               <div class="metric-content">
                 <div class="metric-label">Lead Velocity</div>
                 <div class="metric-value" id="leadVelocity">0</div>
@@ -454,7 +454,7 @@
               </div>
             </div>
             <div class="trend-metric-card forecast">
-              <div class="metric-icon">🎯</div>
+              <div class="metric-icon" aria-hidden="true" data-icon="PRJ"></div>
               <div class="metric-content">
                 <div class="metric-label">30-Day Projection</div>
                 <div class="metric-value" id="monthProjection">$0</div>
@@ -462,7 +462,7 @@
               </div>
             </div>
             <div class="trend-metric-card conversion">
-              <div class="metric-icon">🔄</div>
+              <div class="metric-icon" aria-hidden="true" data-icon="CNV"></div>
               <div class="metric-content">
                 <div class="metric-label">Conversion Trend</div>
                 <div class="metric-value" id="conversionTrend">+0%</div>
@@ -488,7 +488,7 @@
               </div>
               <div id="chartRevenueTrends" class="chart-container xl"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Aggregates Lead_Value by Created_At date (daily) for <strong>COMPLETED</strong> leads only (actual daily revenue). Smooth curve applied for trend visualization. Helps identify revenue patterns, seasonal trends, and forecast future performance.
                 </div>
@@ -503,7 +503,7 @@
               </div>
               <div id="chartLeadVolumeTrend" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Counts all leads by Created_At date (daily). Shows call volume trends to identify peak periods, seasonal patterns, and growth trajectories.
                 </div>
@@ -518,7 +518,7 @@
               </div>
               <div id="chartConversionRateTrend" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Calculates daily conversion rate (COMPLETED / Total Leads) over time. Helps identify if sales effectiveness is improving or declining.
                 </div>
@@ -533,7 +533,7 @@
               </div>
               <div id="chartDealSizeTrend" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Calculates average Lead_Value for COMPLETED leads by date. Shows if you're selling higher or lower-value services over time.
                 </div>
@@ -548,7 +548,7 @@
               </div>
               <div id="chartStatusFlow" class="chart-container"></div>
               <div class="chart-info">
-                <div class="chart-info-icon">ℹ️</div>
+                <div class="chart-info-icon" aria-hidden="true"></div>
                 <div class="chart-info-text">
                   <strong>Data Source:</strong> Shows how lead statuses (NEW, ACCEPTED, COMPLETED, CANCELLED) change over time. Helps track pipeline health and identify conversion bottlenecks.
                 </div>
@@ -764,7 +764,7 @@
   <div id="commentsModal" class="modal-overlay" style="display: none;">
     <div class="comments-modal-content">
       <div class="modal-header">
-        <h3>💬 Internal Notes</h3>
+        <h3>Internal Notes</h3>
         <button id="closeCommentsModal" class="modal-close">&times;</button>
       </div>
       

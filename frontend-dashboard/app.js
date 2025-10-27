@@ -1870,7 +1870,7 @@
   }
 
   function showLoading() {
-    $('#loadingSpinner').style.display = 'block';
+    $('#loadingSpinner').style.display = 'flex';
     $('#mainDashboard').style.display = 'none';
   }
   
@@ -2559,6 +2559,7 @@
       }
     });
     
+    let shouldShowLeadsSection = false;
     try {
       const [leads, stats] = await Promise.all([listLeads({ token }), getStats({ token })]);
       
@@ -2611,11 +2612,14 @@
       // Start real-time polling for updates
       startPolling();
       
-      hideLoading();
-      showSection('leadsSection'); // Start with leads tab
+      shouldShowLeadsSection = true;
     } catch (e) { 
-      hideLoading();
       showError('Failed to load data. Check API_BASE in config.js'); 
+    } finally {
+      hideLoading();
+      if (shouldShowLeadsSection) {
+        showSection('leadsSection'); // Start with leads tab
+      }
     }
   }
 

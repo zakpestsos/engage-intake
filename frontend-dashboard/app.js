@@ -210,11 +210,114 @@
     return email.substring(0, 2).toUpperCase();
   }
 
+  function normalizeEmail(email) {
+    return (email || '').trim().toLowerCase();
+  }
+
+  function getUserByEmail(email) {
+    if (!email || !Array.isArray(allUsers)) return null;
+    const target = normalizeEmail(email);
+    return allUsers.find(user => normalizeEmail(user.Email || user.email) === target) || null;
+  }
+
+  function resolveAssignmentDisplay(email) {
+    const assignedEmail = (email || '').trim();
+    if (!assignedEmail) {
+      return {
+        email: '',
+        label: 'Unassigned',
+        initials: '--',
+        color: '',
+        isUnassigned: true
+      };
+    }
+
+    const user = getUserByEmail(assignedEmail);
+    const first = user ? (user.First_Name || user.firstName || '') : '';
+    const last = user ? (user.Last_Name || user.lastName || '') : '';
+    const label = (first + ' ' + last).trim() || assignedEmail;
+    const initials = getUserInitials(assignedEmail);
+    const color = getColorForInitials(initials, assignedEmail);
+
+    return {
+      email: assignedEmail,
+      label,
+      initials,
+      color,
+      isUnassigned: false
+    };
+  }
+
+  function ensureOptionForAssignment(selectEl, email, label) {
+    if (!selectEl) return;
+    const value = (email || '').trim();
+    if (!value) {
+      selectEl.value = '';
+      return;
+    }
+
+    const hasOption = Array.from(selectEl.options).some(opt => normalizeEmail(opt.value) === normalizeEmail(value));
+    if (!hasOption) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      option.selected = true;
+      selectEl.appendChild(option);
+    }
+
+    selectEl.value = value;
+  }
+
+  function syncAssignedCell(container, email) {
+    if (!container) return;
+    const display = resolveAssignmentDisplay(email);
+    const pill = container.querySelector('.assigned-pill');
+    const avatar = container.querySelector('.assigned-avatar');
+    const nameEl = container.querySelector('.assigned-name');
+    const selectEl = container.querySelector('.assign-dropdown');
+
+    if (pill) {
+      pill.classList.toggle('unassigned', display.isUnassigned);
+    }
+    if (avatar) {
+      avatar.classList.toggle('unassigned', display.isUnassigned);
+      avatar.textContent = display.isUnassigned ? '--' : display.initials;
+      avatar.style.backgroundColor = display.isUnassigned ? '' : display.color;
+    }
+    if (nameEl) {
+      nameEl.textContent = display.label;
+    }
+    if (selectEl) {
+      ensureOptionForAssignment(selectEl, display.email, display.label);
+    }
+  }
+
+  function syncAssignedCard(cardEl, email) {
+    if (!cardEl) return;
+    const container = cardEl.querySelector('.lead-card-assigned');
+    if (!container) return;
+
+    const display = resolveAssignmentDisplay(email);
+    const avatar = container.querySelector('.assigned-avatar');
+    const nameEl = container.querySelector('.assigned-name');
+
+    container.classList.toggle('unassigned', display.isUnassigned);
+    if (avatar) {
+      avatar.classList.toggle('unassigned', display.isUnassigned);
+      avatar.textContent = display.isUnassigned ? '--' : display.initials;
+      avatar.style.backgroundColor = display.isUnassigned ? '' : display.color;
+    }
+    if (nameEl) {
+      nameEl.textContent = display.label;
+    }
+  }
+
   // ====================
   // USER MANAGEMENT UI
   // ====================
   
   async function loadAllUsers() {
+    allUsers = [];
     try {
       const token = getToken();
       if (!token) {
@@ -265,7 +368,7 @@
       }
     } catch (error) {
       console.error('❌ Error loading users:', error);
-      showError('Failed to load users: ' + error.message);
+      showToast('Unable to load full user list: ' + (error.message || 'unknown error'));
     }
   }
   
@@ -827,31 +930,55 @@
         ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
       }
       
-      // Generate assigned to dropdown
+      // Assigned to dropdown + pill
       const assignedTo = ld.Assigned_To || ld.assignedTo || '';
-      let assignedToHtml = '<select class="assign-dropdown" data-lead-id="' + sanitize(ld.id) + '">';
-      assignedToHtml += '<option value="">Unassigned</option>';
+      const assignmentDisplay = resolveAssignmentDisplay(assignedTo);
+      const assignedLabel = sanitize(assignmentDisplay.label);
+      const assignedInitials = sanitize(assignmentDisplay.isUnassigned ? '--' : assignmentDisplay.initials);
+      const assignedAvatarClass = assignmentDisplay.isUnassigned ? 'assigned-avatar unassigned' : 'assigned-avatar';
+      const assignedAvatarStyle = assignmentDisplay.isUnassigned ? '' : ' style="background-color: ' + assignmentDisplay.color + '"';
+      const assignedPillClass = assignmentDisplay.isUnassigned ? 'assigned-pill unassigned' : 'assigned-pill';
+      const assignedNameClass = assignmentDisplay.isUnassigned ? 'assigned-name unassigned' : 'assigned-name';
       
-      // Add all users to dropdown
-      if (allUsers && Array.isArray(allUsers)) {
-        allUsers.forEach(user => {
-          const selected = user.Email === assignedTo ? ' selected' : '';
-          const userName = (user.First_Name || '') + ' ' + (user.Last_Name || '');
-          assignedToHtml += '<option value="' + sanitize(user.Email) + '"' + selected + '>' + sanitize(userName.trim() || user.Email) + '</option>';
+      const dropdownOptions = [];
+      dropdownOptions.push('<option value="">Unassigned</option>');
+      
+      let hasAssignedOption = false;
+      if (Array.isArray(allUsers) && allUsers.length) {
+        const activeUsers = allUsers
+          .filter(user => user.active !== false && user.Active !== false)
+          .sort((a, b) => {
+            const aName = ((a.First_Name || '') + ' ' + (a.Last_Name || '')).trim().toLowerCase();
+            const bName = ((b.First_Name || '') + ' ' + (b.Last_Name || '')).trim().toLowerCase();
+            return aName.localeCompare(bName);
+          });
+        
+        activeUsers.forEach(user => {
+          const emailValue = sanitize(user.Email);
+          const displayName = sanitize(((user.First_Name || '') + ' ' + (user.Last_Name || '')).trim() || user.Email);
+          const isSelected = normalizeEmail(user.Email) === normalizeEmail(assignedTo) ? ' selected' : '';
+          if (isSelected) hasAssignedOption = true;
+          dropdownOptions.push(`<option value="${emailValue}"${isSelected}>${displayName}</option>`);
         });
       }
-      assignedToHtml += '</select>';
       
-      // Show assigned user badge if assigned
-      let assignedBadge = '';
-      if (assignedTo && allUsers) {
-        const assignedUser = allUsers.find(u => u.Email === assignedTo);
-        if (assignedUser) {
-          const initials = getUserInitials(assignedTo);
-          const color = getColorForInitials(initials, assignedTo);
-          assignedBadge = '<div class="ownership-initials" style="background-color: ' + color + '; margin-left: 8px; display: inline-block;">' + initials + '</div>';
-        }
+      if (assignedTo && !hasAssignedOption) {
+        dropdownOptions.push(`<option value="${sanitize(assignedTo)}" selected>${assignedLabel}</option>`);
       }
+      
+      const assignedMarkup = `
+        <div class="assigned-control">
+          <div class="${assignedPillClass}">
+            <span class="${assignedAvatarClass}"${assignedAvatarStyle}>${assignedInitials}</span>
+            <span class="${assignedNameClass}">${assignedLabel}</span>
+          </div>
+          <div class="assigned-select">
+            <select class="assign-dropdown" data-lead-id="${sanitize(ld.id)}">
+              ${dropdownOptions.join('')}
+            </select>
+          </div>
+        </div>
+      `;
       
       tr.innerHTML =
         '<td>' + sanitize(createdDate) + '</td>' +
@@ -861,15 +988,16 @@
         '<td>' + sanitize(ld.product || ld.productSku || '') + '</td>' +
         '<td>' + fmtMoney(ld.leadValue) + '</td>' +
         '<td><span class="badge status-' + sanitize((ld.status || '').toLowerCase()) + '">' + sanitize(ld.status) + '</span>' + ownershipBadge + '</td>' +
-        '<td class="assigned-cell">' + assignedToHtml + assignedBadge + '</td>' +
+        '<td class="assigned-cell">' + assignedMarkup + '</td>' +
         '<td class="actions-cell">' +
-          '<div class="action-buttons">' +
-            '<button class="action-btn accept" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button>' +
-            '<button class="action-btn complete" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button>' +
-            '<button class="action-btn cancel" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
+          '<div class="lead-actions">' +
+            '<button class="lead-action accept" data-action="ACCEPTED" data-id="' + sanitize(ld.id) + '">Accept</button>' +
+            '<button class="lead-action complete" data-action="COMPLETED" data-id="' + sanitize(ld.id) + '">Complete</button>' +
+            '<button class="lead-action cancel" data-action="CANCELLED" data-id="' + sanitize(ld.id) + '">Cancel</button>' +
           '</div>' +
         '</td>';
       tbody.appendChild(tr);
+      syncAssignedCell(tr.querySelector('.assigned-cell'), assignedTo);
     });
   }
 
@@ -904,6 +1032,14 @@
         const color = getColorForInitials(initials, ownerEmail);
         ownershipBadge = `<span class="ownership-badge"><div class="ownership-initials" style="background-color: ${color}">${initials}</div></span>`;
       }
+
+      const cardAssignedTo = lead.Assigned_To || lead.assignedTo || '';
+      const cardAssignment = resolveAssignmentDisplay(cardAssignedTo);
+      const cardAssignedClass = cardAssignment.isUnassigned ? 'lead-card-assigned unassigned' : 'lead-card-assigned';
+      const cardAssignedAvatarClass = cardAssignment.isUnassigned ? 'assigned-avatar unassigned' : 'assigned-avatar';
+      const cardAssignedAvatarStyle = cardAssignment.isUnassigned ? '' : ` style="background-color: ${cardAssignment.color}"`;
+      const cardAssignedInitials = sanitize(cardAssignment.isUnassigned ? '--' : cardAssignment.initials);
+      const cardAssignedName = sanitize(cardAssignment.label);
       
       card.innerHTML = `
         <div class="lead-card-header">
@@ -924,16 +1060,20 @@
               <span class="info-label">Created:</span>
               <span class="info-value">${createdDate}</span>
             </div>
-            <div class="info-row">
-              <span class="info-label">Value:</span>
-              <span class="info-value lead-value">${fmtMoney(lead.leadValue)}</span>
-            </div>
+           <div class="info-row">
+             <span class="info-label">Value:</span>
+             <span class="info-value lead-value">${fmtMoney(lead.leadValue)}</span>
+           </div>
+          </div>
+          <div class="${cardAssignedClass}">
+            <span class="${cardAssignedAvatarClass}"${cardAssignedAvatarStyle}>${cardAssignedInitials}</span>
+            <span class="assigned-name">${cardAssignedName}</span>
           </div>
         </div>
-        <div class="lead-card-actions">
-          <button class="card-action-btn accept" data-action="ACCEPTED" data-id="${sanitize(lead.id)}">Accept</button>
-          <button class="card-action-btn complete" data-action="COMPLETED" data-id="${sanitize(lead.id)}">Complete</button>
-          <button class="card-action-btn cancel" data-action="CANCELLED" data-id="${sanitize(lead.id)}">Cancel</button>
+        <div class="lead-card-actions lead-actions">
+          <button class="lead-action accept" data-action="ACCEPTED" data-id="${sanitize(lead.id)}">Accept</button>
+          <button class="lead-action complete" data-action="COMPLETED" data-id="${sanitize(lead.id)}">Complete</button>
+          <button class="lead-action cancel" data-action="CANCELLED" data-id="${sanitize(lead.id)}">Cancel</button>
         </div>
       `;
       
@@ -945,6 +1085,7 @@
       });
       
       grid.appendChild(card);
+      syncAssignedCard(card, cardAssignedTo);
     });
   }
   
@@ -1988,7 +2129,7 @@
         const oldStatus = leadStatusMap.get(lead.id);
         const oldAssignment = leadAssignmentMap.get(lead.id);
         const statusChanged = oldStatus && oldStatus !== lead.status;
-        const assignmentChanged = oldAssignment !== undefined && oldAssignment !== (lead.assignedTo || '');
+        const assignmentChanged = oldAssignment !== undefined && oldAssignment !== (lead.assignedTo || lead.Assigned_To || '');
         
         // Check if this lead's assignment was recently changed by user
         const recentChangeTime = recentAssignmentChanges.get(lead.id);
@@ -1998,17 +2139,17 @@
           newLeads.push(lead);
           knownLeadIds.add(lead.id);
           leadStatusMap.set(lead.id, lead.status);
-          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+          leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
         } else if (statusChanged) {
           updatedLeads.push({ lead, oldStatus });
           leadStatusMap.set(lead.id, lead.status);
           // Only update assignment if not protected
           if (!isProtectedAssignment) {
-            leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+            leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
           }
         } else if (assignmentChanged && !isProtectedAssignment) {
           // Only track assignment change if not protected by recent user change
-          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+          leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
         }
       });
       
@@ -2175,6 +2316,8 @@
     const token = getToken();
     if (!token) return;
     
+    resetPollingState();
+    
     function currentFilters() {
       return { 
         token, 
@@ -2259,30 +2402,15 @@
             // Update tracking maps
             leadAssignmentMap.set(leadId, assignedEmail);
             
-            // Update the assignment badge visually without full table refresh
+            // Update UI without full table refresh
             const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
-            if (row && allUsers) {
-              const assignedCell = row.querySelector('.assigned-cell');
-              if (assignedCell) {
-                let assignedBadge = '';
-                if (assignedEmail) {
-                  const assignedUser = allUsers.find(u => u.Email === assignedEmail);
-                  if (assignedUser) {
-                    const initials = getUserInitials(assignedEmail);
-                    const color = getColorForInitials(initials, assignedEmail);
-                    assignedBadge = '<div class="ownership-initials" style="background-color: ' + color + '; margin-left: 8px; display: inline-block;">' + initials + '</div>';
-                  }
-                }
-                // Update only the badge, keep the dropdown selected
-                const existingDropdown = assignedCell.querySelector('.assign-dropdown');
-                if (existingDropdown) {
-                  const badgeElements = assignedCell.querySelectorAll('.ownership-initials');
-                  badgeElements.forEach(el => el.remove());
-                  if (assignedBadge) {
-                    assignedCell.insertAdjacentHTML('beforeend', assignedBadge);
-                  }
-                }
-              }
+            if (row) {
+              syncAssignedCell(row.querySelector('.assigned-cell'), assignedEmail);
+            }
+
+            const card = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
+            if (card) {
+              syncAssignedCard(card, assignedEmail);
             }
           } else {
             throw new Error(response.error || 'Failed to update assignment');
@@ -2406,7 +2534,7 @@
           leads.forEach(lead => {
             knownLeadIds.add(lead.id);
             leadStatusMap.set(lead.id, lead.status);
-            leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+            leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
           });
         }
         
@@ -2606,6 +2734,7 @@
         leads.forEach(lead => {
           knownLeadIds.add(lead.id);
           leadStatusMap.set(lead.id, lead.status);
+          leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
         });
       }
       

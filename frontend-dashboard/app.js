@@ -17,9 +17,11 @@
   let recentAssignmentChanges = new Map(); // leadId -> timestamp (tracks user-initiated changes)
   let isPollingInProgress = false;
   let consecutiveErrors = 0;
-  const POLL_INTERVAL_MS = 4000; // Aggressive polling for faster cross-user refresh
+  let quickPollTimeout = null;
+  let assignmentHandlersBound = false;
+  const POLL_INTERVAL_MS = 2000; // Aggressive polling for faster cross-user refresh
   const MAX_CONSECUTIVE_ERRORS = 3;
-  const ASSIGNMENT_PROTECTION_MS = 30000; // 30 seconds protection for manual changes
+  const ASSIGNMENT_PROTECTION_MS = 8000; // 8 seconds buffer after manual changes
   
   // Track if tab is visible (pause polling when hidden)
   let isTabVisible = true;
@@ -202,12 +204,33 @@
   }
   
   function getUserInitials(email) {
-    if (!email) return '??';
-    const parts = email.split('@')[0].split('.');
-    if (parts.length >= 2) {
-      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    if (!email) return '--';
+    const user = getUserByEmail(email);
+    const first = user ? (user.First_Name || user.firstName || '') : '';
+    const last = user ? (user.Last_Name || user.lastName || '') : '';
+    const firstName = first.trim();
+    const lastName = last.trim();
+    const firstInitial = firstName.charAt(0);
+    const lastInitial = lastName.charAt(0);
+    const handle = (email.split('@')[0] || '').trim();
+    const segments = handle.split(/[.\-_]/).filter(Boolean);
+    const fallbackSecond = segments.length >= 2
+      ? segments[segments.length - 1].charAt(0)
+      : handle.charAt(1);
+    if (firstInitial || lastInitial) {
+      const primary = firstInitial || lastInitial;
+      const secondary = lastInitial || fallbackSecond || primary;
+      const initials = (primary + secondary).toUpperCase();
+      return initials || '--';
     }
-    return email.substring(0, 2).toUpperCase();
+    if (segments.length >= 2) {
+      const primary = segments[0].charAt(0);
+      const secondary = segments[segments.length - 1].charAt(0);
+      const initials = (primary + secondary).toUpperCase();
+      return initials || '--';
+    }
+    const fallback = handle.substring(0, 2).toUpperCase();
+    return fallback || (handle.charAt(0).toUpperCase() || '--');
   }
 
   function normalizeEmail(email) {
@@ -354,6 +377,43 @@
       nameEl.classList.toggle('unassigned', display.isUnassigned);
     }
   }
+
+  function applyAssignmentLocally(leadId, assignedEmail, options = {}) {
+    if (!leadId) return;
+    const value = (assignedEmail || '').trim();
+    leadAssignmentMap.set(leadId, value);
+
+    if (window.CURRENT_LEADS && Array.isArray(window.CURRENT_LEADS)) {
+      const lead = window.CURRENT_LEADS.find(l => l.id === leadId);
+      if (lead) {
+        lead.assignedTo = value;
+        lead.Assigned_To = value;
+      }
+    }
+
+    if (window.CURRENT_LEADS_ORIGINAL && Array.isArray(window.CURRENT_LEADS_ORIGINAL)) {
+      const lead = window.CURRENT_LEADS_ORIGINAL.find(l => l.id === leadId);
+      if (lead) {
+        lead.assignedTo = value;
+        lead.Assigned_To = value;
+      }
+    }
+
+    const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+    if (row) {
+      syncAssignedCell(row.querySelector('.assigned-cell'), value);
+    }
+
+    const card = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
+    if (card) {
+      syncAssignedCard(card, value);
+    }
+
+    if (options.clearProtection) {
+      recentAssignmentChanges.delete(leadId);
+    }
+  }
+
 
   // ====================
   // USER MANAGEMENT UI
@@ -1009,17 +1069,15 @@
         dropdownOptions.push(`<option value="${sanitize(assignedTo)}" selected>${assignedLabel}</option>`);
       }
       
+      // Simplified table view - just dropdown with compact indicator
       const assignedMarkup = `
-        <div class="assigned-control">
-          <div class="${assignedPillClass}">
-            <span class="${assignedAvatarClass}"${assignedAvatarStyle}>${assignedInitials}</span>
-            <span class="${assignedNameClass}">${assignedLabel}</span>
-          </div>
-          <div class="assigned-select">
-            <select class="assign-dropdown" data-lead-id="${sanitize(ld.id)}">
-              ${dropdownOptions.join('')}
-            </select>
-          </div>
+        <div class="assigned-control-table">
+          <select class="assign-dropdown" data-lead-id="${sanitize(ld.id)}">
+            ${dropdownOptions.join('')}
+          </select>
+          ${!assignmentDisplay.isUnassigned ? `
+            <span class="assigned-indicator" style="background-color: ${assignmentDisplay.color}">${assignedInitials}</span>
+          ` : ''}
         </div>
       `;
       
@@ -1103,15 +1161,15 @@
               <span class="info-label">Created:</span>
               <span class="info-value">${createdDate}</span>
             </div>
-           <div class="info-row">
-             <span class="info-label">Value:</span>
-             <span class="info-value lead-value">${fmtMoney(lead.leadValue)}</span>
-           </div>
+            <div class="info-row">
+              <span class="info-label">Value:</span>
+              <span class="info-value lead-value">${fmtMoney(lead.leadValue)}</span>
+            </div>
           </div>
           <div class="${cardAssignedClass}">
             <span class="${cardAssignedAvatarClass}"${cardAssignedAvatarStyle}>${cardAssignedInitials}</span>
             <span class="assigned-name">${cardAssignedName}</span>
-          </div>
+        </div>
         </div>
         <div class="lead-card-actions lead-actions">
           <button class="lead-action accept" data-action="ACCEPTED" data-id="${sanitize(lead.id)}">Accept</button>
@@ -2137,6 +2195,17 @@
   // REAL-TIME POLLING FUNCTIONS
   // ====================
   
+  function scheduleQuickPoll(delay = 750) {
+    if (!isTabVisible) return;
+    if (quickPollTimeout) {
+      clearTimeout(quickPollTimeout);
+    }
+    quickPollTimeout = setTimeout(() => {
+      quickPollTimeout = null;
+      pollForUpdates();
+    }, delay);
+  }
+  
   async function pollForUpdates() {
     // Don't poll if tab is hidden or already polling
     if (!isTabVisible || isPollingInProgress) {
@@ -2166,15 +2235,17 @@
       // Detect new leads and changes
       const newLeads = [];
       const updatedLeads = [];
+      const assignmentUpdates = [];
       
       freshLeads.forEach(lead => {
         const isNew = !knownLeadIds.has(lead.id);
         const oldStatus = leadStatusMap.get(lead.id);
-        const oldAssignment = leadAssignmentMap.get(lead.id);
-        const statusChanged = oldStatus && oldStatus !== lead.status;
-        const assignmentChanged = oldAssignment !== undefined && oldAssignment !== (lead.assignedTo || lead.Assigned_To || '');
-        
-        // Check if this lead's assignment was recently changed by user
+        const previousAssignment = leadAssignmentMap.get(lead.id);
+        const newAssignment = lead.assignedTo || lead.Assigned_To || '';
+        const statusChanged = !!oldStatus && oldStatus !== lead.status;
+        const previousNormalized = previousAssignment !== undefined ? normalizeEmail(previousAssignment) : undefined;
+        const newNormalized = normalizeEmail(newAssignment);
+
         const recentChangeTime = recentAssignmentChanges.get(lead.id);
         const isProtectedAssignment = recentChangeTime && (Date.now() - recentChangeTime < ASSIGNMENT_PROTECTION_MS);
         
@@ -2182,21 +2253,34 @@
           newLeads.push(lead);
           knownLeadIds.add(lead.id);
           leadStatusMap.set(lead.id, lead.status);
-          leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
-        } else if (statusChanged) {
+          leadAssignmentMap.set(lead.id, newAssignment);
+          return;
+        }
+
+        if (statusChanged) {
           updatedLeads.push({ lead, oldStatus });
           leadStatusMap.set(lead.id, lead.status);
-          // Only update assignment if not protected
-          if (!isProtectedAssignment) {
-            leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
+        }
+
+        if (!isProtectedAssignment) {
+          if (previousAssignment === undefined) {
+            leadAssignmentMap.set(lead.id, newAssignment);
+          } else if (previousNormalized !== newNormalized) {
+            assignmentUpdates.push({
+              lead,
+              previous: previousAssignment || '',
+              current: newAssignment
+            });
+            applyAssignmentLocally(lead.id, newAssignment, { clearProtection: true });
           }
-        } else if (assignmentChanged && !isProtectedAssignment) {
-          // Only track assignment change if not protected by recent user change
-          leadAssignmentMap.set(lead.id, lead.assignedTo || lead.Assigned_To || '');
         }
       });
       
       // Show notifications and update UI
+      if (assignmentUpdates.length > 0) {
+        showAssignmentNotification(assignmentUpdates);
+      }
+
       if (newLeads.length > 0) {
         showNewLeadNotification(newLeads);
         // Refresh the leads table
@@ -2222,6 +2306,35 @@
     } finally {
       isPollingInProgress = false;
     }
+  }
+  
+  function showAssignmentNotification(changes) {
+    if (!changes || changes.length === 0) return;
+
+    if (changes.length === 1) {
+      const change = changes[0];
+      const lead = change.lead || {};
+      const display = resolveAssignmentDisplay(change.current);
+      const nameParts = [];
+      if (lead.customerName) {
+        nameParts.push(String(lead.customerName).trim());
+      } else {
+        if (lead.customerFirstName) nameParts.push(String(lead.customerFirstName).trim());
+        if (lead.customerLastName) nameParts.push(String(lead.customerLastName).trim());
+      }
+      let leadName = nameParts.filter(Boolean).join(' ').trim();
+      if (!leadName) {
+        const idFragment = (lead.id || '').slice(-4) || 'lead';
+        leadName = 'Lead ' + idFragment;
+      }
+      const message = display.isUnassigned
+        ? `👤 ${leadName} marked unassigned`
+        : `👤 ${leadName} assigned to ${display.label}`;
+      showToast(message);
+      return;
+    }
+
+    showToast(`👥 ${changes.length} assignments updated`);
   }
   
   function showNewLeadNotification(newLeads) {
@@ -2254,8 +2367,13 @@
     if (pollingInterval) {
       clearInterval(pollingInterval);
     }
+    if (quickPollTimeout) {
+      clearTimeout(quickPollTimeout);
+      quickPollTimeout = null;
+    }
     
     // Start new polling interval
+    pollForUpdates();
     pollingInterval = setInterval(pollForUpdates, POLL_INTERVAL_MS);
     console.log('✅ Real-time updates started - checking every', POLL_INTERVAL_MS / 1000, 'seconds');
   }
@@ -2265,6 +2383,10 @@
       clearInterval(pollingInterval);
       pollingInterval = null;
       console.log('⏸️ Real-time updates stopped');
+    }
+    if (quickPollTimeout) {
+      clearTimeout(quickPollTimeout);
+      quickPollTimeout = null;
     }
   }
   
@@ -2399,95 +2521,83 @@
     });
     
     // Prevent dropdown from triggering row click (stop propagation)
+    if (!assignmentHandlersBound) {
     document.addEventListener('click', function(e) {
       if (e.target && (e.target.classList.contains('assign-dropdown') || e.target.closest('.assigned-cell'))) {
         e.stopPropagation();
       }
     }, true);
     
-    // Assign dropdown handler (using event delegation)
     document.addEventListener('change', async function(e) {
       if (e.target && e.target.classList.contains('assign-dropdown')) {
         e.stopPropagation(); // Prevent triggering row click
         
         const leadId = e.target.getAttribute('data-lead-id');
         const assignedEmail = e.target.value;
+          const previousValue = leadAssignmentMap.get(leadId) || '';
+          const previousNormalized = normalizeEmail(previousValue);
+          const nextNormalized = normalizeEmail(assignedEmail);
+          if (previousNormalized === nextNormalized) {
+            return;
+          }
         
-        const previousValue = leadAssignmentMap.get(leadId) || '';
         try {
           const token = getToken();
-          if (!token) {
-            throw new Error('Missing token');
-          }
-
-          // Mark this assignment change as recent to protect from polling overwrites
-          recentAssignmentChanges.set(leadId, Date.now());
-          
-          // Update lead assignment via POST (Apps Script prefers text/plain payloads)
-          const response = await fetch(API() + '?api=leads&id=' + encodeURIComponent(leadId), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain'
-            },
-            body: JSON.stringify({
-              _method: 'PATCH',
-              token,
-              assignedTo: assignedEmail,
-              userEmail: currentUser ? currentUser.email : ''
-            })
-          });
-
-          const result = await response.json();
-
-          if (result && !result.error) {
-            showToast(assignedEmail ? 'Lead assignment updated' : 'Lead unassigned');
-            
-            // Update local data immediately without full refresh
-            if (window.CURRENT_LEADS) {
-              const lead = window.CURRENT_LEADS.find(l => l.id === leadId);
-              if (lead) {
-                lead.assignedTo = assignedEmail;
-                lead.Assigned_To = assignedEmail;
-              }
-            }
-            if (window.CURRENT_LEADS_ORIGINAL) {
-              const lead = window.CURRENT_LEADS_ORIGINAL.find(l => l.id === leadId);
-              if (lead) {
-                lead.assignedTo = assignedEmail;
-                lead.Assigned_To = assignedEmail;
-              }
-            }
-            
-            // Update tracking maps
-            leadAssignmentMap.set(leadId, assignedEmail);
-            
-            // Update UI without full table refresh
-            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
-            if (row) {
-              syncAssignedCell(row.querySelector('.assigned-cell'), assignedEmail);
+            if (!token) {
+              throw new Error('Missing token');
             }
 
-            const card = document.querySelector(`.lead-card[data-lead-id="${leadId}"]`);
-            if (card) {
-              syncAssignedCard(card, assignedEmail);
-            }
+            const stampedAt = Date.now();
+            recentAssignmentChanges.set(leadId, stampedAt);
+
+            const response = await fetch(API() + '?api=leads&id=' + encodeURIComponent(leadId), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'text/plain'
+              },
+              body: JSON.stringify({
+                _method: 'PATCH',
+                token,
+                assignedTo: assignedEmail,
+                userEmail: currentUser ? currentUser.email : ''
+              })
+            });
+
+            const result = await response.json();
+
+            if (result && !result.error) {
+              const display = resolveAssignmentDisplay(assignedEmail);
+              showToast(display.isUnassigned ? 'Lead marked unassigned' : 'Lead assigned to ' + display.label);
+
+              applyAssignmentLocally(leadId, assignedEmail);
+
+              setTimeout(() => {
+                const recorded = recentAssignmentChanges.get(leadId);
+                if (recorded && Date.now() - recorded >= ASSIGNMENT_PROTECTION_MS) {
+                  recentAssignmentChanges.delete(leadId);
+                }
+              }, ASSIGNMENT_PROTECTION_MS + 200);
+
+              scheduleQuickPoll(650);
           } else {
-            throw new Error((result && result.error) || 'Failed to update assignment');
+              throw new Error((result && result.error) || 'Failed to update assignment');
           }
         } catch (error) {
           console.error('Error updating assignment:', error);
           showError('Failed to update assignment: ' + error.message);
 
-          // Roll back dropdown selection to previous value
-          e.target.value = previousValue;
-          const cell = e.target.closest('.assigned-cell');
-          if (cell) {
-            syncAssignedCell(cell, previousValue);
-          }
-          recentAssignmentChanges.delete(leadId);
+            e.target.value = previousValue;
+            const cell = e.target.closest('.assigned-cell');
+            if (cell) {
+              syncAssignedCell(cell, previousValue);
+            }
+            recentAssignmentChanges.delete(leadId);
         }
       }
     });
+
+      assignmentHandlersBound = true;
+    }
     
     // Analytics view switching
     $('#overviewView').addEventListener('click', () => showAnalyticsView('overviewAnalytics'));
@@ -2815,6 +2925,18 @@
       hideLoading();
       if (shouldShowLeadsSection) {
         showSection('leadsSection'); // Start with leads tab
+        
+        // Check for lead hash parameter (email deep link)
+        setTimeout(() => {
+          const hash = window.location.hash;
+          if (hash.startsWith('#lead=')) {
+            const leadId = hash.replace('#lead=', '');
+            console.log('📧 Opening lead from email link:', leadId);
+            openLeadModal(leadId);
+            // Clear hash after opening
+            history.replaceState(null, null, ' ');
+          }
+        }, 500);
       }
     }
   }
@@ -2934,9 +3056,9 @@
     // Stop resizing
     document.addEventListener('mouseup', () => {
       if (isResizing) {
-        isResizing = false;
-        isResizingModal = false; // Clear global flag
-        currentEdge = null;
+      isResizing = false;
+      isResizingModal = false; // Clear global flag
+      currentEdge = null;
         
         // Set recently resized flag to prevent accidental modal close
         recentlyResizedModal = true;

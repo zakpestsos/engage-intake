@@ -2772,6 +2772,11 @@ select option {
   width: 100%;
 }
 
+.assigned-control-table .assign-dropdown {
+  flex: 1;
+  min-width: 140px;
+}
+
 .assign-dropdown:hover {
   border-color: #3b82f6;
 }
@@ -2784,9 +2789,32 @@ select option {
 
 .assigned-cell {
   padding: 0.75rem 1rem !important;
-  min-width: 220px;
+  min-width: 180px;
 }
 
+/* Table view - compact layout with dropdown + indicator */
+.assigned-control-table {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.assigned-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Card view - keep full pill design */
 .assigned-control {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(150px, 1fr);

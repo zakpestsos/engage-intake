@@ -229,6 +229,26 @@ function createLead_(payload, actor) {
     console.error('SMS notification failed (non-fatal): ' + smsError.message);
   }
 
+  // Send email notification
+  try {
+    sendNewLeadNotification_({
+      leadId: id,
+      customerName: (String(payload.customerFirstName || '') + ' ' + String(payload.customerLastName || '')).trim() || 'Unknown',
+      customerPhone: String(payload.customerPhone || ''),
+      customerEmail: String(payload.customerEmail || ''),
+      productName: prodName,
+      addressFull: [
+        String(addr.street || ''),
+        String(addr.city || ''),
+        String(addr.state || ''),
+        String(addr.postal || '')
+      ].filter(Boolean).join(', '),
+      leadValue: leadValue
+    }, companyName);
+  } catch (emailError) {
+    console.error('Email notification failed (non-fatal): ' + emailError.message);
+  }
+
   return { ok: true, id, createdAt: created, status };
 }
 
@@ -661,4 +681,213 @@ function addComment_(leadId, userEmail, userName, commentText) {
     console.error('Error adding comment:', error);
     throw error;
   }
+}
+
+// ==============================
+// EMAIL NOTIFICATION SYSTEM
+// ==============================
+
+function sendNewLeadNotification_(leadData, companyName) {
+  try {
+    // Get company contact email
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const companiesSheet = ss.getSheetByName('Companies');
+    const companiesData = companiesSheet.getDataRange().getValues();
+    
+    let contactEmail = '';
+    for (let i = 1; i < companiesData.length; i++) {
+      if (companiesData[i][0] === companyName) {
+        contactEmail = companiesData[i][2]; // Contact_Email column
+        break;
+      }
+    }
+    
+    if (!contactEmail) {
+      console.log('No contact email found for company:', companyName);
+      return;
+    }
+    
+    // Build dashboard link with lead hash
+    const dashboardBaseUrl = 'https://zakpestsos.github.io/engage-intake/frontend-dashboard/';
+    const dashboardLink = dashboardBaseUrl + '#lead=' + leadData.leadId;
+    
+    // Format values
+    const customerEmail = leadData.customerEmail || 'Not provided';
+    const leadValue = '$' + Number(leadData.leadValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    // Build HTML email
+    const htmlBody = getEmailTemplate_()
+      .replace('[CUSTOMER_NAME]', leadData.customerName)
+      .replace('[CUSTOMER_PHONE]', leadData.customerPhone)
+      .replace('[CUSTOMER_EMAIL]', customerEmail)
+      .replace('[PRODUCT_NAME]', leadData.productName)
+      .replace('[ADDRESS_FULL]', leadData.addressFull)
+      .replace('[LEAD_VALUE]', leadValue)
+      .replace('[DASHBOARD_LINK]', dashboardLink)
+      .replace('[LEAD_ID]', leadData.leadId);
+    
+    // Send email
+    const subject = '🔔 New Lead: ' + leadData.customerName + ' - ' + leadData.productName;
+    
+    MailApp.sendEmail({
+      to: contactEmail,
+      subject: subject,
+      htmlBody: htmlBody
+    });
+    
+    console.log('✅ Email notification sent to:', contactEmail);
+    
+  } catch (error) {
+    console.error('❌ Failed to send email notification:', error);
+    // Don't throw error - email failure shouldn't block lead creation
+  }
+}
+
+function getEmailTemplate_() {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { 
+      font-family: 'Inter', Arial, sans-serif; 
+      background: #0f172a; 
+      color: #e2e8f0; 
+      margin: 0; 
+      padding: 0; 
+    }
+    .container { 
+      max-width: 600px; 
+      margin: 0 auto; 
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+      border-radius: 12px; 
+      overflow: hidden; 
+    }
+    .header { 
+      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%); 
+      padding: 24px; 
+      text-align: center; 
+    }
+    .header h1 { 
+      color: white; 
+      margin: 0; 
+      font-size: 24px; 
+    }
+    .content { 
+      padding: 32px 24px; 
+    }
+    .lead-info { 
+      background: rgba(15, 23, 42, 0.6); 
+      border: 1px solid #475569; 
+      border-radius: 8px; 
+      padding: 20px; 
+      margin-bottom: 20px; 
+    }
+    .info-row { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-bottom: 12px; 
+      padding-bottom: 12px; 
+      border-bottom: 1px solid rgba(71, 85, 105, 0.3); 
+    }
+    .info-row:last-child { 
+      border-bottom: none; 
+      margin-bottom: 0; 
+      padding-bottom: 0; 
+    }
+    .label { 
+      color: #94a3b8; 
+      font-size: 14px; 
+      font-weight: 600; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px; 
+    }
+    .value { 
+      color: #e2e8f0; 
+      font-size: 16px; 
+      font-weight: 500; 
+      text-align: right; 
+    }
+    .value-highlight { 
+      color: #10b981; 
+      font-size: 20px; 
+      font-weight: 700; 
+    }
+    .cta-button { 
+      display: inline-block; 
+      background: linear-gradient(45deg, #1e40af, #3b82f6); 
+      color: white !important; 
+      padding: 14px 32px; 
+      border-radius: 8px; 
+      text-decoration: none; 
+      font-weight: 600; 
+      margin-top: 20px; 
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
+    }
+    .footer { 
+      padding: 24px; 
+      text-align: center; 
+      color: #64748b; 
+      font-size: 13px; 
+    }
+    /* Mobile responsive */
+    @media only screen and (max-width: 600px) {
+      .info-row { 
+        flex-direction: column; 
+        align-items: flex-start; 
+      }
+      .value { 
+        text-align: left; 
+        margin-top: 4px; 
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔔 New Lead Received</h1>
+    </div>
+    <div class="content">
+      <div class="lead-info">
+        <div class="info-row">
+          <span class="label">Customer</span>
+          <span class="value">[CUSTOMER_NAME]</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Phone</span>
+          <span class="value">[CUSTOMER_PHONE]</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email</span>
+          <span class="value">[CUSTOMER_EMAIL]</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Service Requested</span>
+          <span class="value">[PRODUCT_NAME]</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Property Address</span>
+          <span class="value">[ADDRESS_FULL]</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Lead Value</span>
+          <span class="value-highlight">[LEAD_VALUE]</span>
+        </div>
+      </div>
+      
+      <p style="color: #cbd5e1; margin: 20px 0;">A new lead has been submitted and is ready for review in your dashboard.</p>
+      
+      <div style="text-align: center;">
+        <a href="[DASHBOARD_LINK]" class="cta-button">View Lead in Dashboard →</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Engage CRM | Lead Management System</p>
+      <p style="margin-top: 8px; color: #475569;">Lead ID: [LEAD_ID]</p>
+    </div>
+  </div>
+</body>
+</html>`;
 }

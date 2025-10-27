@@ -2370,18 +2370,34 @@
         const leadId = e.target.getAttribute('data-lead-id');
         const assignedEmail = e.target.value;
         
+        const previousValue = leadAssignmentMap.get(leadId) || '';
         try {
           const token = getToken();
-          if (!token) return;
-          
+          if (!token) {
+            throw new Error('Missing token');
+          }
+
           // Mark this assignment change as recent to protect from polling overwrites
           recentAssignmentChanges.set(leadId, Date.now());
           
-          // Update lead assignment
-          const response = await fetchJSON(API() + '?api=leads&id=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token) + '&_method=PATCH&assignedTo=' + encodeURIComponent(assignedEmail));
-          
-          if (response && !response.error) {
-            showToast('Lead assignment updated');
+          // Update lead assignment via POST (Apps Script prefers text/plain payloads)
+          const response = await fetch(API() + '?api=leads&id=' + encodeURIComponent(leadId), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain'
+            },
+            body: JSON.stringify({
+              _method: 'PATCH',
+              token,
+              assignedTo: assignedEmail,
+              userEmail: currentUser ? currentUser.email : ''
+            })
+          });
+
+          const result = await response.json();
+
+          if (result && !result.error) {
+            showToast(assignedEmail ? 'Lead assignment updated' : 'Lead unassigned');
             
             // Update local data immediately without full refresh
             if (window.CURRENT_LEADS) {
@@ -2413,11 +2429,19 @@
               syncAssignedCard(card, assignedEmail);
             }
           } else {
-            throw new Error(response.error || 'Failed to update assignment');
+            throw new Error((result && result.error) || 'Failed to update assignment');
           }
         } catch (error) {
           console.error('Error updating assignment:', error);
           showError('Failed to update assignment: ' + error.message);
+
+          // Roll back dropdown selection to previous value
+          e.target.value = previousValue;
+          const cell = e.target.closest('.assigned-cell');
+          if (cell) {
+            syncAssignedCell(cell, previousValue);
+          }
+          recentAssignmentChanges.delete(leadId);
         }
       }
     });

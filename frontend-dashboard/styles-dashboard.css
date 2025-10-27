@@ -723,14 +723,13 @@ select option {
   margin-top: 1rem;
   position: relative;
   z-index: 1;
-}
-
-.lead-card-actions.lead-actions {
+  display: grid;
   grid-template-columns: repeat(2, minmax(110px, 1fr));
+  gap: 0.5rem;
 }
 
 @media (max-width: 600px) {
-  .lead-card-actions.lead-actions {
+  .lead-card-actions {
     grid-template-columns: 1fr;
   }
 }

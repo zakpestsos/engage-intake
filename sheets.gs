@@ -689,27 +689,42 @@ function addComment_(leadId, userEmail, userName, commentText) {
 
 function sendNewLeadNotification_(leadData, companyName) {
   try {
+    Logger.log('📧 EMAIL NOTIFICATION - Starting for company: ' + companyName);
+    Logger.log('📧 EMAIL NOTIFICATION - Lead ID: ' + leadData.leadId);
+    
     // Get company contact email
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet_();
     const companiesSheet = ss.getSheetByName('Companies');
     const companiesData = companiesSheet.getDataRange().getValues();
     
+    Logger.log('📧 EMAIL NOTIFICATION - Companies sheet has ' + (companiesData.length - 1) + ' rows');
+    
     let contactEmail = '';
+    let companyToken = '';
     for (let i = 1; i < companiesData.length; i++) {
       if (companiesData[i][0] === companyName) {
+        companyToken = companiesData[i][1]; // Company_Access_Token column
         contactEmail = companiesData[i][2]; // Contact_Email column
+        Logger.log('📧 EMAIL NOTIFICATION - Found company match at row ' + i + ', Contact_Email: ' + contactEmail);
         break;
       }
     }
     
     if (!contactEmail) {
-      console.log('No contact email found for company:', companyName);
+      Logger.log('❌ EMAIL NOTIFICATION - No contact email found for company: ' + companyName);
       return;
     }
     
-    // Build dashboard link with lead hash
+    if (!companyToken) {
+      Logger.log('❌ EMAIL NOTIFICATION - No company token found for company: ' + companyName);
+      return;
+    }
+    
+    // Build dashboard link with token and lead hash
     const dashboardBaseUrl = 'https://zakpestsos.github.io/engage-intake/frontend-dashboard/';
-    const dashboardLink = dashboardBaseUrl + '#lead=' + leadData.leadId;
+    const dashboardLink = dashboardBaseUrl + '?token=' + companyToken + '#lead=' + leadData.leadId;
+    
+    Logger.log('📧 EMAIL NOTIFICATION - Dashboard link: ' + dashboardLink);
     
     // Format values
     const customerEmail = leadData.customerEmail || 'Not provided';
@@ -729,17 +744,58 @@ function sendNewLeadNotification_(leadData, companyName) {
     // Send email
     const subject = '🔔 New Lead: ' + leadData.customerName + ' - ' + leadData.productName;
     
+    Logger.log('📧 EMAIL NOTIFICATION - Attempting to send email to: ' + contactEmail);
+    Logger.log('📧 EMAIL NOTIFICATION - Subject: ' + subject);
+    
     MailApp.sendEmail({
       to: contactEmail,
       subject: subject,
-      htmlBody: htmlBody
+      htmlBody: htmlBody,
+      from: 'engage@pest-sos.com',
+      name: 'Engage CRM'
     });
     
-    console.log('✅ Email notification sent to:', contactEmail);
+    Logger.log('✅ EMAIL NOTIFICATION - Email sent successfully to: ' + contactEmail);
     
   } catch (error) {
-    console.error('❌ Failed to send email notification:', error);
+    Logger.log('❌ EMAIL NOTIFICATION - FAILED with error: ' + error.toString());
+    Logger.log('❌ EMAIL NOTIFICATION - Error message: ' + error.message);
+    Logger.log('❌ EMAIL NOTIFICATION - Error stack: ' + error.stack);
     // Don't throw error - email failure shouldn't block lead creation
+  }
+}
+
+/**
+ * TEST FUNCTION - Run this manually to test email
+ * Instructions: 
+ * 1. Open Apps Script editor
+ * 2. Select "testEmailNotification" from function dropdown
+ * 3. Click Run (▶️)
+ * 4. Check zak@pest-sos.com for email
+ */
+function testEmailNotification() {
+  Logger.log('🧪 TEST - Starting manual email test');
+  
+  try {
+    const testLeadData = {
+      leadId: 'TEST-12345',
+      customerName: 'Test Customer',
+      customerPhone: '(555) 123-4567',
+      customerEmail: 'test@example.com',
+      productName: 'Test Service',
+      addressFull: '123 Test St, Test City, OK 73099',
+      leadValue: 299.99
+    };
+    
+    sendNewLeadNotification_(testLeadData, 'Dev Company');
+    
+    Logger.log('🧪 TEST - Completed without errors');
+    Logger.log('🧪 TEST - Check zak@pest-sos.com for email');
+    
+  } catch (error) {
+    Logger.log('🧪 TEST - ERROR: ' + error.toString());
+    Logger.log('🧪 TEST - Error message: ' + error.message);
+    Logger.log('🧪 TEST - Error stack: ' + error.stack);
   }
 }
 
@@ -749,47 +805,56 @@ function getEmailTemplate_() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body { 
-      font-family: 'Inter', Arial, sans-serif; 
-      background: #0f172a; 
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: #e2e8f0; 
       margin: 0; 
-      padding: 0; 
+      padding: 20px; 
     }
     .container { 
-      max-width: 600px; 
+      max-width: 650px; 
       margin: 0 auto; 
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
-      border-radius: 12px; 
-      overflow: hidden; 
+      background: linear-gradient(135deg, #1e293b, #334155); 
+      border: 2px solid #3b82f6;
+      border-radius: 1rem; 
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(59, 130, 246, 0.3);
     }
     .header { 
-      background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%); 
-      padding: 24px; 
-      text-align: center; 
+      background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+      padding: 2rem 2rem;
+      text-align: center;
+      border-bottom: 2px solid #3b82f6;
+      position: relative;
     }
     .header h1 { 
-      color: white; 
+      font-family: 'Poppins', sans-serif;
+      color: #60a5fa; 
       margin: 0; 
-      font-size: 24px; 
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
     }
     .content { 
-      padding: 32px 24px; 
+      padding: 2rem 2rem; 
     }
     .lead-info { 
-      background: rgba(15, 23, 42, 0.6); 
+      background: rgba(15, 23, 42, 0.5); 
       border: 1px solid #475569; 
-      border-radius: 8px; 
-      padding: 20px; 
-      margin-bottom: 20px; 
+      border-radius: 0.75rem; 
+      padding: 1.5rem; 
+      margin-bottom: 1.5rem; 
     }
     .info-row { 
-      display: flex; 
-      justify-content: space-between; 
-      margin-bottom: 12px; 
-      padding-bottom: 12px; 
-      border-bottom: 1px solid rgba(71, 85, 105, 0.3); 
+      display: table;
+      width: 100%;
+      margin-bottom: 1rem; 
+      padding-bottom: 1rem; 
+      border-bottom: 1px solid rgba(71, 85, 105, 0.5); 
     }
     .info-row:last-child { 
       border-bottom: none; 
@@ -797,49 +862,122 @@ function getEmailTemplate_() {
       padding-bottom: 0; 
     }
     .label { 
+      display: table-cell;
+      font-family: 'Rajdhani', sans-serif;
       color: #94a3b8; 
-      font-size: 14px; 
+      font-size: 0.9rem; 
       font-weight: 600; 
       text-transform: uppercase; 
-      letter-spacing: 0.5px; 
+      letter-spacing: 0.05em;
+      padding-right: 1rem;
+      vertical-align: top;
+      white-space: nowrap;
+      width: 1%;
     }
     .value { 
-      color: #e2e8f0; 
-      font-size: 16px; 
+      display: table-cell;
+      font-family: 'Inter', sans-serif;
+      color: #cbd5e1; 
+      font-size: 0.95rem; 
       font-weight: 500; 
-      text-align: right; 
+      text-align: right;
+      word-break: break-word;
     }
     .value-highlight { 
+      display: table-cell;
+      font-family: 'Poppins', sans-serif;
       color: #10b981; 
-      font-size: 20px; 
-      font-weight: 700; 
+      font-size: 1.3rem; 
+      font-weight: 700;
+      text-align: right;
+    }
+    .message-text {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin: 1.5rem 0;
+      text-align: center;
     }
     .cta-button { 
       display: inline-block; 
-      background: linear-gradient(45deg, #1e40af, #3b82f6); 
+      font-family: 'Rajdhani', sans-serif;
+      background: linear-gradient(45deg, #3b82f6, #60a5fa); 
       color: white !important; 
-      padding: 14px 32px; 
-      border-radius: 8px; 
+      padding: 0.875rem 2rem; 
+      border-radius: 0.5rem; 
       text-decoration: none; 
       font-weight: 600; 
-      margin-top: 20px; 
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem; 
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+      border: 1px solid #60a5fa;
+    }
+    .button-container {
+      text-align: center;
+      margin: 2rem 0 1.5rem 0;
     }
     .footer { 
-      padding: 24px; 
+      background: rgba(30, 41, 59, 0.5);
+      padding: 1.5rem; 
       text-align: center; 
-      color: #64748b; 
-      font-size: 13px; 
+      border-top: 1px solid #475569;
+    }
+    .footer p {
+      margin: 0.5rem 0;
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+    .footer .company-name {
+      font-family: 'Poppins', sans-serif;
+      color: #60a5fa;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .footer .lead-id {
+      color: #64748b;
+      font-size: 0.8rem;
+      font-family: 'Courier New', monospace;
+      margin-top: 0.75rem;
     }
     /* Mobile responsive */
     @media only screen and (max-width: 600px) {
-      .info-row { 
-        flex-direction: column; 
-        align-items: flex-start; 
+      body {
+        padding: 12px;
       }
-      .value { 
-        text-align: left; 
-        margin-top: 4px; 
+      .content {
+        padding: 1.5rem 1.25rem;
+      }
+      .header {
+        padding: 1.5rem 1.25rem;
+      }
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      .info-row {
+        display: block;
+      }
+      .label {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.25rem;
+      }
+      .value {
+        display: block;
+        text-align: left;
+        font-size: 1rem;
+      }
+      .value-highlight {
+        display: block;
+        text-align: left;
+        font-size: 1.2rem;
+      }
+      .cta-button {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 1rem;
       }
     }
   </style>
@@ -864,11 +1002,11 @@ function getEmailTemplate_() {
           <span class="value">[CUSTOMER_EMAIL]</span>
         </div>
         <div class="info-row">
-          <span class="label">Service Requested</span>
+          <span class="label">Service</span>
           <span class="value">[PRODUCT_NAME]</span>
         </div>
         <div class="info-row">
-          <span class="label">Property Address</span>
+          <span class="label">Address</span>
           <span class="value">[ADDRESS_FULL]</span>
         </div>
         <div class="info-row">
@@ -877,15 +1015,16 @@ function getEmailTemplate_() {
         </div>
       </div>
       
-      <p style="color: #cbd5e1; margin: 20px 0;">A new lead has been submitted and is ready for review in your dashboard.</p>
+      <p class="message-text">A new lead has been submitted and is ready for review in your dashboard.</p>
       
-      <div style="text-align: center;">
+      <div class="button-container">
         <a href="[DASHBOARD_LINK]" class="cta-button">View Lead in Dashboard →</a>
       </div>
     </div>
     <div class="footer">
-      <p>Engage CRM | Lead Management System</p>
-      <p style="margin-top: 8px; color: #475569;">Lead ID: [LEAD_ID]</p>
+      <p class="company-name">Engage CRM</p>
+      <p style="color: #64748b; font-size: 0.8rem;">Lead Management System</p>
+      <p class="lead-id">Lead ID: [LEAD_ID]</p>
     </div>
   </div>
 </body>

@@ -42,6 +42,23 @@
   // SESSION MANAGEMENT
   // ====================
   
+  // Store pending lead ID from email link
+  function savePendingLeadId(leadId) {
+    if (leadId) {
+      sessionStorage.setItem('pending_lead_id', leadId);
+      console.log('📧 Saved pending lead ID:', leadId);
+    }
+  }
+  
+  function getPendingLeadId() {
+    const leadId = sessionStorage.getItem('pending_lead_id');
+    if (leadId) {
+      sessionStorage.removeItem('pending_lead_id');
+      console.log('📧 Retrieved pending lead ID:', leadId);
+    }
+    return leadId;
+  }
+  
   function checkSession() {
     try {
       const sessionData = localStorage.getItem('engage_user_session');
@@ -138,6 +155,14 @@
         
         // Initialize dashboard
         showToast('Welcome back, ' + result.user.firstName + '!');
+        
+        // Check if there's a pending lead ID from email link
+        const pendingLeadId = getPendingLeadId();
+        if (pendingLeadId) {
+          console.log('📧 Will open lead after dashboard loads:', pendingLeadId);
+          // Store it temporarily so initializeDashboard can pick it up
+          window.pendingLeadIdAfterLogin = pendingLeadId;
+        }
         
         return true;
       } else {
@@ -2460,6 +2485,16 @@
       }
     });
     
+    // Check for lead ID in hash (from email link)
+    const hash = window.location.hash;
+    if (hash.startsWith('#lead=')) {
+      const leadId = hash.replace('#lead=', '');
+      console.log('📧 Detected lead ID from URL hash:', leadId);
+      savePendingLeadId(leadId);
+      // Clear hash from URL
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+    }
+    
     // Check for existing session
     const hasSession = checkSession();
     if (!hasSession) {
@@ -2926,15 +2961,38 @@
       if (shouldShowLeadsSection) {
         showSection('leadsSection'); // Start with leads tab
         
-        // Check for lead hash parameter (email deep link)
+        // Check for pending lead ID (from email link after login) or hash parameter
         setTimeout(() => {
-          const hash = window.location.hash;
-          if (hash.startsWith('#lead=')) {
-            const leadId = hash.replace('#lead=', '');
-            console.log('📧 Opening lead from email link:', leadId);
-            openLeadModal(leadId);
-            // Clear hash after opening
-            history.replaceState(null, null, ' ');
+          let leadIdToOpen = null;
+          
+          // First check if there's a pending lead from login
+          if (window.pendingLeadIdAfterLogin) {
+            leadIdToOpen = window.pendingLeadIdAfterLogin;
+            delete window.pendingLeadIdAfterLogin;
+            console.log('📧 Opening lead from post-login:', leadIdToOpen);
+          } 
+          // Then check sessionStorage (for direct access when already logged in)
+          else {
+            const pendingLeadId = getPendingLeadId();
+            if (pendingLeadId) {
+              leadIdToOpen = pendingLeadId;
+              console.log('📧 Opening lead from session storage:', leadIdToOpen);
+            }
+          }
+          // Finally check hash (fallback for direct hash access)
+          else {
+            const hash = window.location.hash;
+            if (hash.startsWith('#lead=')) {
+              leadIdToOpen = hash.replace('#lead=', '');
+              console.log('📧 Opening lead from URL hash:', leadIdToOpen);
+              // Clear hash after opening
+              history.replaceState(null, null, window.location.pathname + window.location.search);
+            }
+          }
+          
+          // Open the modal if we have a lead ID
+          if (leadIdToOpen) {
+            openLeadModal(leadIdToOpen);
           }
         }, 500);
       }

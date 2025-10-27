@@ -14,10 +14,12 @@
   let knownLeadIds = new Set();
   let leadStatusMap = new Map(); // leadId -> status
   let leadAssignmentMap = new Map(); // leadId -> assignedTo
+  let recentAssignmentChanges = new Map(); // leadId -> timestamp (tracks user-initiated changes)
   let isPollingInProgress = false;
   let consecutiveErrors = 0;
   const POLL_INTERVAL_MS = 10000; // 10 seconds
   const MAX_CONSECUTIVE_ERRORS = 3;
+  const ASSIGNMENT_PROTECTION_MS = 30000; // 30 seconds protection for manual changes
   
   // Track if tab is visible (pause polling when hidden)
   let isTabVisible = true;
@@ -31,6 +33,8 @@
   
   // Track modal resize state
   let isResizingModal = false;
+  let recentlyResizedModal = false;
+  let resizeTimeout = null;
 
   // ====================
   // SESSION MANAGEMENT
@@ -1035,6 +1039,20 @@
     // Store current lead ID for status updates
     $('#updateStatus').setAttribute('data-lead-id', leadId);
     
+    // Clear previous comments immediately to prevent carryover
+    const commentsList = $('#commentsList');
+    const commentsCount = $('#commentsCount');
+    const commentsCountBadge = $('#commentsCountBadge');
+    if (commentsList) {
+      commentsList.innerHTML = '<div class="comments-empty">Loading comments...</div>';
+    }
+    if (commentsCount) {
+      commentsCount.textContent = '0';
+    }
+    if (commentsCountBadge) {
+      commentsCountBadge.textContent = '0';
+    }
+    
     // Load comments for this lead
     loadCommentsForLead(leadId);
     
@@ -1972,6 +1990,10 @@
         const statusChanged = oldStatus && oldStatus !== lead.status;
         const assignmentChanged = oldAssignment !== undefined && oldAssignment !== (lead.assignedTo || '');
         
+        // Check if this lead's assignment was recently changed by user
+        const recentChangeTime = recentAssignmentChanges.get(lead.id);
+        const isProtectedAssignment = recentChangeTime && (Date.now() - recentChangeTime < ASSIGNMENT_PROTECTION_MS);
+        
         if (isNew) {
           newLeads.push(lead);
           knownLeadIds.add(lead.id);
@@ -1980,9 +2002,12 @@
         } else if (statusChanged) {
           updatedLeads.push({ lead, oldStatus });
           leadStatusMap.set(lead.id, lead.status);
-          leadAssignmentMap.set(lead.id, lead.assignedTo || '');
-        } else if (assignmentChanged) {
-          // Track assignment change but don't auto-refresh to avoid overwriting dropdown
+          // Only update assignment if not protected
+          if (!isProtectedAssignment) {
+            leadAssignmentMap.set(lead.id, lead.assignedTo || '');
+          }
+        } else if (assignmentChanged && !isProtectedAssignment) {
+          // Only track assignment change if not protected by recent user change
           leadAssignmentMap.set(lead.id, lead.assignedTo || '');
         }
       });
@@ -2064,6 +2089,7 @@
     knownLeadIds.clear();
     leadStatusMap.clear();
     leadAssignmentMap.clear();
+    recentAssignmentChanges.clear();
     lastPollTimestamp = null;
   }
   
@@ -2205,15 +2231,59 @@
           const token = getToken();
           if (!token) return;
           
+          // Mark this assignment change as recent to protect from polling overwrites
+          recentAssignmentChanges.set(leadId, Date.now());
+          
           // Update lead assignment
           const response = await fetchJSON(API() + '?api=leads&id=' + encodeURIComponent(leadId) + '&token=' + encodeURIComponent(token) + '&_method=PATCH&assignedTo=' + encodeURIComponent(assignedEmail));
           
           if (response && !response.error) {
             showToast('Lead assignment updated');
             
-            // Refresh leads to show updated assignment
-            const leads = await listLeads({ token });
-            renderLeads(leads);
+            // Update local data immediately without full refresh
+            if (window.CURRENT_LEADS) {
+              const lead = window.CURRENT_LEADS.find(l => l.id === leadId);
+              if (lead) {
+                lead.assignedTo = assignedEmail;
+                lead.Assigned_To = assignedEmail;
+              }
+            }
+            if (window.CURRENT_LEADS_ORIGINAL) {
+              const lead = window.CURRENT_LEADS_ORIGINAL.find(l => l.id === leadId);
+              if (lead) {
+                lead.assignedTo = assignedEmail;
+                lead.Assigned_To = assignedEmail;
+              }
+            }
+            
+            // Update tracking maps
+            leadAssignmentMap.set(leadId, assignedEmail);
+            
+            // Update the assignment badge visually without full table refresh
+            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+            if (row && allUsers) {
+              const assignedCell = row.querySelector('.assigned-cell');
+              if (assignedCell) {
+                let assignedBadge = '';
+                if (assignedEmail) {
+                  const assignedUser = allUsers.find(u => u.Email === assignedEmail);
+                  if (assignedUser) {
+                    const initials = getUserInitials(assignedEmail);
+                    const color = getColorForInitials(initials, assignedEmail);
+                    assignedBadge = '<div class="ownership-initials" style="background-color: ' + color + '; margin-left: 8px; display: inline-block;">' + initials + '</div>';
+                  }
+                }
+                // Update only the badge, keep the dropdown selected
+                const existingDropdown = assignedCell.querySelector('.assign-dropdown');
+                if (existingDropdown) {
+                  const badgeElements = assignedCell.querySelectorAll('.ownership-initials');
+                  badgeElements.forEach(el => el.remove());
+                  if (assignedBadge) {
+                    assignedCell.insertAdjacentHTML('beforeend', assignedBadge);
+                  }
+                }
+              }
+            }
           } else {
             throw new Error(response.error || 'Failed to update assignment');
           }
@@ -2414,8 +2484,8 @@
     
     $('#leadModal').addEventListener('click', function(e) {
       // Close modal if clicking outside the content
-      // Don't close if currently resizing
-      if (e.target === this && !isResizingModal) {
+      // Don't close if currently resizing or recently resized (prevents accidental close)
+      if (e.target === this && !isResizingModal && !recentlyResizedModal) {
         closeLeadModal();
       }
     });
@@ -2663,9 +2733,22 @@
 
     // Stop resizing
     document.addEventListener('mouseup', () => {
-      isResizing = false;
-      isResizingModal = false; // Clear global flag
-      currentEdge = null;
+      if (isResizing) {
+        isResizing = false;
+        isResizingModal = false; // Clear global flag
+        currentEdge = null;
+        
+        // Set recently resized flag to prevent accidental modal close
+        recentlyResizedModal = true;
+        
+        // Clear the flag after 300ms to allow intentional closes
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
+        }
+        resizeTimeout = setTimeout(() => {
+          recentlyResizedModal = false;
+        }, 300);
+      }
     });
   }
 

@@ -1,0 +1,426 @@
+Date: Sun, 2 Nov 2025 00:31:13 +0000 (UTC)
+Message-ID: <2107698725.1293.1762043473206@ddaf650f0204>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_1292_1068658262.1762043473206"
+
+------=_Part_1292_1068658262.1762043473206
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>Logic+</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>Logic+</h1>
+    <div class=3D"Section1">
+        <p>Logic+ is a robust workflow tool designed to streamline customer=
+ interactions, elevate agent productivity, and optimize call flow managemen=
+t. This powerful platform enables organizations to build, customize, and ma=
+nage dynamic call flows that seamlessly integrate with existing systems, su=
+pporting a wide range of operational needs. Through its flexible framework,=
+ Logic+ empowers businesses to create complex, responsive workflows that al=
+ign with specific organizational objectives, ensuring customer inquiries ar=
+e addressed with precision, efficiency, and speed.</p>
+<p>Logic+ comes with a wide range of panels that serve specific purposes, i=
+ncluding the following:</p>
+<div class=3D"panel" style=3D"background-color: #C0B6F2;border-width: 1px;"=
+>
+<div class=3D"panelContent" style=3D"background-color: #C0B6F2;">
+<p><strong>Click on any of the links below to access specific Logic+ panel =
+articles:</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4246470=
+680/Building+Logic" data-linked-resource-id=3D"4246470680" data-linked-reso=
+urce-version=3D"7" data-linked-resource-type=3D"page"><strong>Building Logi=
+c+</strong></a></p>
+<ul>
+<li>
+<p><strong>Data</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4248436=
+737/Set+Variable" data-linked-resource-id=3D"4248436737" data-linked-resour=
+ce-version=3D"2" data-linked-resource-type=3D"page"><strong>Set Variable</s=
+trong></a><strong>:</strong> Updates a specified interaction variable with =
+a new value, allowing for dynamic decisions and tracking within the interac=
+tion.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4245159=
+937/Integration" data-linked-resource-id=3D"4245159937" data-linked-resourc=
+e-version=3D"8" data-linked-resource-type=3D"page"><strong>Integration</str=
+ong></a><strong>:</strong> Connects to third-party systems directly within =
+the Logic+ flow to expand functionality.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4244602=
+881/SharpenDB+SELECT" data-linked-resource-id=3D"4244602881" data-linked-re=
+source-version=3D"4" data-linked-resource-type=3D"page"><strong>SharpenDB S=
+ELECT</strong></a><strong>:</strong> Executes a SELECT on custom tables and=
+ data in SharpenDB, supporting personalized customer experiences and dynami=
+c routing decisions.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4244930=
+561/SharpenDB+DELETE" data-linked-resource-id=3D"4244930561" data-linked-re=
+source-version=3D"3" data-linked-resource-type=3D"page"><strong>SharpenDB D=
+ELETE</strong></a><strong>:</strong> Executes a DELETE on custom tables and=
+ data in SharpenDB.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4244602=
+905/SharpenDB+UPDATE" data-linked-resource-id=3D"4244602905" data-linked-re=
+source-version=3D"3" data-linked-resource-type=3D"page"><strong>SharpenDB U=
+PDATE</strong></a><strong>:</strong> Executes an UPDATE on custom tables an=
+d data in SharpenDB.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4244602=
+966/SharpenDB+INSERT" data-linked-resource-id=3D"4244602966" data-linked-re=
+source-version=3D"3" data-linked-resource-type=3D"page"><strong>SharpenDB I=
+NSERT</strong></a><strong>:</strong> Executes an INSERT on custom tables an=
+d data in SharpenDB.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4249714=
+689/Port+X" data-linked-resource-id=3D"4249714689" data-linked-resource-ver=
+sion=3D"3" data-linked-resource-type=3D"page"><strong>PortX</strong></a>: S=
+implifies integrating your Sharpen contact center or IVR with any banking c=
+ore.</p></li>
+</ul></li>
+<li>
+<p><strong>Action</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4243226=
+636/Condition" data-linked-resource-id=3D"4243226636" data-linked-resource-=
+version=3D"3" data-linked-resource-type=3D"page"><strong>Condition</strong>=
+</a><strong>:</strong> Evaluates a condition to support decision-making in =
+Logic+ flows.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3423698=
+949/Switch" data-linked-resource-id=3D"3423698949" data-linked-resource-ver=
+sion=3D"13" data-linked-resource-type=3D"page"><strong>Switch</strong></a><=
+strong>:</strong> Evaluates an interaction variable to enable branching pat=
+hs or actions based on the comparison result.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424550=
+925/Send+SMS" data-linked-resource-id=3D"3424550925" data-linked-resource-v=
+ersion=3D"18" data-linked-resource-type=3D"page"><strong>Send SMS</strong><=
+/a><strong>:</strong> Sends text messages to recipients based on configured=
+ settings.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424452=
+641/Send+Email" data-linked-resource-id=3D"3424452641" data-linked-resource=
+-version=3D"10" data-linked-resource-type=3D"page"><strong>Send Email</stro=
+ng></a><strong>:</strong> Dispatches emails based on configured settings wi=
+thin the Logic+ flow.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424845=
+827/Transfer+To+Classic+Logic" data-linked-resource-id=3D"3424845827" data-=
+linked-resource-version=3D"7" data-linked-resource-type=3D"page"><strong>Tr=
+ansfer to Classic Logic</strong></a><strong>:</strong> Facilitates outbound=
+ calls using Classic Logic functionality.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4236312=
+615/Time+Control" data-linked-resource-id=3D"4236312615" data-linked-resour=
+ce-version=3D"4" data-linked-resource-type=3D"page"><strong>Time Control</s=
+trong></a><strong>:</strong> Implements time-based controls within the Logi=
+c+ flow.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4236312=
+577/Logic+Subroutine" data-linked-resource-id=3D"4236312577" data-linked-re=
+source-version=3D"5" data-linked-resource-type=3D"page"><strong>Logic+ Subr=
+outine</strong></a><strong>:</strong> Executes a defined subroutine within =
+the Logic+ flow to streamline processes.</p></li>
+</ul></li>
+<li>
+<p><strong>Queue</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3425075=
+209/Transfer+To+Queue" data-linked-resource-id=3D"3425075209" data-linked-r=
+esource-version=3D"10" data-linked-resource-type=3D"page"><strong>Transfer =
+to Queue</strong></a><strong>:</strong> Directs the caller to a specified q=
+ueue for further assistance.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424616=
+460/Notify+Agent+In+Queue" data-linked-resource-id=3D"3424616460" data-link=
+ed-resource-version=3D"6" data-linked-resource-type=3D"page"><strong>Notify=
+ Agent in Queue</strong></a><strong>:</strong> Sends an in-app notification=
+ to an agent currently logged into a queue.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4467294=
+230/Agent+Assist" data-linked-resource-id=3D"4467294230" data-linked-resour=
+ce-version=3D"3" data-linked-resource-type=3D"page"><strong>Agent Assist</s=
+trong></a><strong>: </strong>Displays data from previous panels within the =
+Sharpen UI, ensuring seamless information flow and improved agent visibilit=
+y.</p></li>
+</ul></li>
+<li>
+<p><strong>Inbound Voice</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3425042=
+439/Play+Message" data-linked-resource-id=3D"3425042439" data-linked-resour=
+ce-version=3D"18" data-linked-resource-type=3D"page"><strong>Play Message</=
+strong></a><strong>:</strong> Plays audio prompts and captures DTMF inputs =
+for use in routing or decision-making.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4243914=
+753/Convert+to+Voice" data-linked-resource-id=3D"4243914753" data-linked-re=
+source-version=3D"1" data-linked-resource-type=3D"page"><strong>Convert To =
+Voice</strong></a>: The panel initiates a call to a provided customer numbe=
+r.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424714=
+774/Transfer+To+External" data-linked-resource-id=3D"3424714774" data-linke=
+d-resource-version=3D"6" data-linked-resource-type=3D"page"><strong>Transfe=
+r To External</strong></a><strong>:</strong> Redirects the caller to an ext=
+ernal phone number.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424550=
+932/Disconnect" data-linked-resource-id=3D"3424550932" data-linked-resource=
+-version=3D"8" data-linked-resource-type=3D"page"><strong>Disconnect</stron=
+g></a><strong>:</strong> Ends a call interaction.</p></li>
+</ul></li>
+<li>
+<p><strong>Bots</strong></p>
+<ul>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/3424550=
+939/Bot+-+Customer360" data-linked-resource-id=3D"3424550939" data-linked-r=
+esource-version=3D"13" data-linked-resource-type=3D"page"><strong>Bot - Cus=
+tomer360</strong></a><strong>:</strong> Reviews a customer's inbound queue =
+activity on the Sharpen platform for enhanced customer insight.</p></li>
+<li>
+<p><a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/4246470=
+658/Logic+Sidekicks" data-linked-resource-id=3D"4246470658" data-linked-res=
+ource-version=3D"2" data-linked-resource-type=3D"page"><strong>Sidekicks</s=
+trong></a></p></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<h4 id=3D"Logic+-Summary">Summary</h4>
+<p>Each panel serves a unique purpose, allowing businesses to tailor their =
+workflows to their specific needs. By utilizing Logic+, businesses can impr=
+ove customer satisfaction, reduce wait times, and optimize their overall cu=
+stomer service experience.</p>
+    </div>
+</body>
+</html>
+------=_Part_1292_1068658262.1762043473206--

@@ -95,6 +95,22 @@ function handleApiGet_(e) {
       return jsonResponse_(companyData, '', 200);
     }
 
+    // Password reset validation endpoint
+    if (endpoint === 'password-reset-validate' || endpoint === 'api/password-reset-validate') {
+      const resetToken = e.parameter && e.parameter.resetToken;
+      
+      if (!resetToken) {
+        return jsonResponse_({ error: 'Reset token is required' }, '', 400);
+      }
+      
+      try {
+        const result = validateResetToken_(resetToken);
+        return jsonResponse_(result, '', 200);
+      } catch (error) {
+        return jsonResponse_({ error: error.message }, '', 400);
+      }
+    }
+
     return jsonResponse_({ error: 'Not found' }, '', 404);
   } catch (err) {
     return jsonResponse_({ error: String(err.message || err) }, (e && e.headers && e.headers.origin) || '', 400);
@@ -265,6 +281,44 @@ function handleApiPost_(e) {
       
       const result = addComment_(leadId, userEmail, userName, commentText);
       return jsonResponse_(result, origin || '', 200);
+    }
+
+    // Password reset request endpoint
+    if (endpoint === 'password-reset-request' || endpoint === 'api/password-reset-request') {
+      const body = parseBody_(e);
+      const token = (e.parameter && e.parameter.token) || body.token;
+      const email = body.email;
+      
+      if (!email || !token) {
+        return jsonResponse_({ error: 'Email and token are required' }, origin || '', 400);
+      }
+      
+      const companyName = companyFromToken_(token);
+      
+      try {
+        const result = requestPasswordReset_(email, companyName);
+        return jsonResponse_(result, origin || '', 200);
+      } catch (error) {
+        return jsonResponse_({ error: error.message }, origin || '', 400);
+      }
+    }
+
+    // Password reset completion endpoint
+    if (endpoint === 'password-reset-complete' || endpoint === 'api/password-reset-complete') {
+      const body = parseBody_(e);
+      const resetToken = body.resetToken;
+      const newPassword = body.newPassword;
+      
+      if (!resetToken || !newPassword) {
+        return jsonResponse_({ error: 'Reset token and new password are required' }, origin || '', 400);
+      }
+      
+      try {
+        const result = resetPasswordWithToken_(resetToken, newPassword);
+        return jsonResponse_(result, origin || '', 200);
+      } catch (error) {
+        return jsonResponse_({ error: error.message }, origin || '', 400);
+      }
     }
 
     return jsonResponse_({ error: 'Not found' }, origin || '', 404);

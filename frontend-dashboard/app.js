@@ -2470,6 +2470,210 @@
     }
   }
   
+  // ====================
+  // PASSWORD RESET FUNCTIONS
+  // ====================
+  
+  function showPasswordResetModal() {
+    $('#loginModal').style.display = 'none';
+    $('#passwordResetModal').style.display = 'flex';
+    $('#resetEmail').value = '';
+    $('#resetMessage').style.display = 'none';
+  }
+  
+  function hidePasswordResetModal() {
+    $('#passwordResetModal').style.display = 'none';
+    $('#resetEmail').value = '';
+    $('#resetMessage').style.display = 'none';
+  }
+  
+  function showPasswordResetCompleteModal() {
+    $('#loginModal').style.display = 'none';
+    $('#passwordResetModal').style.display = 'none';
+    $('#passwordResetCompleteModal').style.display = 'flex';
+    $('#newPassword').value = '';
+    $('#confirmPassword').value = '';
+    $('#resetCompleteMessage').style.display = 'none';
+  }
+  
+  function hidePasswordResetCompleteModal() {
+    $('#passwordResetCompleteModal').style.display = 'none';
+  }
+  
+  async function requestPasswordReset(email) {
+    const resetButton = $('#resetButton');
+    const btnText = resetButton.querySelector('.btn-text');
+    const btnSpinner = resetButton.querySelector('.btn-spinner');
+    const resetMessage = $('#resetMessage');
+    
+    try {
+      // Show loading state
+      resetButton.disabled = true;
+      btnText.style.display = 'none';
+      btnSpinner.style.display = 'inline-block';
+      resetMessage.style.display = 'none';
+      
+      const token = getToken();
+      if (!token) {
+        throw new Error('No token found in URL');
+      }
+      
+      // Call password reset API
+      const response = await fetch(API() + '?api=password-reset-request&token=' + encodeURIComponent(token), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify({
+          email: email,
+          token: token
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      // Success!
+      resetMessage.textContent = result.message || 'Reset link sent! Check your email.';
+      resetMessage.style.color = '#4caf50';
+      resetMessage.style.display = 'block';
+      
+      // Clear form and show success message
+      setTimeout(() => {
+        hidePasswordResetModal();
+        showLoginModal();
+        showToast('Password reset email sent! Check your inbox.');
+      }, 2000);
+      
+      return true;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      resetMessage.textContent = error.message || 'Failed to send reset email. Please try again.';
+      resetMessage.style.color = '#f44336';
+      resetMessage.style.display = 'block';
+      return false;
+    } finally {
+      // Reset button state
+      resetButton.disabled = false;
+      btnText.style.display = 'inline';
+      btnSpinner.style.display = 'none';
+    }
+  }
+  
+  async function validateResetToken(resetToken) {
+    try {
+      const response = await fetch(API() + '?api=password-reset-validate&resetToken=' + encodeURIComponent(resetToken), {
+        method: 'GET'
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      throw error;
+    }
+  }
+  
+  async function completePasswordReset(resetToken, newPassword) {
+    const resetButton = $('#resetCompleteButton');
+    const btnText = resetButton.querySelector('.btn-text');
+    const btnSpinner = resetButton.querySelector('.btn-spinner');
+    const resetMessage = $('#resetCompleteMessage');
+    
+    try {
+      // Show loading state
+      resetButton.disabled = true;
+      btnText.style.display = 'none';
+      btnSpinner.style.display = 'inline-block';
+      resetMessage.style.display = 'none';
+      
+      // Call password reset complete API
+      const response = await fetch(API() + '?api=password-reset-complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify({
+          resetToken: resetToken,
+          newPassword: newPassword
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      // Success!
+      resetMessage.textContent = result.message || 'Password reset successfully!';
+      resetMessage.style.color = '#4caf50';
+      resetMessage.style.display = 'block';
+      
+      // Clear form and redirect to login
+      setTimeout(() => {
+        hidePasswordResetCompleteModal();
+        showLoginModal();
+        showToast('Password reset successfully! Please log in.');
+        
+        // Remove reset token from URL
+        const url = new URL(window.location);
+        url.searchParams.delete('reset');
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+      }, 2000);
+      
+      return true;
+    } catch (error) {
+      console.error('Password reset complete error:', error);
+      resetMessage.textContent = error.message || 'Failed to reset password. Please try again.';
+      resetMessage.style.color = '#f44336';
+      resetMessage.style.display = 'block';
+      return false;
+    } finally {
+      // Reset button state
+      resetButton.disabled = false;
+      btnText.style.display = 'inline';
+      btnSpinner.style.display = 'none';
+    }
+  }
+  
+  async function handleResetTokenInURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('reset');
+    
+    if (resetToken) {
+      console.log('Reset token found in URL:', resetToken);
+      
+      try {
+        // Validate the token
+        await validateResetToken(resetToken);
+        
+        // Token is valid, show password reset form
+        showPasswordResetCompleteModal();
+        
+        // Store token for form submission
+        window.currentResetToken = resetToken;
+      } catch (error) {
+        console.error('Invalid reset token:', error);
+        showToast('Invalid or expired reset link. Please request a new one.');
+        showLoginModal();
+        
+        // Remove invalid token from URL
+        const url = new URL(window.location);
+        url.searchParams.delete('reset');
+        window.history.replaceState({}, document.title, url.pathname + url.search);
+      }
+    }
+  }
+
   // Cleanup on page unload
   window.addEventListener('beforeunload', function() {
     stopPolling();
@@ -2507,6 +2711,57 @@
       }
     });
     
+    // Password reset link handlers
+    $('#forgotPasswordLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      showPasswordResetModal();
+    });
+    
+    $('#backToLoginLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      hidePasswordResetModal();
+      showLoginModal();
+    });
+    
+    // Password reset form handler
+    $('#passwordResetForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = $('#resetEmail').value.trim();
+      await requestPasswordReset(email);
+    });
+    
+    // Password reset complete form handler
+    $('#passwordResetCompleteForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const newPassword = $('#newPassword').value;
+      const confirmPassword = $('#confirmPassword').value;
+      const resetMessage = $('#resetCompleteMessage');
+      
+      // Validate passwords match
+      if (newPassword !== confirmPassword) {
+        resetMessage.textContent = 'Passwords do not match';
+        resetMessage.style.color = '#f44336';
+        resetMessage.style.display = 'block';
+        return;
+      }
+      
+      // Validate password length
+      if (newPassword.length < 8) {
+        resetMessage.textContent = 'Password must be at least 8 characters';
+        resetMessage.style.color = '#f44336';
+        resetMessage.style.display = 'block';
+        return;
+      }
+      
+      if (window.currentResetToken) {
+        await completePasswordReset(window.currentResetToken, newPassword);
+      } else {
+        resetMessage.textContent = 'Reset token not found. Please use the link from your email.';
+        resetMessage.style.color = '#f44336';
+        resetMessage.style.display = 'block';
+      }
+    });
+    
     // Check for lead ID in hash (from email link)
     const hash = window.location.hash;
     if (hash.startsWith('#lead=')) {
@@ -2516,6 +2771,9 @@
       // Clear hash from URL
       history.replaceState(null, null, window.location.pathname + window.location.search);
     }
+    
+    // Check for password reset token in URL
+    await handleResetTokenInURL();
     
     // Check for existing session
     const hasSession = checkSession();

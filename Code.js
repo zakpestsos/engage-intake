@@ -8,6 +8,7 @@ const SHEET_COMPANIES = 'Companies';
 const SHEET_USERS = 'Users';
 const SHEET_AUDIT = 'Audit_Log';
 const SHEET_COMMENTS = 'Comments';
+const SHEET_PASSWORD_RESETS = 'Password_Resets';
 
 const LEADS_HEADERS = [
   'Lead_ID',
@@ -92,6 +93,15 @@ const COMMENTS_HEADERS = [
   'User_Name',
   'Created_At',
   'Comment_Text'
+];
+
+const PASSWORD_RESETS_HEADERS = [
+  'Reset_Token',
+  'User_Email',
+  'Company_Name',
+  'Created_At',
+  'Expires_At',
+  'Used'
 ];
 
 // Allowed origins for CORS checks (update for your GitHub Pages domain)
@@ -352,6 +362,8 @@ function setup() {
   const companies = ensureSheetWithHeaders_(ss, SHEET_COMPANIES, COMPANIES_HEADERS);
   ensureSheetWithHeaders_(ss, SHEET_USERS, USERS_HEADERS);
   ensureSheetWithHeaders_(ss, SHEET_AUDIT, AUDIT_HEADERS);
+  ensureSheetWithHeaders_(ss, SHEET_COMMENTS, COMMENTS_HEADERS);
+  ensureSheetWithHeaders_(ss, SHEET_PASSWORD_RESETS, PASSWORD_RESETS_HEADERS);
 
   // Seed Companies
   const seedCompanies = [
@@ -823,6 +835,333 @@ function updateCompanySmsOptIn_(companyName, smsOptIn) {
   } catch (error) {
     console.error('Error updating company SMS opt-in:', error);
     throw error;
+  }
+}
+
+/* ================================
+   PASSWORD RESET FUNCTIONALITY
+   ================================ */
+
+/**
+ * Request a password reset for a user
+ * @param {string} email - User's email address
+ * @param {string} companyName - User's company name
+ * @returns {Object} Success message or error
+ */
+function requestPasswordReset_(email, companyName) {
+  try {
+    // Validate that user exists
+    const { sheet: usersSheet, header: usersHeader } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    const usersValues = usersSheet.getDataRange().getValues();
+    
+    const emailIdx = usersHeader.indexOf('Email');
+    const companyIdx = usersHeader.indexOf('Company_Name');
+    const firstNameIdx = usersHeader.indexOf('First_Name');
+    const lastNameIdx = usersHeader.indexOf('Last_Name');
+    
+    let userFound = false;
+    let userName = '';
+    
+    for (let i = 1; i < usersValues.length; i++) {
+      const row = usersValues[i];
+      if (String(row[emailIdx] || '').trim().toLowerCase() === email.toLowerCase() &&
+          String(row[companyIdx] || '').trim() === companyName) {
+        userFound = true;
+        userName = (row[firstNameIdx] || '') + ' ' + (row[lastNameIdx] || '');
+        break;
+      }
+    }
+    
+    if (!userFound) {
+      throw new Error('No user found with this email address');
+    }
+    
+    // Generate unique reset token
+    const resetToken = Utilities.getUuid();
+    
+    // Calculate expiration (7 days from now)
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+    
+    // Store reset token in Password_Resets sheet
+    const { sheet: resetsSheet, header: resetsHeader } = getSheetWithHeader_(SHEET_PASSWORD_RESETS, PASSWORD_RESETS_HEADERS);
+    
+    const tokenIdx = resetsHeader.indexOf('Reset_Token');
+    const userEmailIdx = resetsHeader.indexOf('User_Email');
+    const companyNameIdx = resetsHeader.indexOf('Company_Name');
+    const createdAtIdx = resetsHeader.indexOf('Created_At');
+    const expiresAtIdx = resetsHeader.indexOf('Expires_At');
+    const usedIdx = resetsHeader.indexOf('Used');
+    
+    const newRow = new Array(resetsHeader.length).fill('');
+    newRow[tokenIdx] = resetToken;
+    newRow[userEmailIdx] = email;
+    newRow[companyNameIdx] = companyName;
+    newRow[createdAtIdx] = now;
+    newRow[expiresAtIdx] = expiresAt;
+    newRow[usedIdx] = false;
+    
+    resetsSheet.appendRow(newRow);
+    
+    // Send reset email
+    sendPasswordResetEmail_(email, userName, resetToken, companyName);
+    
+    console.log('✅ Password reset requested for:', email);
+    
+    return {
+      success: true,
+      message: 'Password reset email sent. Please check your inbox.'
+    };
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate a reset token
+ * @param {string} token - Reset token to validate
+ * @returns {Object} User email if valid, error if not
+ */
+function validateResetToken_(token) {
+  try {
+    const { sheet, header } = getSheetWithHeader_(SHEET_PASSWORD_RESETS, PASSWORD_RESETS_HEADERS);
+    const values = sheet.getDataRange().getValues();
+    
+    const tokenIdx = header.indexOf('Reset_Token');
+    const emailIdx = header.indexOf('User_Email');
+    const companyIdx = header.indexOf('Company_Name');
+    const expiresAtIdx = header.indexOf('Expires_At');
+    const usedIdx = header.indexOf('Used');
+    
+    for (let i = 1; i < values.length; i++) {
+      const row = values[i];
+      if (String(row[tokenIdx] || '').trim() === token) {
+        // Check if already used
+        if (row[usedIdx] === true || String(row[usedIdx]).toUpperCase() === 'TRUE') {
+          throw new Error('This reset link has already been used');
+        }
+        
+        // Check if expired
+        const expiresAt = new Date(row[expiresAtIdx]);
+        if (new Date() > expiresAt) {
+          throw new Error('This reset link has expired');
+        }
+        
+        return {
+          valid: true,
+          email: row[emailIdx],
+          companyName: row[companyIdx]
+        };
+      }
+    }
+    
+    throw new Error('Invalid reset link');
+  } catch (error) {
+    console.error('Error validating reset token:', error);
+    throw error;
+  }
+}
+
+/**
+ * Reset password using a valid token
+ * @param {string} token - Reset token
+ * @param {string} newPassword - New password
+ * @returns {Object} Success message or error
+ */
+function resetPasswordWithToken_(token, newPassword) {
+  try {
+    // Validate password
+    if (!newPassword || newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+    
+    // Validate token and get user info
+    const tokenInfo = validateResetToken_(token);
+    const email = tokenInfo.email;
+    const companyName = tokenInfo.companyName;
+    
+    // Update user's password
+    const { sheet: usersSheet, header: usersHeader } = getSheetWithHeader_(SHEET_USERS, USERS_HEADERS);
+    const usersValues = usersSheet.getDataRange().getValues();
+    
+    const emailIdx = usersHeader.indexOf('Email');
+    const passwordIdx = usersHeader.indexOf('Password');
+    const companyIdx = usersHeader.indexOf('Company_Name');
+    
+    let updated = false;
+    
+    for (let i = 1; i < usersValues.length; i++) {
+      const row = usersValues[i];
+      if (String(row[emailIdx] || '').trim().toLowerCase() === email.toLowerCase() &&
+          String(row[companyIdx] || '').trim() === companyName) {
+        // Hash and update password
+        row[passwordIdx] = hashPassword_(newPassword);
+        usersSheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+        updated = true;
+        break;
+      }
+    }
+    
+    if (!updated) {
+      throw new Error('User not found');
+    }
+    
+    // Mark token as used
+    const { sheet: resetsSheet, header: resetsHeader } = getSheetWithHeader_(SHEET_PASSWORD_RESETS, PASSWORD_RESETS_HEADERS);
+    const resetsValues = resetsSheet.getDataRange().getValues();
+    
+    const tokenIdx = resetsHeader.indexOf('Reset_Token');
+    const usedIdx = resetsHeader.indexOf('Used');
+    
+    for (let i = 1; i < resetsValues.length; i++) {
+      const row = resetsValues[i];
+      if (String(row[tokenIdx] || '').trim() === token) {
+        row[usedIdx] = true;
+        resetsSheet.getRange(i + 1, 1, 1, row.length).setValues([row]);
+        break;
+      }
+    }
+    
+    console.log('✅ Password reset successfully for:', email);
+    
+    return {
+      success: true,
+      message: 'Password reset successfully. You can now log in with your new password.'
+    };
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send password reset email
+ * @param {string} email - User's email
+ * @param {string} userName - User's name
+ * @param {string} resetToken - Reset token
+ * @param {string} companyName - Company name
+ */
+function sendPasswordResetEmail_(email, userName, resetToken, companyName) {
+  try {
+    // Determine the dashboard URL based on environment
+    // For now, use staging URL - can be made dynamic later
+    const dashboardUrl = 'https://zakpestsos.github.io/engage-intake/development/frontend-dashboard/';
+    const resetLink = dashboardUrl + '?reset=' + resetToken;
+    
+    const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content {
+      background: #f9f9f9;
+      padding: 30px;
+      border: 1px solid #e0e0e0;
+      border-top: none;
+    }
+    .button {
+      display: inline-block;
+      padding: 15px 30px;
+      background: #667eea;
+      color: white !important;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    .footer {
+      background: #f0f0f0;
+      padding: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-radius: 0 0 8px 8px;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .security {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 15px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔐 Password Reset Request</h1>
+    <p>Engage CRM</p>
+  </div>
+  
+  <div class="content">
+    <p>Hello ${userName || 'there'},</p>
+    
+    <p>We received a request to reset your password for your Engage CRM account (${companyName}).</p>
+    
+    <p style="text-align: center;">
+      <a href="${resetLink}" class="button">Reset Your Password</a>
+    </p>
+    
+    <p>Or copy and paste this link into your browser:</p>
+    <p style="word-break: break-all; background: white; padding: 10px; border: 1px solid #ddd;">
+      ${resetLink}
+    </p>
+    
+    <div class="warning">
+      <strong>⏰ This link will expire in 7 days</strong><br>
+      For security reasons, this password reset link will only work once and will expire on ${new Date(Date.now() + 7*24*60*60*1000).toLocaleDateString()}.
+    </div>
+    
+    <div class="security">
+      <strong>🔒 Security Notice</strong><br>
+      If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+      If you're concerned about your account security, please contact your administrator.
+    </div>
+    
+    <p>Best regards,<br>
+    The Engage CRM Team</p>
+  </div>
+  
+  <div class="footer">
+    <p>This is an automated email from Engage CRM.</p>
+    <p>Need help? Contact your system administrator.</p>
+  </div>
+</body>
+</html>
+    `;
+    
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Reset Your Engage CRM Password',
+      htmlBody: htmlBody,
+      from: 'engage@pest-sos.com',
+      name: 'Engage CRM'
+    });
+    
+    console.log('✅ Password reset email sent to:', email);
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', error);
+    throw new Error('Failed to send reset email. Please try again later.');
   }
 }
 

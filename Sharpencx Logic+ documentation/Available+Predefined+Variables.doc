@@ -1,0 +1,433 @@
+Date: Sun, 2 Nov 2025 00:33:32 +0000 (UTC)
+Message-ID: <398474797.257.1762043612119@572cfdb1c7bd>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_256_311796063.1762043612119"
+
+------=_Part_256_311796063.1762043612119
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>Available Predefined Variables</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>Available Predefined Variables</h1>
+    <div class=3D"Section1">
+        <p>Predefined variables are versatile tools within Logic+ that allo=
+w you to modify values, retrieve specific call-related data, and integrate =
+caller information into various workflows. These variables can be utilized =
+to enhance the functionality of your flow by dynamically adjusting conditio=
+ns, passing important details to external systems, and supporting complex r=
+outing decisions. By leveraging predefined variables, you can streamline pr=
+ocesses and ensure efficient handling of calls and integrations.</p>
+<div class=3D"panel" style=3D"background-color: #EAE6FF;border-color: #998D=
+D9;border-width: 1px;">
+<div class=3D"panelContent" style=3D"background-color: #EAE6FF;">
+<p>Predefined variables are optional, as you can easily create and use cust=
+om variables in any Logic+ flow to suit your specific needs.</p>
+</div>
+</div>
+<h2 id=3D"AvailablePredefinedVariables-PredefinedVariables">Predefined Vari=
+ables</h2>
+<ul>
+<li>
+<p>Data-Returning Variables (Returning Call-Related Information)</p>
+<ul>
+<li>
+<p><code>$(ani)</code>: Represents the caller's ID (Automatic Number Identi=
+fication).</p></li>
+<li>
+<p><code>$(cnam)</code>: Represents the caller's name (Caller Name Delivery=
+).</p></li>
+<li>
+<p><code>$(dnis)</code>: Refers to the number dialed by the caller (Dialed =
+Number Identification Service).</p></li>
+<li>
+<p><code>SharpenCX_SIP_HEADERS</code>*These options are accessible through =
+Logic+ via Classic Logic or Sidekick initiation.*</p>
+<ul>
+<li>
+<p><code>.To</code></p></li>
+<li>
+<p><code>.From</code></p></li>
+<li>
+<p><code>.Via</code></p></li>
+<li>
+<p><code>.Allow</code></p></li>
+<li>
+<p><code>.Accept</code></p></li>
+<li>
+<p><code>.Call-ID</code></p></li>
+<li>
+<p><code>.Contact</code></p></li>
+<li>
+<p><code>.Max-Forwards</code></p></li>
+<li>
+<p><code>.P-Asserted-Identity</code></p></li>
+</ul></li>
+</ul></li>
+<li>
+<p>Modifiable Variables (Adjustable Variable Fields for Routing Decisions o=
+r Reporting)</p>
+<ul>
+<li>
+<p><code>queueSkills</code>: <span style=3D"background-color: rgb(223,216,2=
+53);">Seen in Sharpen Q UI, for more information on queueSkills refer to th=
+is</span> <a href=3D"https://sharpencx.atlassian.net/wiki/spaces/CT1/pages/=
+1006043182/Q+Skills" data-linked-resource-id=3D"1006043182" data-linked-res=
+ource-version=3D"2" data-linked-resource-type=3D"page"><span style=3D"backg=
+round-color: rgb(223,216,253);">article</span></a></p></li>
+<li>
+<p><code>queuePoints</code>: <span style=3D"background-color: rgb(223,216,2=
+53);">Seen in Sharpen Q UI</span></p></li>
+<li>
+<p><code>twitter</code></p></li>
+<li>
+<p><code>facebook</code></p></li>
+<li>
+<p><code>email</code></p></li>
+<li>
+<p><code>companyName</code>: <span style=3D"background-color: rgb(223,216,2=
+53);">Seen in Sharpen Q UI</span></p></li>
+<li>
+<p><code>firstName</code></p></li>
+<li>
+<p><code>lastName</code></p></li>
+<li>
+<p><code>callerCity</code></p></li>
+<li>
+<p><code>callerState</code></p></li>
+<li>
+<p><code>callerCountry</code></p></li>
+<li>
+<p><code>title</code>: <span style=3D"background-color: rgb(223,216,253);">=
+Seen in Sharpen Q UI</span></p></li>
+<li>
+<p><code>externalCRMAccountID</code></p></li>
+<li>
+<p><code>externalCRMID</code></p></li>
+<li>
+<p><code>externalCRMMake</code></p></li>
+<li>
+<p><code>externalCRMRecordType</code></p></li>
+<li>
+<p><code>externalCRMStatus</code></p></li>
+<li>
+<p><code>externalCRMCampaignID</code></p></li>
+<li>
+<p><code>externalCRMCampaignStatus</code></p></li>
+<li>
+<p><code>externalMarketingMake</code></p></li>
+<li>
+<p><code>externalMarketingID</code></p></li>
+<li>
+<p><code>externalCaseID</code></p></li>
+</ul></li>
+<li>
+<p>Sidekick-passed Variables</p>
+<ul>
+<li>
+<p><code>copilotAlert_queueId</code></p></li>
+<li>
+<p><code>copilotAlert_interactionId</code> *Also known as the Queue Call Ma=
+nager ID (QCMID)*</p></li>
+<li>
+<p><code>copilotAlert_alertInfo</code></p>
+<ul>
+<li>
+<p><code>.longCallThreshold</code> *Available on Long Call Trigger*</p></li=
+>
+<li>
+<p><code>.numHolds</code> *Available on Holds Trigger*</p></li>
+<li>
+<p><code>.holdCountThreshold</code> *Available on Holds Trigger*</p></li>
+<li>
+<p><code>.numTransfers</code> *Available on Transfers Trigger*</p></li>
+<li>
+<p><code>.transferThreshold</code> *Available on Transfers Trigger*</p></li=
+>
+<li>
+<p><code>.callDuration</code> *Available on Short Call Trigger</p></li>
+<li>
+<p><code>.shortCallThreshold</code> *Available on Short Call Trigger</p></l=
+i>
+</ul></li>
+<li>
+<p><code>copilotAlert_alertType</code></p></li>
+</ul></li>
+<li>
+<p>AI</p>
+<ul>
+<li>
+<p><code>latestSummary</code></p></li>
+<li>
+<p><code>latestSentiment</code></p></li>
+<li>
+<p><code>summaryRecap</code></p></li>
+<li>
+<p><code>sentimentRecap</code></p></li>
+</ul></li>
+</ul>
+<p><em>**Variables highlighted in purple indicate fields that, when modifie=
+d, will display in the Sharpen Q UI.</em></p>
+<div class=3D"confluence-information-macro confluence-information-macro-inf=
+ormation">
+<span class=3D"aui-icon aui-icon-small aui-iconfont-info confluence-informa=
+tion-macro-icon"></span>
+<div class=3D"confluence-information-macro-body">
+<p>When accessing data from a variable in Logic+, use the format <code>$(va=
+riableNameHere)</code>. However, when assigning a value to a predefined var=
+iable, the <code>$()</code> format is not required.</p>
+</div>
+</div>
+<h3 id=3D"AvailablePredefinedVariables-HandlingPIIDatainLogic+Flows"><stron=
+g>Handling PII Data in Logic+ Flows</strong></h3>
+<p>When working with Personally Identifiable Information (PII) in a Logic+ =
+flow, it=E2=80=99s essential to implement a standardized naming convention =
+to protect sensitive data. Using this approach helps ensure that PII data i=
+s obfuscated once the flow is complete, safeguarding it from unauthorized a=
+ccess.</p>
+<h4 id=3D"AvailablePredefinedVariables-StandardNamingConventionforPIIVariab=
+les">Standard Naming Convention for PII Variables</h4>
+<p>For any variable holding PII data, prepend =E2=80=9CPII_=E2=80=9D to the=
+ variable name to indicate its sensitive nature. This convention signals to=
+ the system and team members that the data must be handled carefully and ob=
+fuscated at the end of the flow.</p>
+<h4 id=3D"AvailablePredefinedVariables-ExamplesofPIIVariableNaming:">Exampl=
+es of PII Variable Naming:</h4>
+<ul>
+<li>
+<p><strong>PII_CreditCard</strong>: This variable would store a 16-digit cr=
+edit card number, which, after processing, would appear as <code>**********=
+******</code>.</p></li>
+<li>
+<p><strong>PII_SSN</strong>: This variable would store a 9-digit Social Sec=
+urity number, later displayed as <code>*********</code>.</p></li>
+</ul>
+<p><em>**By following this naming convention, PII data is managed securely =
+and remains obfuscated after processing in Logic+ flows.</em></p>
+<p>Related Article: <a href=3D"https://sharpencx.atlassian.net/wiki/spaces/=
+CT1/pages/3421536257/Set+Variable+Panel" data-linked-resource-id=3D"3421536=
+257" data-linked-resource-version=3D"30" data-linked-resource-type=3D"page"=
+>Set Variable Panel</a></p>
+    </div>
+</body>
+</html>
+------=_Part_256_311796063.1762043612119--

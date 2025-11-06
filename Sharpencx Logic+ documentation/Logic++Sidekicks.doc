@@ -1,0 +1,371 @@
+Date: Sun, 2 Nov 2025 00:34:31 +0000 (UTC)
+Message-ID: <1829149276.443.1762043671045@2bd2ef29bf19>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_442_1188866795.1762043671045"
+
+------=_Part_442_1188866795.1762043671045
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>Logic+ Sidekicks</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font: var(--ds-font-body-small, Arial, Helvetica, FreeSans, sans-se=
+rif);
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-text, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        page-break-after: avoid;
+    }
+
+    pre {
+        font: var(--ds-font-code, Monaco, "Courier New", monospace);
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>Logic+ Sidekicks</h1>
+    <div class=3D"Section1">
+        <p>Sidekicks represent a new way to take action on calls while they=
+ are still connected. Sidekicks attach to your queues and watch over the st=
+atus of each call that enters the queue.&nbsp; As that call is handled by a=
+n agent, the Sidekicks are watching and waiting for any of the configured c=
+onditions to be met. When that happens, Sidekick will trigger a Logic+ auto=
+mation of your organization=E2=80=99s design.&nbsp; Use Sidekicks to take a=
+ction and resolve a call that might have otherwise gone unnoticed. Take for=
+ instance a call that has been running for 3, 4, or even 5 times longer tha=
+n your average call length.&nbsp; This is likely a call that you want to do=
+ something about. The Agent is struggling to resolve this call and needs so=
+me assistance. With Sidekicks you can trigger a Logic+ to notify a Supervis=
+or of this long call. That Supervisor can then intervene and potentially re=
+solve the issue. This is just one example of how Sidekicks can help your co=
+ntact center operations.</p>
+<p></p>
+<p>Sidekick currently supports the following interaction triggers;</p>
+<ul>
+<li>
+<p><strong>Long Calls </strong>- This will trigger on any call which runs f=
+or longer than the specified time in the configuration (This is based upon =
+the Queue Entry time). This means that if you have it set for 15 minutes, o=
+nce a call, any call reaches 15 minutes this Sidekick will trigger.</p></li=
+>
+<li>
+<p><strong>Short Calls - </strong>This is the only trigger than does not fi=
+re when a call is running. By nature, the call will have to have ended in o=
+rder for it to have been too short. Any call that ends in a time which is l=
+ess than the configured time will trigger this sidekick (This is based upon=
+ Queue Entry time).</p></li>
+<li>
+<p><strong>Number of Transfers on a Call</strong> - This trigger will fire =
+when a call is transferred 1 more time than the configured value. The UI in=
+dicates a Greater than value is required. This means that if you have this =
+value set to 2. The sidekick will trigger on the third transfer.</p></li>
+<li>
+<p><strong>Number of Holds on a call</strong> - This trigger will fire when=
+ a call is put on hold 1 more time than the configured value. The UI indica=
+tes a Greater than value is required. This means that if you have this valu=
+e set to 2. The sidekick will trigger on the third hold.</p></li>
+<li>
+<p><strong>Answer Interaction </strong>- This trigger will fire when an age=
+nt answers an interaction.</p></li>
+<li>
+<p><strong>End Interaction </strong>- This trigger will fire when an intera=
+ction ends, after wrap-up if configured.</p></li>
+</ul>
+<p>Try not to think about SideKicks in terms of a specific action that they=
+ take. The SideKick is not the action taken by Logic+, but rather the Sidek=
+ick is the bit which watches those calls in queue and makes the determinati=
+on on when to take action. While the Sidekick is capable of launching a Log=
+ic+ to do anything, that is not an actual function of the sidekick.</p>
+<p>That being said here are some example of what you might do with Sidekick=
+s.</p>
+<ul>
+<li>
+<p>You can use a sidekick to update a database with information about that =
+call for later tracking.&nbsp;</p></li>
+<li>
+<p>Update Your CRM through a generic integration.&nbsp;</p></li>
+<li>
+<p>Send an email to the Quality Management group about that call so they ca=
+n review at a later time.&nbsp;</p></li>
+<li>
+<p>Put a notification on the agent=E2=80=99s desktop with a suggested actio=
+n.</p></li>
+<li>
+<p>Let the agent know when they have handled several short interactions in =
+a row or in a day.</p></li>
+<li>
+<p>Notify a Supervisor to Whisper / Join an out of tolerance interaction.</=
+p></li>
+<li>
+<p>Jump in and speak with a customer who has been transferred several times=
+, or put on hold several times.</p></li>
+<li>
+<p>Use a customer 360bot in Logic+ to review customer history and take cond=
+itional actions based on history</p></li>
+<li>
+<p>Send a Call, SMS, or email to the right group.</p></li>
+</ul>
+<p>Sidekicks can be configured from two different locations. They can be co=
+nfigured directly on the queue which you want the Sidekicks to watch, or th=
+ey can be configured directly on the Logic+ itself.</p>
+<p>To configure Sidekicks from Logic+, just open the logic+ you want to con=
+figure a sidekick on, then navigate to the settings by clicking on the gear=
+ icon. Once there, click on the Sidekick bots tab and you can configure thi=
+ngs right there.</p><span class=3D"confluence-embedded-file-wrapper image-c=
+enter-wrapper confluence-embedded-manual-size"><img class=3D"confluence-emb=
+edded-image image-center" width=3D"250" loading=3D"lazy" src=3D"https://sha=
+rpencx.atlassian.net/wiki/download/thumbnails/4246470658/Screenshot%2520202=
+4-07-11%2520at%25209.53.44%25E2%2580%25AFAM.png%3Fversion=3D1%26modificatio=
+nDate=3D1720706038559%26cacheVersion=3D1%26api=3Dv2%26width=3D760?version=
+=3D1&amp;modificationDate=3D1730239688403&amp;cacheVersion=3D1&amp;api=3Dv2=
+" data-image-src=3D"https://sharpencx.atlassian.net/wiki/download/attachmen=
+ts/4246470658/Screenshot%25202024-07-11%2520at%25209.53.44%25E2%2580%25AFAM=
+.png%3Fversion=3D1%26modificationDate=3D1720706038559%26cacheVersion=3D1%26=
+api=3Dv2%26width=3D760?version=3D1&amp;modificationDate=3D1730239688403&amp=
+;cacheVersion=3D1&amp;api=3Dv2" data-height=3D"1075" data-width=3D"1770" da=
+ta-unresolved-comment-count=3D"0" data-linked-resource-id=3D"4246470670" da=
+ta-linked-resource-version=3D"1" data-linked-resource-type=3D"attachment" d=
+ata-linked-resource-default-alias=3D"Screenshot%202024-07-11%20at%209.53.44=
+%E2%80%AFAM.png?version=3D1&amp;modificationDate=3D1720706038559&amp;cacheV=
+ersion=3D1&amp;api=3Dv2&amp;width=3D760" data-base-url=3D"https://sharpencx=
+.atlassian.net/wiki" data-linked-resource-content-type=3D"image/png" data-l=
+inked-resource-container-id=3D"4246470658" data-linked-resource-container-v=
+ersion=3D"2" data-media-id=3D"6519731d-961d-4565-9026-965e805a5584" data-me=
+dia-type=3D"file"></span>
+<p>Likewise, to configure Sidekicks from within the Queue settings, Just na=
+vigate to the Admin section of the app and click on Sharpen Q to reach the =
+Queue settings. Scroll down to Sidekick Bots and enable the toggle.</p><spa=
+n class=3D"confluence-embedded-file-wrapper image-center-wrapper confluence=
+-embedded-manual-size"><img class=3D"confluence-embedded-image image-center=
+" width=3D"250" loading=3D"lazy" src=3D"https://sharpencx.atlassian.net/wik=
+i/download/thumbnails/4246470658/Screenshot%25202024-07-11%2520at%252010.19=
+.18%25E2%2580%25AFAM.png%3Fversion=3D1%26modificationDate=3D1720707567335%2=
+6cacheVersion=3D1%26api=3Dv2%26width=3D760?version=3D1&amp;modificationDate=
+=3D1730239688138&amp;cacheVersion=3D1&amp;api=3Dv2" data-image-src=3D"https=
+://sharpencx.atlassian.net/wiki/download/attachments/4246470658/Screenshot%=
+25202024-07-11%2520at%252010.19.18%25E2%2580%25AFAM.png%3Fversion=3D1%26mod=
+ificationDate=3D1720707567335%26cacheVersion=3D1%26api=3Dv2%26width=3D760?v=
+ersion=3D1&amp;modificationDate=3D1730239688138&amp;cacheVersion=3D1&amp;ap=
+i=3Dv2" data-height=3D"574" data-width=3D"1500" data-unresolved-comment-cou=
+nt=3D"0" data-linked-resource-id=3D"4246470667" data-linked-resource-versio=
+n=3D"1" data-linked-resource-type=3D"attachment" data-linked-resource-defau=
+lt-alias=3D"Screenshot%202024-07-11%20at%2010.19.18%E2%80%AFAM.png?version=
+=3D1&amp;modificationDate=3D1720707567335&amp;cacheVersion=3D1&amp;api=3Dv2=
+&amp;width=3D760" data-base-url=3D"https://sharpencx.atlassian.net/wiki" da=
+ta-linked-resource-content-type=3D"image/png" data-linked-resource-containe=
+r-id=3D"4246470658" data-linked-resource-container-version=3D"2" data-media=
+-id=3D"7f0043f7-6bff-489a-affb-85464c2dfe73" data-media-type=3D"file"></spa=
+n>
+<p>Regardless of where it is configured in the application, the configurati=
+ons are shared. Any sidekick configured on the Queue will be available on t=
+he Logic+ and visa versa.</p>
+<p>&nbsp;</p>
+    </div>
+</body>
+</html>
+------=_Part_442_1188866795.1762043671045--

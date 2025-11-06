@@ -2683,11 +2683,22 @@
     clearError();
     showLoading();
     
+    // Check if this is a password reset link (doesn't require company token)
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('reset');
+    
     const token = getToken();
-    if (!token) { 
+    if (!token && !resetToken) { 
       hideLoading();
       $('#unauthorized').style.display = 'block'; 
       return; 
+    }
+    
+    // If we have a reset token but no company token, handle password reset only
+    if (resetToken && !token) {
+      hideLoading();
+      await handleResetTokenInURL();
+      return;
     }
     
     // Set up login form handler (needs to be attached before checking session)

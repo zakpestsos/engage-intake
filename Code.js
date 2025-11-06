@@ -1045,8 +1045,9 @@ function resetPasswordWithToken_(token, newPassword) {
 function sendPasswordResetEmail_(email, userName, resetToken, companyName) {
   try {
     // Determine the dashboard URL based on environment
-    // For now, use staging URL - can be made dynamic later
-    const dashboardUrl = 'https://zakpestsos.github.io/engage-intake/development/frontend-dashboard/';
+    // TODO: Make this configurable via a settings sheet or company property
+    // For local testing, use localhost. For production, use GitHub Pages.
+    const dashboardUrl = 'http://localhost:3000/frontend-dashboard/';
     const resetLink = dashboardUrl + '?reset=' + resetToken;
     
     const htmlBody = `

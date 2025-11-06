@@ -538,7 +538,7 @@
     }).join('');
   }
   
-  function openUserModal(mode = 'create', userData = null) {
+  async function openUserModal(mode = 'create', userData = null) {
     const modal = $('#userModal');
     const title = $('#userModalTitle');
     const form = $('#userForm');
@@ -561,11 +561,28 @@
       $('#userRole').value = userData.role || 'User';
       $('#userActive').checked = userData.active !== false;
       $('#userIconColor').value = userData.iconColor || '#3b82f6';
+      $('#userPhone').value = userData.phoneNumber || '';
+      
+      // Load company SMS opt-in status
+      if (userData.companyName) {
+        try {
+          const token = getToken();
+          const companyData = await fetchJSON(API() + '?api=company&companyName=' + encodeURIComponent(userData.companyName) + '&token=' + encodeURIComponent(token));
+          if (companyData && !companyData.error) {
+            $('#userSmsOptIn').checked = companyData.smsEnabled === true || companyData.smsEnabled === 'TRUE';
+          }
+        } catch (error) {
+          console.error('Error loading company SMS status:', error);
+          $('#userSmsOptIn').checked = false;
+        }
+      }
     } else {
       $('#userEmail').disabled = false;
       $('#userPassword').required = true;
       $('#userPassword').placeholder = '';
       $('#userIconColor').value = '#3b82f6';
+      $('#userPhone').value = '';
+      $('#userSmsOptIn').checked = false;
     }
     
     // Show modal
@@ -588,6 +605,8 @@
     const role = $('#userRole').value;
     const active = $('#userActive').checked;
     const iconColor = $('#userIconColor').value;
+    const phoneNumber = $('#userPhone').value.trim();
+    const smsOptIn = $('#userSmsOptIn').checked;
     
     const isEditing = $('#userEmail').disabled;
     const saveBtn = $('#saveUserBtn');
@@ -607,6 +626,8 @@
         role: role,
         active: active,
         iconColor: iconColor,
+        phoneNumber: phoneNumber,
+        smsOptIn: smsOptIn,
         token: token
       };
       
@@ -648,6 +669,7 @@
         currentUser.fullName = firstName + ' ' + lastName;
         currentUser.role = role;
         currentUser.iconColor = iconColor;
+        currentUser.phoneNumber = phoneNumber;
         saveSession(currentUser);
         updateUserMenu();
       }
@@ -662,10 +684,10 @@
   }
   
   // Make functions available globally for onclick handlers
-  window.editUser = function(email) {
+  window.editUser = async function(email) {
     const user = allUsers.find(u => u.email === email);
     if (user) {
-      openUserModal('edit', user);
+      await openUserModal('edit', user);
     }
   };
   

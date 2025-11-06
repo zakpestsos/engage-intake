@@ -737,6 +737,12 @@
         </div>
         
         <div class="form-group">
+          <label for="userPhone">Phone Number</label>
+          <input type="tel" id="userPhone" placeholder="(555) 123-4567">
+          <small>User's phone number for SMS notifications</small>
+        </div>
+        
+        <div class="form-group">
           <label for="userIconColor">Icon Color</label>
           <div class="color-picker-wrapper">
             <input type="color" id="userIconColor" value="#3b82f6">
@@ -750,6 +756,14 @@
             <input type="checkbox" id="userActive" checked>
             Active
           </label>
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" id="userSmsOptIn">
+            Text Opt Ins
+          </label>
+          <small>Enable SMS notifications for this user's company</small>
         </div>
         
         <div class="modal-actions">
